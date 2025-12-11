@@ -144,6 +144,53 @@ export function setupAuth(app: Express) {
     const { password: _, ...userWithoutPassword } = req.user;
     res.json(userWithoutPassword);
   });
+
+  app.post("/api/auth/google", async (req, res) => {
+    try {
+      const { accessToken } = req.body;
+
+      if (!accessToken) {
+        return res.status(400).json({ error: "Access token je obavezan" });
+      }
+
+      const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (!response.ok) {
+        return res.status(401).json({ error: "Neispravan Google token" });
+      }
+
+      const googleUser = await response.json();
+      const { email, name, picture } = googleUser;
+
+      if (!email) {
+        return res.status(400).json({ error: "Nije moguće dobiti email sa Google naloga" });
+      }
+
+      let user = await storage.getUserByEmail(email);
+
+      if (!user) {
+        const randomPassword = randomBytes(32).toString("hex");
+        const hashedPassword = await hashPassword(randomPassword);
+        user = await storage.createUser({
+          email,
+          password: hashedPassword,
+          name: name || email.split('@')[0],
+          role: "renter",
+          avatarUrl: picture || undefined,
+        });
+      }
+
+      req.session.userId = user.id;
+      
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Google auth error:", error);
+      res.status(500).json({ error: "Greška pri Google prijavi" });
+    }
+  });
 }
 
 export function isAuthenticated(

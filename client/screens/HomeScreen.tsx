@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, FlatList, StyleSheet, TextInput, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
@@ -9,11 +9,20 @@ import { useQuery } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
 import { ItemCard } from '@/components/ItemCard';
 import { CategoryFilter } from '@/components/CategoryFilter';
+import { FilterModal, FilterState } from '@/components/FilterModal';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
-import { Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
+import { Colors, Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
+
+const DEFAULT_FILTERS: FilterState = {
+  minPrice: null,
+  maxPrice: null,
+  minRating: null,
+  maxDeposit: null,
+  city: '',
+};
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -25,18 +34,37 @@ export default function HomeScreen() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
   const { data: items = [], isLoading, refetch } = useQuery<Item[]>({
     queryKey: ['/api/items', selectedCategory].filter(Boolean),
   });
 
-  const filteredItems = items.filter((item) => {
-    const matchesSearch = !search || 
-      item.title.toLowerCase().includes(search.toLowerCase()) ||
-      item.city.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = !selectedCategory || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.minPrice !== null) count++;
+    if (filters.maxPrice !== null) count++;
+    if (filters.minRating !== null) count++;
+    if (filters.maxDeposit !== null) count++;
+    if (filters.city) count++;
+    return count;
+  }, [filters]);
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const matchesSearch = !search || 
+        item.title.toLowerCase().includes(search.toLowerCase()) ||
+        item.city.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = !selectedCategory || item.category === selectedCategory;
+      const matchesMinPrice = filters.minPrice === null || item.pricePerDay >= filters.minPrice;
+      const matchesMaxPrice = filters.maxPrice === null || item.pricePerDay <= filters.maxPrice;
+      const matchesRating = filters.minRating === null || parseFloat(item.rating || '0') >= filters.minRating;
+      const matchesDeposit = filters.maxDeposit === null || item.deposit <= filters.maxDeposit;
+      const matchesCity = !filters.city || item.city.toLowerCase().includes(filters.city.toLowerCase());
+      return matchesSearch && matchesCategory && matchesMinPrice && matchesMaxPrice && matchesRating && matchesDeposit && matchesCity;
+    });
+  }, [items, search, selectedCategory, filters]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -53,20 +81,45 @@ export default function HomeScreen() {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <View style={[styles.searchContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
-        <Feather name="search" size={20} color={theme.textTertiary} />
-        <TextInput
-          style={[styles.searchInput, { color: theme.text }]}
-          placeholder="Pretraži stvari..."
-          placeholderTextColor={theme.textTertiary}
-          value={search}
-          onChangeText={setSearch}
-        />
-        {search ? (
-          <Pressable onPress={() => setSearch('')}>
-            <Feather name="x" size={20} color={theme.textTertiary} />
-          </Pressable>
-        ) : null}
+      <View style={styles.searchRow}>
+        <View style={[styles.searchContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+          <Feather name="search" size={20} color={theme.textTertiary} />
+          <TextInput
+            style={[styles.searchInput, { color: theme.text }]}
+            placeholder="Pretraži stvari..."
+            placeholderTextColor={theme.textTertiary}
+            value={search}
+            onChangeText={setSearch}
+          />
+          {search ? (
+            <Pressable onPress={() => setSearch('')}>
+              <Feather name="x" size={20} color={theme.textTertiary} />
+            </Pressable>
+          ) : null}
+        </View>
+        <Pressable
+          style={[
+            styles.filterButton,
+            {
+              backgroundColor: activeFilterCount > 0 ? Colors.primary : theme.backgroundDefault,
+              borderColor: activeFilterCount > 0 ? Colors.primary : theme.border,
+            },
+          ]}
+          onPress={() => setShowFilters(true)}
+        >
+          <Feather 
+            name="sliders" 
+            size={20} 
+            color={activeFilterCount > 0 ? '#FFFFFF' : theme.text} 
+          />
+          {activeFilterCount > 0 ? (
+            <View style={styles.filterBadge}>
+              <ThemedText type="caption" style={styles.filterBadgeText}>
+                {activeFilterCount}
+              </ThemedText>
+            </View>
+          ) : null}
+        </Pressable>
       </View>
       <CategoryFilter
         categories={CATEGORIES}
@@ -99,26 +152,34 @@ export default function HomeScreen() {
   }
 
   return (
-    <FlatList
-      style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
-      contentContainerStyle={{
-        paddingTop: headerHeight + Spacing.md,
-        paddingBottom: tabBarHeight + Spacing.fabSize + Spacing.xl,
-        paddingHorizontal: Spacing.lg,
-        flexGrow: 1,
-      }}
-      scrollIndicatorInsets={{ bottom: insets.bottom }}
-      data={filteredItems}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      numColumns={2}
-      columnWrapperStyle={styles.row}
-      ListHeaderComponent={renderHeader}
-      ListEmptyComponent={renderEmpty}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
-      }
-    />
+    <>
+      <FlatList
+        style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
+        contentContainerStyle={{
+          paddingTop: headerHeight + Spacing.md,
+          paddingBottom: tabBarHeight + Spacing.fabSize + Spacing.xl,
+          paddingHorizontal: Spacing.lg,
+          flexGrow: 1,
+        }}
+        scrollIndicatorInsets={{ bottom: insets.bottom }}
+        data={filteredItems}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmpty}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+        }
+      />
+      <FilterModal
+        visible={showFilters}
+        onClose={() => setShowFilters(false)}
+        filters={filters}
+        onApply={setFilters}
+      />
+    </>
   );
 }
 
@@ -126,19 +187,49 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: Spacing.lg,
   },
+  searchRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
   searchContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     height: Spacing.inputHeight,
     borderWidth: 1,
     borderRadius: BorderRadius.sm,
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     marginLeft: Spacing.sm,
+  },
+  filterButton: {
+    width: Spacing.inputHeight,
+    height: Spacing.inputHeight,
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: Colors.accent,
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  filterBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
   },
   row: {
     justifyContent: 'space-between',

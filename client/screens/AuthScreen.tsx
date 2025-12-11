@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+import { Feather } from '@expo/vector-icons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/Button';
@@ -8,16 +11,69 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 
+WebBrowser.maybeCompleteAuthSession();
+
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle } = useAuth();
   
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      handleGoogleResponse(response.authentication?.accessToken);
+    }
+  }, [response]);
+
+  const handleGoogleResponse = async (accessToken: string | undefined) => {
+    if (!accessToken) {
+      Alert.alert('Greška', 'Nije moguće dobiti pristup putem Google-a');
+      setIsGoogleLoading(false);
+      return;
+    }
+
+    setIsGoogleLoading(true);
+    try {
+      await loginWithGoogle(accessToken);
+    } catch (error: any) {
+      Alert.alert('Greška', error.message || 'Greška pri Google prijavi');
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!GOOGLE_WEB_CLIENT_ID) {
+      Alert.alert(
+        'Google prijava nije konfigurisana',
+        'Administrator treba da podesi Google OAuth kredencijale.'
+      );
+      return;
+    }
+    setIsGoogleLoading(true);
+    try {
+      await promptAsync();
+    } catch (error: any) {
+      Alert.alert('Greška', error.message || 'Greška pri Google prijavi');
+      setIsGoogleLoading(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!email || !password || (!isLogin && !name)) {
@@ -72,6 +128,33 @@ export default function AuthScreen() {
         <ThemedText type="h3" style={styles.formTitle}>
           {isLogin ? 'Prijava' : 'Registracija'}
         </ThemedText>
+
+        <Pressable
+          style={[styles.googleButton, { borderColor: theme.border, backgroundColor: theme.backgroundDefault }]}
+          onPress={handleGoogleSignIn}
+          disabled={isGoogleLoading}
+        >
+          {isGoogleLoading ? (
+            <ActivityIndicator color={Colors.primary} size="small" />
+          ) : (
+            <>
+              <View style={styles.googleIcon}>
+                <Feather name="mail" size={20} color="#EA4335" />
+              </View>
+              <ThemedText type="body" style={styles.googleButtonText}>
+                {isLogin ? 'Prijavi se sa Google-om' : 'Registruj se sa Google-om'}
+              </ThemedText>
+            </>
+          )}
+        </Pressable>
+
+        <View style={styles.divider}>
+          <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+          <ThemedText type="caption" style={[styles.dividerText, { color: theme.textTertiary }]}>
+            ili
+          </ThemedText>
+          <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+        </View>
 
         {!isLogin && (
           <TextInput
@@ -152,6 +235,33 @@ const styles = StyleSheet.create({
   },
   formTitle: {
     marginBottom: Spacing.xl,
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: Spacing.inputHeight,
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.lg,
+  },
+  googleIcon: {
+    marginRight: Spacing.sm,
+  },
+  googleButtonText: {
+    fontWeight: '500',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    marginHorizontal: Spacing.md,
   },
   input: {
     height: Spacing.inputHeight,

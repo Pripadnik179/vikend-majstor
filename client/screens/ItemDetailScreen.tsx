@@ -10,12 +10,13 @@ import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { AvailabilityCalendar } from '@/components/AvailabilityCalendar';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import { Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
-import type { Item, User, Review } from '@shared/schema';
+import type { Item, User, Review, Booking } from '@shared/schema';
 
 type ItemWithOwner = Item & { owner: User };
 
@@ -35,6 +36,11 @@ export default function ItemDetailScreen() {
 
   const { data: reviews = [] } = useQuery<(Review & { reviewer: User })[]>({
     queryKey: ['/api/items', route.params.itemId, 'reviews'],
+    enabled: !!item,
+  });
+
+  const { data: bookings = [] } = useQuery<Booking[]>({
+    queryKey: ['/api/items', route.params.itemId, 'bookings'],
     enabled: !!item,
   });
 
@@ -155,6 +161,16 @@ export default function ItemDetailScreen() {
             <ThemedText type="body" style={{ color: theme.textSecondary }}>
               {item.deposit} RSD (vraća se nakon vraćanja)
             </ThemedText>
+          </View>
+
+          <View style={styles.section}>
+            <ThemedText type="h4" style={styles.sectionTitle}>Dostupnost</ThemedText>
+            <AvailabilityCalendar 
+              bookings={bookings.map(b => ({
+                startDate: b.startDate as unknown as string,
+                endDate: b.endDate as unknown as string,
+              }))}
+            />
           </View>
 
           {reviews.length > 0 && (

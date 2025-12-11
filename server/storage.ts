@@ -25,6 +25,7 @@ export interface IStorage {
   
   getBookings(userId: string, type: 'renter' | 'owner'): Promise<Booking[]>;
   getBooking(id: string): Promise<Booking | undefined>;
+  getItemBookings(itemId: string): Promise<Booking[]>;
   createBooking(booking: InsertBooking): Promise<Booking>;
   updateBooking(id: string, data: Partial<InsertBooking>): Promise<Booking | undefined>;
   
@@ -38,6 +39,7 @@ export interface IStorage {
   
   getReviewsForItem(itemId: string): Promise<Review[]>;
   getReviewsForUser(userId: string): Promise<Review[]>;
+  getItemReviews(itemId: string): Promise<(Review & { reviewer: User })[]>;
   createReview(review: InsertReview): Promise<Review>;
 }
 
@@ -121,6 +123,18 @@ export class DatabaseStorage implements IStorage {
     return booking || undefined;
   }
 
+  async getItemBookings(itemId: string): Promise<Booking[]> {
+    return await db.select().from(bookings)
+      .where(and(
+        eq(bookings.itemId, itemId),
+        or(
+          eq(bookings.status, 'confirmed'),
+          eq(bookings.status, 'pending')
+        )
+      ))
+      .orderBy(bookings.startDate);
+  }
+
   async getConversations(userId: string): Promise<Conversation[]> {
     return await db.select().from(conversations)
       .where(or(eq(conversations.user1Id, userId), eq(conversations.user2Id, userId)))
@@ -189,6 +203,21 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(reviews)
       .where(eq(reviews.revieweeId, userId))
       .orderBy(desc(reviews.createdAt));
+  }
+
+  async getItemReviews(itemId: string): Promise<(Review & { reviewer: User })[]> {
+    const itemReviews = await db.select().from(reviews)
+      .where(eq(reviews.itemId, itemId))
+      .orderBy(desc(reviews.createdAt));
+    
+    const reviewsWithReviewers = await Promise.all(
+      itemReviews.map(async (review) => {
+        const [reviewer] = await db.select().from(users).where(eq(users.id, review.reviewerId));
+        return { ...review, reviewer };
+      })
+    );
+    
+    return reviewsWithReviewers;
   }
 
   async createReview(insertReview: InsertReview): Promise<Review> {

@@ -162,6 +162,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/items/:id/bookings", async (req, res) => {
+    try {
+      const bookings = await storage.getItemBookings(req.params.id);
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching item bookings:", error);
+      res.status(500).json({ error: "Greška pri učitavanju rezervacija" });
+    }
+  });
+
+  app.get("/api/items/:id/reviews", async (req, res) => {
+    try {
+      const reviews = await storage.getItemReviews(req.params.id);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching item reviews:", error);
+      res.status(500).json({ error: "Greška pri učitavanju recenzija" });
+    }
+  });
+
   app.get("/api/bookings", isAuthenticated, async (req, res) => {
     try {
       const { type = "renter" } = req.query;
