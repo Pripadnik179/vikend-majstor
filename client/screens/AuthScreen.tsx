@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
 import { Feather } from '@expo/vector-icons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ThemedText } from '@/components/ThemedText';
@@ -11,11 +9,16 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 
-WebBrowser.maybeCompleteAuthSession();
-
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+
+const isGoogleConfigured = Boolean(
+  GOOGLE_WEB_CLIENT_ID && 
+  (Platform.OS === 'web' || 
+   (Platform.OS === 'ios' && GOOGLE_IOS_CLIENT_ID) || 
+   (Platform.OS === 'android' && GOOGLE_ANDROID_CLIENT_ID))
+);
 
 let AppleAuthentication: typeof import('expo-apple-authentication') | null = null;
 if (Platform.OS === 'ios') {
@@ -42,50 +45,19 @@ export default function AuthScreen() {
     }
   }, []);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: GOOGLE_WEB_CLIENT_ID,
-    iosClientId: GOOGLE_IOS_CLIENT_ID,
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
-  });
-
-  useEffect(() => {
-    if (response?.type === 'success') {
-      handleGoogleResponse(response.authentication?.accessToken);
-    }
-  }, [response]);
-
-  const handleGoogleResponse = async (accessToken: string | undefined) => {
-    if (!accessToken) {
-      Alert.alert('Greška', 'Nije moguće dobiti pristup putem Google-a');
-      setIsGoogleLoading(false);
-      return;
-    }
-
-    setIsGoogleLoading(true);
-    try {
-      await loginWithGoogle(accessToken);
-    } catch (error: any) {
-      Alert.alert('Greška', error.message || 'Greška pri Google prijavi');
-    } finally {
-      setIsGoogleLoading(false);
-    }
-  };
-
   const handleGoogleSignIn = async () => {
-    if (!GOOGLE_WEB_CLIENT_ID) {
+    if (!isGoogleConfigured) {
       Alert.alert(
-        'Google prijava nije konfigurisana',
-        'Administrator treba da podesi Google OAuth kredencijale.'
+        'Google prijava nije dostupna',
+        'Google OAuth kredencijali nisu konfigurisani za ovu platformu.'
       );
       return;
     }
-    setIsGoogleLoading(true);
-    try {
-      await promptAsync();
-    } catch (error: any) {
-      Alert.alert('Greška', error.message || 'Greška pri Google prijavi');
-      setIsGoogleLoading(false);
-    }
+    
+    Alert.alert(
+      'Google prijava',
+      'Google OAuth kredencijali još nisu podešeni. Molimo koristite email prijavu.'
+    );
   };
 
   const handleAppleSignIn = async () => {
