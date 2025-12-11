@@ -1,0 +1,322 @@
+import React, { useState } from 'react';
+import { View, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Feather } from '@expo/vector-icons';
+import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
+import { ThemedText } from '@/components/ThemedText';
+import { Card } from '@/components/Card';
+import { Button } from '@/components/Button';
+import { useTheme } from '@/hooks/useTheme';
+import { apiRequest } from '@/lib/query-client';
+import { Spacing, BorderRadius } from '@/constants/theme';
+import type { RootStackParamList } from '@/navigation/types';
+import type { Item, User } from '@shared/schema';
+
+type ItemWithOwner = Item & { owner: User };
+
+export default function BookingFlowScreen() {
+  const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
+  const route = useRoute<RouteProp<RootStackParamList, 'BookingFlow'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const queryClient = useQueryClient();
+
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'cash'>('cash');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { data: item, isLoading: isLoadingItem } = useQuery<ItemWithOwner>({
+    queryKey: ['/api/items', route.params.itemId],
+  });
+
+  const today = new Date();
+  const nextWeek = new Date(today);
+  nextWeek.setDate(today.getDate() + 7);
+
+  const quickDates = [
+    { label: 'Danas', days: 1, start: today },
+    { label: 'Vikend', days: 2, start: getNextWeekend() },
+    { label: '3 dana', days: 3, start: today },
+    { label: 'Nedelja', days: 7, start: today },
+  ];
+
+  function getNextWeekend() {
+    const d = new Date();
+    const day = d.getDay();
+    const daysUntilSaturday = (6 - day + 7) % 7 || 7;
+    d.setDate(d.getDate() + daysUntilSaturday);
+    return d;
+  }
+
+  const selectQuickDate = (option: typeof quickDates[0]) => {
+    const start = new Date(option.start);
+    const end = new Date(start);
+    end.setDate(start.getDate() + option.days - 1);
+    setStartDate(start);
+    setEndDate(end);
+  };
+
+  const calculateDays = () => {
+    if (!startDate || !endDate) return 0;
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  };
+
+  const totalDays = calculateDays();
+  const rentalCost = totalDays * (item?.pricePerDay || 0);
+  const depositAmount = item?.deposit || 0;
+  const totalCost = rentalCost + depositAmount;
+
+  const handleConfirm = async () => {
+    if (!startDate || !endDate) {
+      Alert.alert('Greška', 'Izaberite datume');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await apiRequest('POST', '/api/bookings', {
+        itemId: route.params.itemId,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        totalDays,
+        totalPrice: rentalCost,
+        deposit: depositAmount,
+        paymentMethod,
+        status: 'pending',
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['/api/bookings'] });
+      
+      Alert.alert(
+        'Uspešno',
+        'Vaša rezervacija je poslata vlasniku. Čekajte potvrdu.',
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+    } catch (error: any) {
+      Alert.alert('Greška', error.message || 'Došlo je do greške');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDate = (date: Date | null) => {
+    if (!date) return '-';
+    return date.toLocaleDateString('sr-RS', { day: 'numeric', month: 'short' });
+  };
+
+  if (isLoadingItem || !item) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: theme.backgroundRoot }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <KeyboardAwareScrollViewCompat
+      style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
+      contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + Spacing.xl }]}
+    >
+      <Card style={styles.itemCard}>
+        <ThemedText type="h4">{item.title}</ThemedText>
+        <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.xs }}>
+          {item.city}{item.district ? `, ${item.district}` : ''} | {item.pricePerDay} RSD/dan
+        </ThemedText>
+      </Card>
+
+      <View style={styles.section}>
+        <ThemedText type="h4" style={styles.sectionTitle}>Brzi izbor datuma</ThemedText>
+        <View style={styles.quickDates}>
+          {quickDates.map((option) => (
+            <Pressable
+              key={option.label}
+              style={({ pressed }) => [
+                styles.quickDateButton,
+                { 
+                  backgroundColor: pressed ? theme.primaryLight : theme.backgroundDefault,
+                  borderColor: theme.border,
+                },
+              ]}
+              onPress={() => selectQuickDate(option)}
+            >
+              <ThemedText type="body">{option.label}</ThemedText>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <ThemedText type="h4" style={styles.sectionTitle}>Izabrani period</ThemedText>
+        <Card style={styles.dateCard}>
+          <View style={styles.dateRow}>
+            <View style={styles.dateColumn}>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>Od</ThemedText>
+              <ThemedText type="h4">{formatDate(startDate)}</ThemedText>
+            </View>
+            <Feather name="arrow-right" size={20} color={theme.textTertiary} />
+            <View style={styles.dateColumn}>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>Do</ThemedText>
+              <ThemedText type="h4">{formatDate(endDate)}</ThemedText>
+            </View>
+          </View>
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <ThemedText type="h4" style={styles.sectionTitle}>Način plaćanja</ThemedText>
+        <Pressable
+          style={[
+            styles.paymentOption,
+            { 
+              backgroundColor: paymentMethod === 'cash' ? theme.primaryLight : theme.backgroundDefault,
+              borderColor: paymentMethod === 'cash' ? theme.primary : theme.border,
+            },
+          ]}
+          onPress={() => setPaymentMethod('cash')}
+        >
+          <Feather 
+            name="dollar-sign" 
+            size={22} 
+            color={paymentMethod === 'cash' ? theme.primary : theme.text} 
+          />
+          <View style={styles.paymentText}>
+            <ThemedText type="body" style={{ fontWeight: '600' }}>Plati pri preuzimanju</ThemedText>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Gotovina ili dogovor</ThemedText>
+          </View>
+          {paymentMethod === 'cash' && (
+            <Feather name="check-circle" size={22} color={theme.primary} />
+          )}
+        </Pressable>
+
+        <Pressable
+          style={[
+            styles.paymentOption,
+            { 
+              backgroundColor: paymentMethod === 'stripe' ? theme.primaryLight : theme.backgroundDefault,
+              borderColor: paymentMethod === 'stripe' ? theme.primary : theme.border,
+              opacity: 0.5,
+            },
+          ]}
+          disabled
+        >
+          <Feather 
+            name="credit-card" 
+            size={22} 
+            color={theme.textTertiary} 
+          />
+          <View style={styles.paymentText}>
+            <ThemedText type="body" style={{ fontWeight: '600', color: theme.textTertiary }}>
+              Online plaćanje
+            </ThemedText>
+            <ThemedText type="small" style={{ color: theme.textTertiary }}>Uskoro dostupno</ThemedText>
+          </View>
+        </Pressable>
+      </View>
+
+      <View style={styles.section}>
+        <ThemedText type="h4" style={styles.sectionTitle}>Ukupno</ThemedText>
+        <Card style={styles.priceCard}>
+          <View style={styles.priceRow}>
+            <ThemedText type="body" style={{ color: theme.textSecondary }}>
+              Iznajmljivanje ({totalDays} {totalDays === 1 ? 'dan' : totalDays < 5 ? 'dana' : 'dana'})
+            </ThemedText>
+            <ThemedText type="body">{rentalCost} RSD</ThemedText>
+          </View>
+          <View style={styles.priceRow}>
+            <ThemedText type="body" style={{ color: theme.textSecondary }}>Depozit (vraća se)</ThemedText>
+            <ThemedText type="body">{depositAmount} RSD</ThemedText>
+          </View>
+          <View style={[styles.priceRow, styles.totalRow, { borderTopColor: theme.border }]}>
+            <ThemedText type="h4">Ukupno</ThemedText>
+            <ThemedText type="h3" style={{ color: theme.primary }}>{totalCost} RSD</ThemedText>
+          </View>
+        </Card>
+      </View>
+
+      <Button 
+        onPress={handleConfirm} 
+        disabled={isLoading || !startDate || !endDate}
+        style={styles.confirmButton}
+      >
+        {isLoading ? <ActivityIndicator color="#FFFFFF" /> : 'Potvrdi rezervaciju'}
+      </Button>
+    </KeyboardAwareScrollViewCompat>
+  );
+}
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  container: {
+    padding: Spacing.lg,
+  },
+  itemCard: {
+    marginBottom: Spacing.xl,
+  },
+  section: {
+    marginBottom: Spacing.xl,
+  },
+  sectionTitle: {
+    marginBottom: Spacing.md,
+  },
+  quickDates: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  quickDateButton: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+  },
+  dateCard: {
+    padding: Spacing.lg,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  dateColumn: {
+    alignItems: 'center',
+  },
+  paymentOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    marginBottom: Spacing.sm,
+  },
+  paymentText: {
+    flex: 1,
+    marginLeft: Spacing.md,
+  },
+  priceCard: {
+    padding: Spacing.lg,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.sm,
+  },
+  totalRow: {
+    marginTop: Spacing.sm,
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    marginBottom: 0,
+  },
+  confirmButton: {
+    marginTop: Spacing.md,
+  },
+});
