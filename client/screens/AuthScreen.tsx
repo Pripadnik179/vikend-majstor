@@ -3,7 +3,6 @@ import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-import * as AppleAuthentication from 'expo-apple-authentication';
 import { Feather } from '@expo/vector-icons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ThemedText } from '@/components/ThemedText';
@@ -17,6 +16,11 @@ WebBrowser.maybeCompleteAuthSession();
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+
+let AppleAuthentication: typeof import('expo-apple-authentication') | null = null;
+if (Platform.OS === 'ios') {
+  AppleAuthentication = require('expo-apple-authentication');
+}
 
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
@@ -33,7 +37,9 @@ export default function AuthScreen() {
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
 
   useEffect(() => {
-    AppleAuthentication.isAvailableAsync().then(setIsAppleAvailable);
+    if (Platform.OS === 'ios' && AppleAuthentication) {
+      AppleAuthentication.isAvailableAsync().then(setIsAppleAvailable);
+    }
   }, []);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -83,6 +89,10 @@ export default function AuthScreen() {
   };
 
   const handleAppleSignIn = async () => {
+    if (Platform.OS !== 'ios' || !AppleAuthentication) {
+      return;
+    }
+    
     setIsAppleLoading(true);
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -136,6 +146,8 @@ export default function AuthScreen() {
     },
   ];
 
+  const showAppleButton = Platform.OS === 'ios' && isAppleAvailable;
+
   return (
     <KeyboardAwareScrollViewCompat
       style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
@@ -180,7 +192,7 @@ export default function AuthScreen() {
           )}
         </Pressable>
 
-        {isAppleAvailable ? (
+        {showAppleButton ? (
           <Pressable
             style={[styles.appleButton, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}
             onPress={handleAppleSignIn}
