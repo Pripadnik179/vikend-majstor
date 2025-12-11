@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, role?: string) => Promise<void>;
   loginWithGoogle: (accessToken: string) => Promise<void>;
+  loginWithApple: (identityToken: string, fullName?: { givenName?: string; familyName?: string } | null) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -66,13 +67,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(userData);
   };
 
+  const loginWithApple = async (identityToken: string, fullName?: { givenName?: string; familyName?: string } | null) => {
+    const response = await apiRequest('POST', '/api/auth/apple', { 
+      identityToken,
+      fullName: fullName ? `${fullName.givenName || ''} ${fullName.familyName || ''}`.trim() : undefined,
+    });
+    const userData = await response.json();
+    setUser(userData);
+  };
+
   const logout = async () => {
     await apiRequest('POST', '/api/auth/logout');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, loginWithGoogle, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, loginWithGoogle, loginWithApple, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

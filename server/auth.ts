@@ -2,8 +2,12 @@ import { Request, Response, NextFunction, Express } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import { storage } from "./storage";
 import type { User } from "@shared/schema";
+
+const APPLE_JWKS_URL = new URL('https://appleid.apple.com/auth/keys');
+const appleJWKS = createRemoteJWKSet(APPLE_JWKS_URL);
 
 const scryptAsync = promisify(scrypt);
 
@@ -189,6 +193,61 @@ export function setupAuth(app: Express) {
     } catch (error) {
       console.error("Google auth error:", error);
       res.status(500).json({ error: "Greška pri Google prijavi" });
+    }
+  });
+
+  app.post("/api/auth/apple", async (req, res) => {
+    try {
+      const { identityToken, fullName } = req.body;
+
+      if (!identityToken) {
+        return res.status(400).json({ error: "Identity token je obavezan" });
+      }
+
+      let payload;
+      try {
+        const { payload: verifiedPayload } = await jwtVerify(identityToken, appleJWKS, {
+          issuer: 'https://appleid.apple.com',
+        });
+        payload = verifiedPayload;
+      } catch (jwtError: any) {
+        console.error("Apple JWT verification failed:", jwtError);
+        return res.status(401).json({ error: "Neispravan ili istekao Apple token" });
+      }
+      
+      const appleUserId = payload.sub as string;
+      const email = payload.email as string | undefined;
+
+      if (!appleUserId) {
+        return res.status(400).json({ error: "Nije moguće dobiti Apple korisnički ID" });
+      }
+
+      const userEmail = email || `apple_${appleUserId}@privaterelay.appleid.com`;
+
+      let user = await storage.getUserByEmail(userEmail);
+
+      if (!user) {
+        const randomPassword = randomBytes(32).toString("hex");
+        const hashedPassword = await hashPassword(randomPassword);
+        const userName = fullName && fullName.trim() ? fullName.trim() : 'Apple User';
+        user = await storage.createUser({
+          email: userEmail,
+          password: hashedPassword,
+          name: userName,
+          role: "renter",
+        });
+      } else if (fullName && fullName.trim() && user.name === 'Apple User') {
+        await storage.updateUser(user.id, { name: fullName.trim() });
+        user = { ...user, name: fullName.trim() };
+      }
+
+      req.session.userId = user.id;
+      
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Apple auth error:", error);
+      res.status(500).json({ error: "Greška pri Apple prijavi" });
     }
   });
 }

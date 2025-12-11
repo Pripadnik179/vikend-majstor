@@ -3,6 +3,7 @@ import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { Feather } from '@expo/vector-icons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ThemedText } from '@/components/ThemedText';
@@ -20,7 +21,7 @@ const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_I
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
-  const { login, register, loginWithGoogle } = useAuth();
+  const { login, register, loginWithGoogle, loginWithApple } = useAuth();
   
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -28,6 +29,12 @@ export default function AuthScreen() {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAppleLoading, setIsAppleLoading] = useState(false);
+  const [isAppleAvailable, setIsAppleAvailable] = useState(false);
+
+  useEffect(() => {
+    AppleAuthentication.isAvailableAsync().then(setIsAppleAvailable);
+  }, []);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     webClientId: GOOGLE_WEB_CLIENT_ID,
@@ -72,6 +79,31 @@ export default function AuthScreen() {
     } catch (error: any) {
       Alert.alert('Greška', error.message || 'Greška pri Google prijavi');
       setIsGoogleLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setIsAppleLoading(true);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      
+      if (credential.identityToken) {
+        await loginWithApple(credential.identityToken, credential.fullName);
+      } else {
+        Alert.alert('Greška', 'Nije moguće dobiti Apple token');
+      }
+    } catch (error: any) {
+      if (error.code === 'ERR_REQUEST_CANCELED') {
+        return;
+      }
+      Alert.alert('Greška', error.message || 'Greška pri Apple prijavi');
+    } finally {
+      setIsAppleLoading(false);
     }
   };
 
@@ -147,6 +179,25 @@ export default function AuthScreen() {
             </>
           )}
         </Pressable>
+
+        {isAppleAvailable ? (
+          <Pressable
+            style={[styles.appleButton, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}
+            onPress={handleAppleSignIn}
+            disabled={isAppleLoading}
+          >
+            {isAppleLoading ? (
+              <ActivityIndicator color={isDark ? '#000000' : '#FFFFFF'} size="small" />
+            ) : (
+              <>
+                <Feather name="command" size={20} color={isDark ? '#000000' : '#FFFFFF'} style={styles.appleIcon} />
+                <ThemedText type="body" style={[styles.appleButtonText, { color: isDark ? '#000000' : '#FFFFFF' }]}>
+                  {isLogin ? 'Prijavi se sa Apple-om' : 'Registruj se sa Apple-om'}
+                </ThemedText>
+              </>
+            )}
+          </Pressable>
+        ) : null}
 
         <View style={styles.divider}>
           <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
@@ -249,6 +300,20 @@ const styles = StyleSheet.create({
     marginRight: Spacing.sm,
   },
   googleButtonText: {
+    fontWeight: '500',
+  },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: Spacing.inputHeight,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.lg,
+  },
+  appleIcon: {
+    marginRight: Spacing.sm,
+  },
+  appleButtonText: {
     fontWeight: '500',
   },
   divider: {
