@@ -1,0 +1,78 @@
+Napravi full-stack web aplikaciju pod nazivom "VikendMajstor" – P2P platforma za izdavanje alata i stvari među komšijama.
+
+### Cilj
+- MVP verzija spremna za lansiranje u roku od 30–45 dana.
+- Prve rezervacije u prvoj nedelji.
+
+### Platforme
+- Web aplikacija (Next.js 14 + Tailwind CSS).
+- Backend: Next.js API routes.
+- Baza: Supabase (auth, baza, storage, real-time).
+- Hosting: Vercel ili Replit (besplatno na početku).
+- Plaćanje: Stripe (test mode) + fallback opcija “plati pri preuzimanju”.
+
+### Obavezne funkcije
+1. **Registracija / login**
+   - Email + lozinka ili Google login.
+   - Email verifikacija (SMS verifikacija odložena za kasnije).
+   - Dva tipa korisnika: Vlasnik (izdaje stvar) i Iznajmljivač (rezerviše).
+
+2. **Dodavanje nove stvari (za vlasnika)**
+   - Naslov.
+   - Do 4 fotografije.
+   - Opis.
+   - Kategorija (bušilica, merdevine, agregat, šator…).
+   - Cena po danu (RSD).
+   - Depozit (RSD).
+   - Lokacija (grad + deo grada, ručno ili Google Maps pin).
+   - Dostupnost (kalendar).
+
+3. **Početna stranica**
+   - Pretraga po gradu + kategoriji.
+   - Grid/list view sa slikom, naslovom, cenom po danu, lokacijom, prosečnom ocenom.
+   - Filteri: cena, udaljenost, ocena, depozit.
+
+4. **Stranica pojedinačne stvari**
+   - Galerija slika.
+   - Kalendar slobodnih termina.
+   - Dugme “Rezerviši” → bira datume → izračunava ukupnu cenu (dani × cena + depozit).
+
+5. **Proces rezervacije i plaćanja**
+   - Stripe checkout (test mode).
+   - Plaća se pun iznos + depozit odmah (ili opcija “plati pri preuzimanju”).
+   - Novac stoji kod platforme dok iznajmljivač ne potvrdi preuzimanje.
+
+6. **Chat (osnovni)**
+   - In-app messaging sistem (threaded messages).
+   - Real-time chat se dodaje kasnije.
+
+7. **Ocene i recenzije**
+   - Posle završene rezervacije obe strane ostavljaju ocenu 1–5 i komentar.
+
+8. **Admin panel (minimalni)**
+   - Pregled svih rezervacija.
+   - Ručno menjanje statusa rezervacije.
+   - Blokiranje korisnika.
+   - Promena provizije (default 20 %).
+
+### Dodatne funkcije (nakon MVP-a)
+- SMS verifikacija telefona.
+- Push notifikacije (nova poruka, rezervacija prihvaćena…).
+- Osiguranje stvari do 50.000 RSD (integracija sa osiguravajućom kućom).
+- Dostava kuririma (Glovo/Dexter integracija).
+- Real-time chat (WebSocket/Supabase Realtime).
+- Upload lične karte za verifikaciju.
+
+### Dizajn i jezik
+- Kompletan interfejs na srpskom jeziku (latinica).
+- Moderan, čist dizajn (plavo-narandžasta paleta).
+- 100 % responsivan – mora da izgleda savršeno na telefonu.
+
+### Output
+Generiši kompletan kod za:
+- Frontend (Next.js 14 + Tailwind CSS).
+- Backend API (Next.js API routes).
+- Bazu (Supabase).
+- Stripe integraciju (test mode).
+- Osnovni in-app messaging sistem.
+- Minimalni admin panel.
