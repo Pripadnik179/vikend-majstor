@@ -88,6 +88,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/user/ad-stats", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user!;
+      const userItems = await storage.getItemsByOwner(user.id);
+      const itemCount = userItems.length;
+      const featuredItem = userItems.find(item => item.isFeatured);
+      
+      const FREE_AD_LIMIT = 2;
+      const hasSubscription = user.subscriptionType === 'basic' || user.subscriptionType === 'premium';
+      const subscriptionActive = hasSubscription && user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
+      
+      res.json({
+        totalAds: itemCount,
+        freeAdsUsed: Math.min(itemCount, FREE_AD_LIMIT),
+        freeAdsLimit: FREE_AD_LIMIT,
+        canCreateAd: subscriptionActive || itemCount < FREE_AD_LIMIT,
+        subscriptionType: user.subscriptionType,
+        subscriptionStatus: subscriptionActive ? 'active' : 'inactive',
+        subscriptionEndDate: user.subscriptionEndDate,
+        featuredItemId: featuredItem?.id || null,
+        isPremium: user.subscriptionType === 'premium' && subscriptionActive,
+      });
+    } catch (error) {
+      console.error("Error fetching ad stats:", error);
+      res.status(500).json({ error: "Greška pri učitavanju statistike" });
+    }
+  });
+
   app.get("/api/items", async (req, res) => {
     try {
       const { category, subCategory, toolType, powerSource, city, search } = req.query;
@@ -143,9 +171,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/items", isAuthenticated, async (req, res) => {
     try {
+      const user = req.user!;
+      const userItems = await storage.getItemsByOwner(user.id);
+      const itemCount = userItems.length;
+      
+      const FREE_AD_LIMIT = 2;
+      const hasSubscription = user.subscriptionType === 'basic' || user.subscriptionType === 'premium';
+      const subscriptionActive = hasSubscription && user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
+      
+      if (itemCount >= FREE_AD_LIMIT && !subscriptionActive) {
+        return res.status(403).json({ 
+          error: "Dostigli ste limit od 2 besplatna oglasa",
+          code: "FREE_LIMIT_REACHED",
+          itemCount,
+          freeLimit: FREE_AD_LIMIT
+        });
+      }
+      
       const item = await storage.createItem({
         ...req.body,
-        ownerId: req.user!.id,
+        ownerId: user.id,
       });
       res.status(201).json(item);
     } catch (error) {
