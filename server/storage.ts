@@ -16,6 +16,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, data: Partial<InsertUser>): Promise<User | undefined>;
+  incrementUserAdsCreated(userId: string): Promise<void>;
   
   getItems(filters?: { 
     category?: string; 
@@ -71,6 +72,12 @@ export class DatabaseStorage implements IStorage {
   async updateUser(id: string, data: Partial<InsertUser>): Promise<User | undefined> {
     const [user] = await db.update(users).set(data).where(eq(users.id, id)).returning();
     return user || undefined;
+  }
+
+  async incrementUserAdsCreated(userId: string): Promise<void> {
+    await db.update(users)
+      .set({ totalAdsCreated: sql`COALESCE(${users.totalAdsCreated}, 0) + 1` })
+      .where(eq(users.id, userId));
   }
 
   async getItems(filters?: { 

@@ -188,24 +188,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/items", isAuthenticated, async (req, res) => {
     try {
-      // Fetch fresh user data from database (not stale session data)
       const freshUser = await storage.getUser(req.user!.id);
       if (!freshUser) {
         return res.status(401).json({ error: "Korisnik nije pronađen" });
       }
       
-      const userItems = await storage.getItemsByOwner(freshUser.id);
-      const itemCount = userItems.length;
-      
       const FREE_AD_LIMIT = 5;
       const hasSubscription = freshUser.subscriptionType === 'basic' || freshUser.subscriptionType === 'premium';
       const subscriptionActive = hasSubscription && freshUser.subscriptionEndDate && new Date(freshUser.subscriptionEndDate) > new Date();
       
-      if (itemCount >= FREE_AD_LIMIT && !subscriptionActive) {
+      const totalAdsCreated = freshUser.totalAdsCreated || 0;
+      
+      if (totalAdsCreated >= FREE_AD_LIMIT && !subscriptionActive) {
         return res.status(403).json({ 
-          error: "Dostigli ste limit od 5 besplatnih oglasa",
+          error: "Iskoristili ste svih 5 besplatnih oglasa. Za nove oglase potrebna vam je pretplata.",
           code: "FREE_LIMIT_REACHED",
-          itemCount,
+          totalAdsCreated,
           freeLimit: FREE_AD_LIMIT
         });
       }
@@ -214,10 +212,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         ownerId: freshUser.id,
       });
+      
+      if (!subscriptionActive) {
+        await storage.incrementUserAdsCreated(freshUser.id);
+      }
+      
       res.status(201).json(item);
     } catch (error) {
       console.error("Error creating item:", error);
       res.status(500).json({ error: "Greška pri kreiranju stvari" });
+    }
+  });
+
+  app.delete("/api/items/:id", isAuthenticated, async (req, res) => {
+    try {
+      const item = await storage.getItem(req.params.id);
+      if (!item) {
+        return res.status(404).json({ error: "Stvar nije pronađena" });
+      }
+      if (item.ownerId !== req.user!.id) {
+        return res.status(403).json({ error: "Nemate dozvolu za ovu akciju" });
+      }
+      
+      await storage.deleteItem(req.params.id);
+      res.json({ success: true, message: "Oglas je uspešno obrisan" });
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      res.status(500).json({ error: "Greška pri brisanju oglasa" });
     }
   });
 

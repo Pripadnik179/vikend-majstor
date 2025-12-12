@@ -28,6 +28,7 @@ export const users = pgTable("users", {
   isPremiumListing: boolean("is_premium_listing").default(false).notNull(),
   premiumListingEndDate: timestamp("premium_listing_end_date"),
   stripeCustomerId: text("stripe_customer_id"),
+  totalAdsCreated: integer("total_ads_created").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
