@@ -121,7 +121,21 @@ export default function AddItemScreen() {
       queryClient.invalidateQueries({ queryKey: ['/api/my-items'] });
       navigation.goBack();
     } catch (error: any) {
-      Alert.alert('Greška', error.message || 'Došlo je do greške');
+      if (error.code === 'FREE_LIMIT_REACHED') {
+        Alert.alert(
+          'Limit besplatnih oglasa',
+          'Dostigli ste limit od 2 besplatna oglasa. Da biste objavili više oglasa, potrebna vam je pretplata.',
+          [
+            { text: 'Otkaži', style: 'cancel' },
+            { 
+              text: 'Pogledaj pretplate', 
+              onPress: () => navigation.navigate('Subscription'),
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Greška', error.message || 'Došlo je do greške');
+      }
     } finally {
       setIsLoading(false);
     }

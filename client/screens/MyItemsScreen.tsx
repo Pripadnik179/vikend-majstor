@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, FlatList, StyleSheet, Pressable, RefreshControl, ActivityIndicator, Alert } from 'react-native';
+import { View, FlatList, StyleSheet, Pressable, RefreshControl, ActivityIndicator, Alert, StyleProp, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,6 +14,18 @@ import { Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
 
+interface AdStats {
+  totalAds: number;
+  freeAdsUsed: number;
+  freeAdsLimit: number;
+  canCreateAd: boolean;
+  subscriptionType: string;
+  subscriptionStatus: string;
+  subscriptionEndDate: string | null;
+  featuredItemId: string | null;
+  isPremium: boolean;
+}
+
 export default function MyItemsScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
@@ -25,6 +37,18 @@ export default function MyItemsScreen() {
   const { data: items = [], isLoading, refetch } = useQuery<Item[]>({
     queryKey: ['/api/my-items'],
   });
+
+  const { data: adStats, refetch: refetchStats } = useQuery<AdStats>({
+    queryKey: ['/api/user/ad-stats'],
+  });
+
+  const getSubscriptionLabel = (type: string) => {
+    switch (type) {
+      case 'premium': return 'Premium';
+      case 'basic': return 'Standard';
+      default: return 'Besplatno';
+    }
+  };
 
   const deleteMutation = useMutation({
     mutationFn: async (itemId: string) => {
@@ -38,9 +62,9 @@ export default function MyItemsScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.all([refetch(), refetchStats()]);
     setRefreshing(false);
-  }, [refetch]);
+  }, [refetch, refetchStats]);
 
   const handleDelete = (item: Item) => {
     Alert.alert(
@@ -66,45 +90,108 @@ export default function MyItemsScreen() {
     return CATEGORIES.find(c => c.id === categoryId)?.label || categoryId;
   };
 
-  const renderItem = ({ item }: { item: Item }) => (
-    <Card 
-      style={styles.itemCard}
-      onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
-    >
-      <View style={styles.itemContent}>
-        {item.images && item.images.length > 0 ? (
-          <Image
-            source={{ uri: getImageUrl(item.images[0]) }}
-            style={styles.itemImage}
-            contentFit="cover"
-          />
-        ) : (
-          <View style={[styles.itemImage, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary }]}>
-            <Feather name="image" size={24} color={theme.textTertiary} />
+  const renderHeader = () => (
+    <Card style={styles.statsCard}>
+      <View style={styles.statsRow}>
+        <View style={styles.statItem}>
+          <ThemedText type="h3" style={{ color: theme.primary }}>
+            {adStats?.freeAdsUsed || 0}/{adStats?.freeAdsLimit || 2}
+          </ThemedText>
+          <ThemedText type="small" style={{ color: theme.textSecondary }}>
+            Besplatni oglasi
+          </ThemedText>
+        </View>
+        <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+        <View style={styles.statItem}>
+          <ThemedText type="h4" style={{ color: adStats?.subscriptionStatus === 'active' ? theme.success : theme.textSecondary }}>
+            {getSubscriptionLabel(adStats?.subscriptionType || 'free')}
+          </ThemedText>
+          <ThemedText type="small" style={{ color: theme.textSecondary }}>
+            Status pretplate
+          </ThemedText>
+        </View>
+        <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+        <View style={styles.statItem}>
+          <ThemedText type="h3" style={{ color: theme.text }}>
+            {adStats?.totalAds || 0}
+          </ThemedText>
+          <ThemedText type="small" style={{ color: theme.textSecondary }}>
+            Ukupno oglasa
+          </ThemedText>
+        </View>
+      </View>
+      {adStats?.subscriptionType === 'free' && (adStats?.freeAdsUsed || 0) >= (adStats?.freeAdsLimit || 2) && (
+        <Pressable
+          style={[styles.upgradeButton, { backgroundColor: theme.accent }]}
+          onPress={() => navigation.navigate('Subscription')}
+        >
+          <Feather name="zap" size={16} color="#FFFFFF" />
+          <ThemedText style={{ color: '#FFFFFF', marginLeft: Spacing.sm, fontWeight: '600' }}>
+            Nadogradi na Standard ili Premium
+          </ThemedText>
+        </Pressable>
+      )}
+      {adStats?.isPremium && adStats?.featuredItemId && (
+        <View style={[styles.featuredInfo, { backgroundColor: theme.warning + '20' }]}>
+          <Feather name="star" size={14} color={theme.warning} />
+          <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs }}>
+            Imate 1 istaknuti oglas na vrhu liste
+          </ThemedText>
+        </View>
+      )}
+    </Card>
+  );
+
+  const renderItem = ({ item }: { item: Item }) => {
+    const isFeatured = adStats?.featuredItemId === item.id;
+    
+    return (
+      <Card 
+        style={isFeatured ? StyleSheet.flatten([styles.itemCard, { borderWidth: 2, borderColor: theme.warning }]) : styles.itemCard}
+        onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
+      >
+        {isFeatured && (
+          <View style={[styles.featuredBadge, { backgroundColor: theme.warning }]}>
+            <Feather name="star" size={12} color="#FFFFFF" />
+            <ThemedText style={{ color: '#FFFFFF', fontSize: 10, marginLeft: 4, fontWeight: '600' }}>
+              ISTAKNUTO
+            </ThemedText>
           </View>
         )}
-        <View style={styles.itemInfo}>
-          <ThemedText type="body" style={{ fontWeight: '600' }} numberOfLines={1}>
-            {item.title}
-          </ThemedText>
-          <ThemedText type="small" style={{ color: theme.textSecondary }} numberOfLines={1}>
-            {getCategoryLabel(item.category)} | {item.city}
-          </ThemedText>
-          <View style={styles.priceRow}>
-            <ThemedText type="body" style={{ color: theme.primary, fontWeight: '600' }}>
-              {item.pricePerDay} RSD/dan
+        <View style={styles.itemContent}>
+          {item.images && item.images.length > 0 ? (
+            <Image
+              source={{ uri: getImageUrl(item.images[0]) }}
+              style={styles.itemImage}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={[styles.itemImage, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary }]}>
+              <Feather name="image" size={24} color={theme.textTertiary} />
+            </View>
+          )}
+          <View style={styles.itemInfo}>
+            <ThemedText type="body" style={{ fontWeight: '600' }} numberOfLines={1}>
+              {item.title}
             </ThemedText>
-            <View style={[
-              styles.statusBadge,
-              { backgroundColor: item.isAvailable ? theme.success + '20' : theme.error + '20' },
-            ]}>
-              <ThemedText type="small" style={{ color: item.isAvailable ? theme.success : theme.error }}>
-                {item.isAvailable ? 'Dostupno' : 'Nedostupno'}
+            <ThemedText type="small" style={{ color: theme.textSecondary }} numberOfLines={1}>
+              {getCategoryLabel(item.category)} | {item.city}
+            </ThemedText>
+            <View style={styles.priceRow}>
+              <ThemedText type="body" style={{ color: theme.primary, fontWeight: '600' }}>
+                {item.pricePerDay} RSD/dan
               </ThemedText>
+              <View style={[
+                styles.statusBadge,
+                { backgroundColor: item.isAvailable ? theme.success + '20' : theme.error + '20' },
+              ]}>
+                <ThemedText type="small" style={{ color: item.isAvailable ? theme.success : theme.error }}>
+                  {item.isAvailable ? 'Dostupno' : 'Nedostupno'}
+                </ThemedText>
+              </View>
             </View>
           </View>
         </View>
-      </View>
       <View style={styles.actions}>
         <Pressable
           style={({ pressed }) => [
@@ -132,7 +219,8 @@ export default function MyItemsScreen() {
         </Pressable>
       </View>
     </Card>
-  );
+    );
+  };
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
@@ -176,6 +264,7 @@ export default function MyItemsScreen() {
       data={items}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
+      ListHeaderComponent={items.length > 0 ? renderHeader : undefined}
       ListEmptyComponent={renderEmpty}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
@@ -189,6 +278,47 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  statsCard: {
+    marginBottom: Spacing.lg,
+    padding: Spacing.md,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+  },
+  upgradeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    marginTop: Spacing.md,
+  },
+  featuredInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.xs,
+    marginTop: Spacing.md,
+  },
+  featuredBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.xs,
+    marginBottom: Spacing.sm,
   },
   itemCard: {
     marginBottom: Spacing.md,
