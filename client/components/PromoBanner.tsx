@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, Pressable, ScrollView, Dimensions, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
@@ -7,7 +7,7 @@ import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
-import { Colors, Spacing, BorderRadius } from '@/constants/theme';
+import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
 
@@ -49,7 +49,7 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
       >
         {earlyAdopterSlotsRemaining > 0 ? (
           <Pressable onPress={handleEarlyAdopterPress}>
-            <Card style={[styles.bannerCard, { backgroundColor: Colors.primary }]}>
+            <Card style={StyleSheet.flatten([styles.bannerCard, { backgroundColor: theme.primary }])}>
               <View style={styles.earlyAdopterContent}>
                 <View style={styles.earlyAdopterIcon}>
                   <Feather name="gift" size={32} color="#FFFFFF" />
@@ -62,9 +62,9 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
                     Ostalo jos {earlyAdopterSlotsRemaining} besplatnih mesta
                   </ThemedText>
                   <View style={styles.bannerCta}>
-                    <ThemedText type="caption" style={styles.bannerCtaText}>
+                    <Text style={styles.bannerCtaText}>
                       Saznaj vise
-                    </ThemedText>
+                    </Text>
                     <Feather name="arrow-right" size={14} color="#FFFFFF" />
                   </View>
                 </View>
@@ -78,12 +78,12 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
             key={item.id}
             onPress={() => handlePremiumItemPress(item.id)}
           >
-            <Card style={[styles.bannerCard, styles.premiumCard]}>
-              <View style={styles.premiumBadge}>
+            <Card style={StyleSheet.flatten([styles.bannerCard, styles.premiumCard])}>
+              <View style={[styles.premiumBadge, { backgroundColor: theme.accent }]}>
                 <Feather name="star" size={12} color="#FFFFFF" />
-                <ThemedText type="caption" style={styles.premiumBadgeText}>
+                <Text style={styles.premiumBadgeText}>
                   Premium
-                </ThemedText>
+                </Text>
               </View>
               {item.images && item.images.length > 0 ? (
                 <Image
@@ -92,21 +92,21 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
                   contentFit="cover"
                 />
               ) : (
-                <View style={[styles.premiumImage, styles.premiumPlaceholder, { backgroundColor: theme.backgroundElevated }]}>
+                <View style={[styles.premiumImage, styles.premiumPlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
                   <Feather name="package" size={40} color={theme.textTertiary} />
                 </View>
               )}
               <View style={styles.premiumInfo}>
-                <ThemedText type="bodyBold" numberOfLines={1} style={{ color: theme.text }}>
+                <Text style={[styles.premiumTitle, { color: theme.text }]} numberOfLines={1}>
                   {item.title}
-                </ThemedText>
+                </Text>
                 <View style={styles.premiumPriceRow}>
-                  <ThemedText type="h4" style={{ color: Colors.primary }}>
+                  <ThemedText type="h4" style={{ color: theme.primary }}>
                     {item.pricePerDay} RSD
                   </ThemedText>
-                  <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+                  <Text style={[styles.perDay, { color: theme.textSecondary }]}>
                     /dan
-                  </ThemedText>
+                  </Text>
                 </View>
               </View>
             </Card>
@@ -163,6 +163,7 @@ const styles = StyleSheet.create({
   bannerCtaText: {
     color: '#FFFFFF',
     fontWeight: '600',
+    fontSize: 12,
   },
   premiumCard: {
     backgroundColor: 'transparent',
@@ -174,7 +175,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: Colors.accent,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.xs,
@@ -183,6 +183,7 @@ const styles = StyleSheet.create({
   premiumBadgeText: {
     color: '#FFFFFF',
     fontWeight: '600',
+    fontSize: 12,
   },
   premiumImage: {
     width: '100%',
@@ -197,10 +198,17 @@ const styles = StyleSheet.create({
   premiumInfo: {
     padding: Spacing.md,
   },
+  premiumTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
   premiumPriceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     gap: 4,
     marginTop: Spacing.xs,
+  },
+  perDay: {
+    fontSize: 12,
   },
 });

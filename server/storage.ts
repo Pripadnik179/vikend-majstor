@@ -118,13 +118,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPremiumItems(): Promise<Item[]> {
+    const now = new Date();
     const premiumUserIds = await db
       .select({ id: users.id })
       .from(users)
       .where(
         and(
-          eq(users.subscriptionPlan, 'premium'),
-          sql`${users.subscriptionEndDate} > NOW()`
+          eq(users.subscriptionType, 'premium'),
+          sql`${users.subscriptionEndDate} > ${now}`
         )
       );
     

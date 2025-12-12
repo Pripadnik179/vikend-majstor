@@ -110,3 +110,10 @@ The app runs with `npm run all:dev` which starts:
 - Added availability calendar to item detail page
 - Added advanced filtering (price range, rating, deposit)
 - Added booking endpoints for item availability
+- Added homepage promotional banner (PromoBanner component)
+  - Early adopter program banner with remaining slots
+  - Premium items carousel for premium subscribers
+- Added /api/home endpoint for homepage data
+- Fixed SearchScreen to pass all filters (category, subcategory, toolType, powerSource) to backend
+- Fixed BookingFlowScreen to block dates for both 'confirmed' and 'pending' bookings
+- Fixed SubscriptionScreen to use correct API contract field names

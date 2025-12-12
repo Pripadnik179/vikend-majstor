@@ -115,8 +115,8 @@ export default function HomeScreen() {
           style={[
             styles.filterButton,
             {
-              backgroundColor: activeFilterCount > 0 ? Colors.primary : theme.backgroundDefault,
-              borderColor: activeFilterCount > 0 ? Colors.primary : theme.border,
+              backgroundColor: activeFilterCount > 0 ? theme.primary : theme.backgroundDefault,
+              borderColor: activeFilterCount > 0 ? theme.primary : theme.border,
             },
           ]}
           onPress={() => setShowFilters(true)}
@@ -127,8 +127,8 @@ export default function HomeScreen() {
             color={activeFilterCount > 0 ? '#FFFFFF' : theme.text} 
           />
           {activeFilterCount > 0 ? (
-            <View style={styles.filterBadge}>
-              <ThemedText type="caption" style={styles.filterBadgeText}>
+            <View style={[styles.filterBadge, { backgroundColor: theme.accent }]}>
+              <ThemedText type="small" style={styles.filterBadgeText}>
                 {activeFilterCount}
               </ThemedText>
             </View>
@@ -136,7 +136,7 @@ export default function HomeScreen() {
         </Pressable>
       </View>
       <CategoryFilter
-        categories={CATEGORIES}
+        categories={[...CATEGORIES]}
         selected={selectedCategory}
         onSelect={setSelectedCategory}
       />
@@ -232,7 +232,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: Colors.accent,
     borderRadius: 10,
     minWidth: 18,
     height: 18,
