@@ -264,6 +264,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/items/:id/feature", isAuthenticated, async (req, res) => {
+    try {
+      const { action } = req.body;
+      
+      if (!action || !['feature', 'unfeature'].includes(action)) {
+        return res.status(400).json({ error: "Nevažeća akcija" });
+      }
+      
+      const item = await storage.getItem(req.params.id);
+      if (!item) {
+        return res.status(404).json({ error: "Stvar nije pronađena" });
+      }
+      
+      if (item.ownerId !== req.user!.id) {
+        return res.status(403).json({ error: "Nemate dozvolu za ovu akciju" });
+      }
+      
+      const user = await storage.getUser(req.user!.id);
+      if (!user) {
+        return res.status(404).json({ error: "Korisnik nije pronađen" });
+      }
+      
+      const now = new Date();
+      const isPremium = user.subscriptionType === 'premium' && 
+        user.subscriptionEndDate && 
+        new Date(user.subscriptionEndDate) > now;
+      
+      if (!isPremium) {
+        return res.status(403).json({ 
+          error: "Samo premium korisnici mogu istaknuti oglase",
+          code: "PREMIUM_REQUIRED"
+        });
+      }
+      
+      if (action === 'feature') {
+        await storage.setFeaturedItem(req.user!.id, req.params.id);
+        res.json({ success: true, message: "Oglas je uspešno istaknut" });
+      } else {
+        await storage.setFeaturedItem(req.user!.id, null);
+        res.json({ success: true, message: "Oglas je uklonjen sa vrha" });
+      }
+    } catch (error) {
+      console.error("Error featuring item:", error);
+      res.status(500).json({ error: "Greška pri isticanju oglasa" });
+    }
+  });
+
   app.put("/api/items/:id", isAuthenticated, async (req, res) => {
     try {
       const item = await storage.getItem(req.params.id);

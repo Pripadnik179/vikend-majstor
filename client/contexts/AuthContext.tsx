@@ -1,20 +1,30 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import type { User } from '@shared/schema';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+let Notifications: typeof import('expo-notifications') | null = null;
+
+const setupNotifications = async () => {
+  if (Platform.OS === 'web') return;
+  
+  try {
+    Notifications = await import('expo-notifications');
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  } catch (error) {
+    console.log('Notifications not available in Expo Go SDK 53+');
+  }
+};
 
 type AuthUser = Omit<User, 'password'>;
 
@@ -69,6 +79,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!Device.isDevice) return;
 
     try {
+      await setupNotifications();
+      
+      if (!Notifications) {
+        console.log('Push notifications not available in Expo Go SDK 53+');
+        return;
+      }
+      
       const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
       
       if (!projectId) {

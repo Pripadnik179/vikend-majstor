@@ -419,6 +419,18 @@ export class DatabaseStorage implements IStorage {
       .set({ pushToken })
       .where(eq(users.id, userId));
   }
+
+  async setFeaturedItem(userId: string, itemId: string | null): Promise<void> {
+    await db.update(items)
+      .set({ isFeatured: false })
+      .where(eq(items.ownerId, userId));
+    
+    if (itemId) {
+      await db.update(items)
+        .set({ isFeatured: true })
+        .where(and(eq(items.id, itemId), eq(items.ownerId, userId)));
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

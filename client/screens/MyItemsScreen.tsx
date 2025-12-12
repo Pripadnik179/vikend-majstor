@@ -74,6 +74,22 @@ export default function MyItemsScreen() {
     },
   });
 
+  const featureMutation = useMutation({
+    mutationFn: async ({ itemId, action }: { itemId: string; action: 'feature' | 'unfeature' }) => {
+      await apiRequest('POST', `/api/items/${itemId}/feature`, { action });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/my-items'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/items'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/ad-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/home'] });
+    },
+    onError: (error) => {
+      console.error('Feature error:', error);
+      Alert.alert('Greška', 'Došlo je do greške pri isticanju oglasa');
+    },
+  });
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await Promise.all([refetch(), refetchStats()]);
@@ -236,6 +252,27 @@ export default function MyItemsScreen() {
             Izmeni
           </ThemedText>
         </Pressable>
+        {adStats?.isPremium ? (
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionButton,
+              { backgroundColor: pressed ? theme.warning + '20' : 'transparent' },
+            ]}
+            disabled={featureMutation.isPending}
+            onPress={() => {
+              if (isFeatured) {
+                featureMutation.mutate({ itemId: item.id, action: 'unfeature' });
+              } else {
+                featureMutation.mutate({ itemId: item.id, action: 'feature' });
+              }
+            }}
+          >
+            <Feather name={isFeatured ? "star" : "award"} size={18} color={theme.warning} />
+            <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs }}>
+              {featureMutation.isPending ? 'Učitavam...' : (isFeatured ? 'Ukloni sa vrha' : 'Istakni oglas')}
+            </ThemedText>
+          </Pressable>
+        ) : null}
         <Pressable
           style={({ pressed }) => [
             styles.actionButton,
