@@ -104,6 +104,31 @@ The app runs with `npm run all:dev` which starts:
 - Expo dev server on port 8081
 - Express API server on port 5000
 
+## Monetization System
+
+### Subscription Tiers
+1. **Besplatno (Free)**: 0 RSD/mesec
+   - Do 2 oglasa
+   - Osnovne kategorije
+   - Poruke sa zakupcima
+   
+2. **Standard**: 500 RSD/mesec
+   - Neograničen broj oglasa
+   - Pristup svim kategorijama
+   - Statistika oglasa
+
+3. **Premium**: 1000 RSD/mesec
+   - Sve iz Standard paketa
+   - 1 istaknuti oglas na vrhu pretrage
+   - Premium značka na oglasima
+   - Prioritet u rezultatima pretrage
+
+### Early Adopter Program
+- First 100 registered users automatically become early adopters
+- Early adopters receive FREE premium access for 1 month
+- Registration automatically sets: isEarlyAdopter=true, subscriptionType="premium", 30-day subscriptionEndDate
+- Counter shows remaining slots on homepage banner and subscription page
+
 ## Recent Changes (December 2024)
 - Added Apple Sign-In support for iOS users
 - Implemented Google OAuth infrastructure
@@ -116,4 +141,6 @@ The app runs with `npm run all:dev` which starts:
 - Added /api/home endpoint for homepage data
 - Fixed SearchScreen to pass all filters (category, subcategory, toolType, powerSource) to backend
 - Fixed BookingFlowScreen to block dates for both 'confirmed' and 'pending' bookings
-- Fixed SubscriptionScreen to use correct API contract field names
+- Fixed SubscriptionScreen to show plan comparison with FREE, Standard, and Premium tiers
+- Added "Pretplata" menu item in Profile with subscription badge
+- Automatic early adopter registration for first 100 users across all auth methods

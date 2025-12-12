@@ -25,10 +25,26 @@ type HomeData = {
   premiumItems: unknown[];
 };
 
+const FREE_PLAN = {
+  id: 'free',
+  name: 'Besplatno',
+  price: 0,
+  features: [
+    'Do 2 oglasa',
+    'Osnovne kategorije',
+    'Poruke sa zakupcima',
+  ],
+  limitations: [
+    'Ograničen broj oglasa (maks 2)',
+    'Bez isticanja oglasa',
+    'Standardna podrška',
+  ],
+};
+
 const PLANS = [
   {
     id: 'basic',
-    name: 'Osnovni',
+    name: 'Standard',
     price: 500,
     features: [
       'Neograničen broj oglasa',
@@ -43,11 +59,11 @@ const PLANS = [
     name: 'Premium',
     price: 1000,
     features: [
-      'Sve iz Osnovnog paketa',
-      'Istaknuti oglasi sa značkom',
-      'Prioritet u pretrazi',
-      'Ekskluzivne promocije',
-      'Prioritetna podrška',
+      'Sve iz Standard paketa',
+      '1 istaknuti oglas na vrhu pretrage',
+      'Premium značka na oglasima',
+      'Prioritet u rezultatima pretrage',
+      'Prioritetna podrška 24/7',
     ],
     recommended: true,
   },
@@ -186,7 +202,43 @@ export default function SubscriptionScreen() {
           </Card>
         )}
 
-        <ThemedText type="h3" style={styles.plansTitle}>Planovi pretplate</ThemedText>
+        <ThemedText type="h3" style={styles.plansTitle}>Uporedi planove</ThemedText>
+
+        <Card style={StyleSheet.flatten([styles.planCard, status?.subscriptionType === 'none' || !status?.subscriptionType ? { borderColor: theme.border, borderWidth: 1 } : {}])}>
+          {(status?.subscriptionType === 'none' || (!status?.subscriptionType && !status?.isEarlyAdopter)) && (
+            <View style={[styles.activeBadge, { backgroundColor: theme.textSecondary }]}>
+              <ThemedText type="small" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                TRENUTNI PLAN
+              </ThemedText>
+            </View>
+          )}
+          <ThemedText type="h2">{FREE_PLAN.name}</ThemedText>
+          <View style={styles.priceRow}>
+            <ThemedText type="h1" style={{ color: theme.textSecondary }}>0</ThemedText>
+            <ThemedText type="body" style={{ color: theme.textSecondary }}> RSD/mesec</ThemedText>
+          </View>
+
+          <View style={styles.features}>
+            {FREE_PLAN.features.map((feature, index) => (
+              <View key={index} style={styles.featureRow}>
+                <Feather name="check" size={18} color={theme.success} />
+                <ThemedText type="body">{feature}</ThemedText>
+              </View>
+            ))}
+          </View>
+
+          <View style={[styles.features, { marginTop: Spacing.sm }]}>
+            <ThemedText type="small" style={{ color: theme.textSecondary, fontWeight: '600', marginBottom: Spacing.xs }}>
+              Ograničenja:
+            </ThemedText>
+            {FREE_PLAN.limitations.map((limitation, index) => (
+              <View key={index} style={styles.featureRow}>
+                <Feather name="x" size={18} color={theme.error} />
+                <ThemedText type="body" style={{ color: theme.textSecondary }}>{limitation}</ThemedText>
+              </View>
+            ))}
+          </View>
+        </Card>
 
         {PLANS.map((plan) => {
           const planStyle: ViewStyle = {

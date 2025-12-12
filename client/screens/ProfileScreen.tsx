@@ -32,8 +32,16 @@ export default function ProfileScreen() {
     );
   };
 
+  const getSubscriptionLabel = () => {
+    if (user?.isEarlyAdopter) return 'Rani korisnik';
+    if (user?.subscriptionType === 'premium') return 'Premium';
+    if (user?.subscriptionType === 'basic') return 'Standard';
+    return 'Besplatno';
+  };
+
   const menuItems = [
     { icon: 'package', label: 'Moje Stvari', onPress: () => navigation.navigate('MyItems') },
+    { icon: 'star', label: 'Pretplata', badge: getSubscriptionLabel(), onPress: () => navigation.navigate('Subscription') },
     { icon: 'settings', label: 'Podešavanja', onPress: () => navigation.navigate('Settings') },
     { icon: 'help-circle', label: 'Pomoć', onPress: () => {} },
     { icon: 'info', label: 'O Aplikaciji', onPress: () => {} },
@@ -91,8 +99,15 @@ export default function ProfileScreen() {
             onPress={item.onPress}
           >
             <View style={styles.menuItemLeft}>
-              <Feather name={item.icon as any} size={22} color={theme.text} />
+              <Feather name={item.icon as any} size={22} color={item.icon === 'star' ? theme.warning : theme.text} />
               <ThemedText type="body" style={styles.menuItemLabel}>{item.label}</ThemedText>
+              {item.badge ? (
+                <View style={[styles.subscriptionBadge, { backgroundColor: theme.primary + '20' }]}>
+                  <ThemedText type="small" style={{ color: theme.primary, fontWeight: '600' }}>
+                    {item.badge}
+                  </ThemedText>
+                </View>
+              ) : null}
             </View>
             <Feather name="chevron-right" size={22} color={theme.textTertiary} />
           </Pressable>
@@ -173,6 +188,12 @@ const styles = StyleSheet.create({
   },
   menuItemLabel: {
     marginLeft: Spacing.md,
+  },
+  subscriptionBadge: {
+    marginLeft: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.xs,
   },
   logoutButton: {
     flexDirection: 'row',
