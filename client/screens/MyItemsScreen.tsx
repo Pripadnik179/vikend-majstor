@@ -69,6 +69,8 @@ export default function MyItemsScreen() {
       queryClient.invalidateQueries({ queryKey: ['/api/my-items'] });
       queryClient.invalidateQueries({ queryKey: ['/api/items'] });
       queryClient.invalidateQueries({ queryKey: ['/api/user/ad-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/home'] });
+      Alert.alert('Uspeh', 'Oglas je uspešno obrisan');
     },
     onError: (error) => {
       console.error('Delete error:', error);

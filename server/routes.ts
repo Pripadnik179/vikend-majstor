@@ -308,11 +308,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userItems = await storage.getItemsByOwner(user.id);
         const currentFeaturedCount = userItems.filter(i => i.isFeatured).length;
         
+        if (currentFeaturedCount >= 1 && !paid) {
+          return res.status(402).json({ 
+            error: "Možete imati samo 1 istaknuti oglas. Dodatno isticanje košta 99 RSD.",
+            code: "PAYMENT_REQUIRED",
+            price: 99
+          });
+        }
+        
         if (!user.freeFeatureUsed) {
           await storage.featureItem(req.params.id);
           await storage.markFreeFeatureUsed(user.id);
           res.json({ success: true, message: "Oglas je uspešno istaknut (besplatno u okviru Premium pretplate)" });
-        } else if (currentFeaturedCount > 0 && !paid) {
+        } else if (!paid) {
           return res.status(402).json({ 
             error: "Već ste iskoristili besplatno isticanje. Dodatno isticanje košta 99 RSD.",
             code: "PAYMENT_REQUIRED",
@@ -357,24 +365,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating item:", error);
       res.status(500).json({ error: "Greška pri ažuriranju stvari" });
-    }
-  });
-
-  app.delete("/api/items/:id", isAuthenticated, async (req, res) => {
-    try {
-      const item = await storage.getItem(req.params.id);
-      if (!item) {
-        return res.status(404).json({ error: "Stvar nije pronađena" });
-      }
-      if (item.ownerId !== req.user!.id) {
-        return res.status(403).json({ error: "Nemate dozvolu za ovu akciju" });
-      }
-      
-      await storage.deleteItem(req.params.id);
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting item:", error);
-      res.status(500).json({ error: "Greška pri brisanju stvari" });
     }
   });
 
