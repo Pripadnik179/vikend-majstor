@@ -78,14 +78,10 @@ export default function MyItemsScreen() {
 
   const featureMutation = useMutation({
     mutationFn: async ({ itemId, action }: { itemId: string; action: 'feature' | 'unfeature' }) => {
-      const response = await apiRequest('POST', `/api/items/${itemId}/feature`, { action });
-      if (!response.ok) {
-        const data = await response.json();
-        throw { code: data.code, message: data.error, price: data.price };
-      }
-      return response.json();
+      const res = await apiRequest('POST', `/api/items/${itemId}/feature`, { action });
+      return await res.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/my-items'] });
       queryClient.invalidateQueries({ queryKey: ['/api/items'] });
       queryClient.invalidateQueries({ queryKey: ['/api/user/ad-stats'] });
@@ -99,14 +95,14 @@ export default function MyItemsScreen() {
       if (error.code === 'PAYMENT_REQUIRED') {
         Alert.alert(
           'Potrebno plaćanje',
-          `Već ste iskoristili besplatno isticanje. Dodatno isticanje košta ${error.price} RSD.`,
+          'Već ste iskoristili besplatno isticanje. Dodatno isticanje košta 99 RSD.',
           [
             { text: 'Otkaži', style: 'cancel' },
             { text: 'Kupi', onPress: () => navigation.navigate('Subscription') },
           ]
         );
       } else if (error.code === 'CANNOT_REMOVE_FREE') {
-        Alert.alert('Nije moguće', error.message);
+        Alert.alert('Nije moguće', 'Ne možete ukloniti besplatno istaknut oglas');
       } else {
         Alert.alert('Greška', error.message || 'Došlo je do greške pri isticanju oglasa');
       }
