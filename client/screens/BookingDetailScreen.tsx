@@ -42,11 +42,21 @@ export default function BookingDetailScreen() {
       }
       return JSON.parse(text);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/bookings'] });
       queryClient.invalidateQueries({ queryKey: ['/api/bookings', route.params.bookingId] });
+      
+      if (variables.status === 'confirmed') {
+        Alert.alert('Uspeh', 'Rezervacija je uspešno potvrđena!');
+      } else if (variables.status === 'cancelled') {
+        Alert.alert('Otkazano', 'Rezervacija je otkazana.');
+        navigation.goBack();
+      } else if (variables.status === 'completed') {
+        Alert.alert('Završeno', 'Vraćanje je potvrđeno. Rezervacija je završena!');
+      }
     },
     onError: (error: Error) => {
+      console.error('Booking update error:', error);
       Alert.alert('Greška', error.message || 'Došlo je do greške pri ažuriranju rezervacije');
     },
   });
