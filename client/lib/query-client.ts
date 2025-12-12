@@ -16,10 +16,38 @@ export function getApiUrl(): string {
   return url.href;
 }
 
+class ApiError extends Error {
+  code?: string;
+  status: number;
+  
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.status = status;
+    this.code = code;
+    this.name = 'ApiError';
+  }
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    let message = `${res.status}: ${text}`;
+    let code: string | undefined;
+    
+    // Try to parse JSON error response
+    try {
+      const json = JSON.parse(text);
+      if (json.error) {
+        message = json.error;
+      }
+      if (json.code) {
+        code = json.code;
+      }
+    } catch {
+      // Not JSON, use text as-is
+    }
+    
+    throw new ApiError(message, res.status, code);
   }
 }
 
