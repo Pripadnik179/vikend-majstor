@@ -10,11 +10,17 @@ import { Feather } from '@expo/vector-icons';
 import { ItemCard } from '@/components/ItemCard';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { FilterModal, FilterState } from '@/components/FilterModal';
+import { PromoBanner } from '@/components/PromoBanner';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { Colors, Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
+
+interface HomeData {
+  premiumItems: Item[];
+  remainingEarlyAdopterSlots: number;
+}
 
 const DEFAULT_FILTERS: FilterState = {
   minPrice: null,
@@ -39,6 +45,10 @@ export default function HomeScreen() {
 
   const { data: items = [], isLoading, refetch } = useQuery<Item[]>({
     queryKey: ['/api/items', selectedCategory].filter(Boolean),
+  });
+
+  const { data: homeData } = useQuery<HomeData>({
+    queryKey: ['/api/home'],
   });
 
   const activeFilterCount = useMemo(() => {
@@ -81,6 +91,10 @@ export default function HomeScreen() {
 
   const renderHeader = () => (
     <View style={styles.header}>
+      <PromoBanner
+        premiumItems={homeData?.premiumItems || []}
+        earlyAdopterSlotsRemaining={homeData?.remainingEarlyAdopterSlots || 0}
+      />
       <View style={styles.searchRow}>
         <View style={[styles.searchContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
           <Feather name="search" size={20} color={theme.textTertiary} />

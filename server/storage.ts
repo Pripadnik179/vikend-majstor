@@ -9,7 +9,7 @@ import {
   type Subscription, type InsertSubscription
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, sql, count } from "drizzle-orm";
+import { eq, and, or, desc, sql, count, inArray } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -115,6 +115,35 @@ export class DatabaseStorage implements IStorage {
 
   async getItemsByOwner(ownerId: string): Promise<Item[]> {
     return await db.select().from(items).where(eq(items.ownerId, ownerId)).orderBy(desc(items.createdAt));
+  }
+
+  async getPremiumItems(): Promise<Item[]> {
+    const premiumUserIds = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(
+        and(
+          eq(users.subscriptionPlan, 'premium'),
+          sql`${users.subscriptionEndDate} > NOW()`
+        )
+      );
+    
+    if (premiumUserIds.length === 0) {
+      return [];
+    }
+
+    const premiumOwnerIds = premiumUserIds.map(u => u.id);
+    return await db
+      .select()
+      .from(items)
+      .where(
+        and(
+          eq(items.isAvailable, true),
+          inArray(items.ownerId, premiumOwnerIds)
+        )
+      )
+      .orderBy(desc(items.createdAt))
+      .limit(10);
   }
 
   async createItem(insertItem: InsertItem): Promise<Item> {

@@ -73,6 +73,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/home", async (req, res) => {
+    try {
+      const premiumItems = await storage.getPremiumItems();
+      const earlyAdopterCount = await storage.getEarlyAdopterCount();
+      const remainingSlots = Math.max(0, 100 - earlyAdopterCount);
+      res.json({
+        premiumItems,
+        remainingEarlyAdopterSlots: remainingSlots,
+      });
+    } catch (error) {
+      console.error("Error fetching home data:", error);
+      res.status(500).json({ error: "Greška pri učitavanju podataka" });
+    }
+  });
+
   app.get("/api/items", async (req, res) => {
     try {
       const { category, subCategory, toolType, powerSource, city, search } = req.query;
