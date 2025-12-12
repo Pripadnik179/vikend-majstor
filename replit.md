@@ -111,9 +111,17 @@ The app runs with `npm run all:dev` which starts:
 - Expired ads are deleted from the database on server startup
 - Items are filtered out from search results when expired
 
+### Free Ad Limit System
+- Free users have a **lifetime limit of 5 total ads created** (not active ads)
+- Tracked via `totalAdsCreated` field in users table
+- Deleting ads does NOT reset the counter - this prevents circumvention
+- Users must upgrade to Standard or Premium for unlimited ads
+- `POST /api/items` checks `totalAdsCreated >= 5` before allowing creation
+- MyItemsScreen shows expiration countdown for each ad
+
 ### Subscription Tiers
 1. **Besplatno (Free)**: 0 RSD/mesec
-   - Do 5 oglasa (30-day expiration)
+   - 5 oglasa doživotno (30-day expiration per ad)
    - Osnovne kategorije
    - Poruke sa zakupcima
    
@@ -157,3 +165,6 @@ The app runs with `npm run all:dev` which starts:
 - Fixed SubscriptionScreen to show plan comparison with FREE, Standard, and Premium tiers
 - Added "Pretplata" menu item in Profile with subscription badge
 - Automatic early adopter registration for first 100 users across all auth methods
+- Implemented lifetime 5-ad limit for free users via `totalAdsCreated` field (deleting ads doesn't reset counter)
+- Added DELETE `/api/items/:id` endpoint for item deletion
+- Added expiration countdown display in MyItemsScreen (shows days remaining until 30-day expiration)
