@@ -124,7 +124,7 @@ export default function AddItemScreen() {
       if (error.code === 'FREE_LIMIT_REACHED') {
         Alert.alert(
           'Limit besplatnih oglasa',
-          'Dostigli ste limit od 2 besplatna oglasa. Da biste objavili više oglasa, potrebna vam je pretplata.',
+          'Dostigli ste limit od 5 besplatnih oglasa. Da biste objavili više oglasa, potrebna vam je pretplata.',
           [
             { text: 'Otkaži', style: 'cancel' },
             { 

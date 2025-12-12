@@ -30,12 +30,14 @@ const FREE_PLAN = {
   name: 'Besplatno',
   price: 0,
   features: [
-    'Do 2 oglasa',
+    'Do 5 oglasa',
+    'Trajanje oglasa: 30 dana',
     'Osnovne kategorije',
     'Poruke sa zakupcima',
   ],
   limitations: [
-    'Ograničen broj oglasa (maks 2)',
+    'Ograničen broj oglasa (maks 5)',
+    'Oglasi ističu nakon 30 dana',
     'Bez isticanja oglasa',
     'Standardna podrška',
   ],

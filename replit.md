@@ -106,9 +106,14 @@ The app runs with `npm run all:dev` which starts:
 
 ## Monetization System
 
+### Ad Expiration
+- All ads automatically expire after 30 days
+- Expired ads are deleted from the database on server startup
+- Items are filtered out from search results when expired
+
 ### Subscription Tiers
 1. **Besplatno (Free)**: 0 RSD/mesec
-   - Do 2 oglasa
+   - Do 5 oglasa (30-day expiration)
    - Osnovne kategorije
    - Poruke sa zakupcima
    

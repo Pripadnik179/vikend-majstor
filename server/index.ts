@@ -1,6 +1,7 @@
 import express from "express";
 import type { Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { storage } from "./storage";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -226,6 +227,15 @@ function setupErrorHandler(app: express.Application) {
   const server = await registerRoutes(app);
 
   setupErrorHandler(app);
+
+  try {
+    const deletedCount = await storage.deleteExpiredItems();
+    if (deletedCount > 0) {
+      log(`Cleaned up ${deletedCount} expired items on startup`);
+    }
+  } catch (error) {
+    console.error("Error cleaning up expired items:", error);
+  }
 
   const port = parseInt(process.env.PORT || "5000", 10);
   server.listen(

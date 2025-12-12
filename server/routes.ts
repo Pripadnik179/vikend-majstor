@@ -100,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const itemCount = userItems.length;
       const featuredItem = userItems.find(item => item.isFeatured);
       
-      const FREE_AD_LIMIT = 2;
+      const FREE_AD_LIMIT = 5;
       const hasSubscription = freshUser.subscriptionType === 'basic' || freshUser.subscriptionType === 'premium';
       const subscriptionActive = hasSubscription && freshUser.subscriptionEndDate && new Date(freshUser.subscriptionEndDate) > new Date();
       
@@ -185,13 +185,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userItems = await storage.getItemsByOwner(freshUser.id);
       const itemCount = userItems.length;
       
-      const FREE_AD_LIMIT = 2;
+      const FREE_AD_LIMIT = 5;
       const hasSubscription = freshUser.subscriptionType === 'basic' || freshUser.subscriptionType === 'premium';
       const subscriptionActive = hasSubscription && freshUser.subscriptionEndDate && new Date(freshUser.subscriptionEndDate) > new Date();
       
       if (itemCount >= FREE_AD_LIMIT && !subscriptionActive) {
         return res.status(403).json({ 
-          error: "Dostigli ste limit od 2 besplatna oglasa",
+          error: "Dostigli ste limit od 5 besplatnih oglasa",
           code: "FREE_LIMIT_REACHED",
           itemCount,
           freeLimit: FREE_AD_LIMIT

@@ -84,6 +84,7 @@ export const items = pgTable("items", {
   isFeatured: boolean("is_featured").default(false).notNull(),
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
   totalRatings: integer("total_ratings").default(0),
+  expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

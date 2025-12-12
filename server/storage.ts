@@ -9,7 +9,7 @@ import {
   type Subscription, type InsertSubscription
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, sql, count, inArray } from "drizzle-orm";
+import { eq, and, or, desc, sql, count, inArray, gt, lt, isNull } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -30,6 +30,7 @@ export interface IStorage {
   createItem(item: InsertItem): Promise<Item>;
   updateItem(id: string, data: Partial<InsertItem>): Promise<Item | undefined>;
   deleteItem(id: string): Promise<void>;
+  deleteExpiredItems(): Promise<number>;
   
   getBookings(userId: string, type: 'renter' | 'owner'): Promise<Booking[]>;
   getBooking(id: string): Promise<Booking | undefined>;
@@ -80,7 +81,11 @@ export class DatabaseStorage implements IStorage {
     city?: string; 
     search?: string;
   }): Promise<Item[]> {
-    const conditions = [eq(items.isAvailable, true)];
+    const now = new Date();
+    const conditions = [
+      eq(items.isAvailable, true),
+      or(isNull(items.expiresAt), gt(items.expiresAt, now))
+    ];
     
     if (filters?.category) {
       conditions.push(eq(items.category, filters.category));
@@ -141,7 +146,8 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(items.isAvailable, true),
-          inArray(items.ownerId, premiumOwnerIds)
+          inArray(items.ownerId, premiumOwnerIds),
+          or(isNull(items.expiresAt), gt(items.expiresAt, now))
         )
       )
       .orderBy(desc(items.createdAt))
@@ -149,8 +155,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createItem(insertItem: InsertItem): Promise<Item> {
-    const [item] = await db.insert(items).values(insertItem).returning();
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const [item] = await db.insert(items).values({ ...insertItem, expiresAt }).returning();
     return item;
+  }
+
+  async deleteExpiredItems(): Promise<number> {
+    const now = new Date();
+    const expiredItems = await db.select({ id: items.id }).from(items).where(
+      and(
+        sql`${items.expiresAt} IS NOT NULL`,
+        lt(items.expiresAt, now)
+      )
+    );
+    
+    if (expiredItems.length === 0) return 0;
+    
+    const expiredIds = expiredItems.map(i => i.id);
+    await db.delete(items).where(inArray(items.id, expiredIds));
+    return expiredIds.length;
   }
 
   async updateItem(id: string, data: Partial<InsertItem>): Promise<Item | undefined> {
