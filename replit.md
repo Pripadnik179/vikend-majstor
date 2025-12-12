@@ -95,7 +95,7 @@ The app supports multiple authentication methods:
 
 ## Design Guidelines
 - UI in Serbian (Latin script)
-- Blue-orange color palette (#2563EB primary, #F97316 accent)
+- Caterpillar-inspired black-yellow color palette (#FFCC00 primary yellow, #1A1A1A accent black)
 - iOS 26 Liquid Glass interface design
 - Mobile-first responsive design
 

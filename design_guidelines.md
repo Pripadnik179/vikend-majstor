@@ -195,29 +195,29 @@
 
 ## Design System
 
-### Color Palette
-**Primary (Blue):**
-- Primary 500: `#2563EB` (Main brand blue)
-- Primary 600: `#1D4ED8` (Pressed state)
-- Primary 50: `#EFF6FF` (Light backgrounds)
+### Color Palette (Caterpillar-inspired Black & Yellow)
+**Primary (Yellow):**
+- Primary 500: `#FFCC00` (Caterpillar Yellow - main brand color)
+- Primary 600: `#E6B800` (Pressed state)
+- Primary 50: `#FFF9E6` (Light backgrounds)
 
-**Accent (Orange):**
-- Accent 500: `#F97316` (Call-to-action, highlights)
-- Accent 600: `#EA580C` (Pressed state)
-- Accent 50: `#FFF7ED` (Light backgrounds)
+**Accent (Black):**
+- Accent 500: `#1A1A1A` (Industrial Black)
+- Accent 600: `#333333` (Pressed state)
+- Accent 50: `#F0F0F0` (Light backgrounds)
 
 **Neutral:**
-- Gray 900: `#111827` (Primary text)
-- Gray 600: `#4B5563` (Secondary text)
-- Gray 400: `#9CA3AF` (Tertiary text, placeholders)
-- Gray 200: `#E5E7EB` (Borders)
-- Gray 50: `#F9FAFB` (Background)
+- Black: `#1A1A1A` (Primary text)
+- Gray 700: `#4A4A4A` (Secondary text)
+- Gray 500: `#7A7A7A` (Tertiary text, placeholders)
+- Gray 300: `#E0E0E0` (Borders)
+- Gray 100: `#F5F5F5` (Background)
 - White: `#FFFFFF`
 
 **Semantic:**
-- Success: `#10B981`
+- Success: `#22C55E`
 - Error: `#EF4444`
-- Warning: `#F59E0B`
+- Warning: `#FFCC00` (matches primary)
 
 ### Typography
 **Font Family:** System default (SF Pro for iOS, Roboto for Android)
@@ -263,9 +263,9 @@
 ### Components
 
 **Buttons:**
-- Primary: Solid blue background, white text, 48px height
-- Secondary: Blue outline, blue text, 48px height
-- Text: No background, blue text
+- Primary: Solid yellow (#FFCC00) background, black text, 48px height
+- Secondary: Yellow outline, yellow text, 48px height
+- Text: No background, yellow text
 - All buttons: 8px border radius, subtle scale animation on press (0.95)
 
 **Cards:**
@@ -287,8 +287,8 @@
 
 **Floating Action Button:**
 - 56px diameter circle
-- Orange (Accent 500) background
-- White plus icon
+- Yellow (#FFCC00) background
+- Black plus icon
 - Position: Center of tab bar with -28px offset
 - Shadow as specified above
 

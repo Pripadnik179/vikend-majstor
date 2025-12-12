@@ -51,21 +51,21 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
           <Pressable onPress={handleEarlyAdopterPress}>
             <Card style={StyleSheet.flatten([styles.bannerCard, { backgroundColor: theme.primary }])}>
               <View style={styles.earlyAdopterContent}>
-                <View style={styles.earlyAdopterIcon}>
-                  <Feather name="gift" size={32} color="#FFFFFF" />
+                <View style={[styles.earlyAdopterIcon, { backgroundColor: 'rgba(0,0,0,0.15)' }]}>
+                  <Feather name="gift" size={32} color="#1A1A1A" />
                 </View>
                 <View style={styles.earlyAdopterText}>
-                  <ThemedText type="h4" style={styles.bannerTitle}>
+                  <ThemedText type="h4" style={[styles.bannerTitle, { color: '#1A1A1A' }]}>
                     Program ranih usvojilaca
                   </ThemedText>
-                  <ThemedText type="body" style={styles.bannerSubtitle}>
+                  <ThemedText type="body" style={[styles.bannerSubtitle, { color: 'rgba(0,0,0,0.7)' }]}>
                     Ostalo jos {earlyAdopterSlotsRemaining} besplatnih mesta
                   </ThemedText>
                   <View style={styles.bannerCta}>
-                    <Text style={styles.bannerCtaText}>
+                    <Text style={[styles.bannerCtaText, { color: '#1A1A1A' }]}>
                       Saznaj vise
                     </Text>
-                    <Feather name="arrow-right" size={14} color="#FFFFFF" />
+                    <Feather name="arrow-right" size={14} color="#1A1A1A" />
                   </View>
                 </View>
               </View>
