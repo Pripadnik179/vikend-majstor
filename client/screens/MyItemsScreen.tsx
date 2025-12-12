@@ -50,6 +50,15 @@ export default function MyItemsScreen() {
     }
   };
 
+  const getDaysRemaining = (expiresAt: Date | string | null) => {
+    if (!expiresAt) return null;
+    const expDate = new Date(expiresAt);
+    const now = new Date();
+    const diffMs = expDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
   const deleteMutation = useMutation({
     mutationFn: async (itemId: string) => {
       await apiRequest('DELETE', `/api/items/${itemId}`);
@@ -144,6 +153,8 @@ export default function MyItemsScreen() {
 
   const renderItem = ({ item }: { item: Item }) => {
     const isFeatured = adStats?.featuredItemId === item.id;
+    const daysRemaining = getDaysRemaining(item.expiresAt);
+    const isExpiringSoon = daysRemaining !== null && daysRemaining <= 7;
     
     return (
       <Card 
@@ -190,6 +201,14 @@ export default function MyItemsScreen() {
                 </ThemedText>
               </View>
             </View>
+            {daysRemaining !== null ? (
+              <View style={[styles.expirationRow, { backgroundColor: isExpiringSoon ? '#FFF3CD' : theme.backgroundSecondary }]}>
+                <Feather name="clock" size={12} color={isExpiringSoon ? '#856404' : theme.textSecondary} />
+                <ThemedText type="small" style={{ color: isExpiringSoon ? '#856404' : theme.textSecondary, marginLeft: Spacing.xs }}>
+                  {daysRemaining === 0 ? 'Ističe danas' : `Ističe za ${daysRemaining} dana`}
+                </ThemedText>
+              </View>
+            ) : null}
           </View>
         </View>
       <View style={styles.actions}>
@@ -350,6 +369,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.xs,
+  },
+  expirationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: BorderRadius.xs,
+    alignSelf: 'flex-start',
   },
   actions: {
     flexDirection: 'row',

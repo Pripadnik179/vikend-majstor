@@ -90,7 +90,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/user/ad-stats", isAuthenticated, async (req, res) => {
     try {
-      // Fetch fresh user data from database (not stale session data)
       const freshUser = await storage.getUser(req.user!.id);
       if (!freshUser) {
         return res.status(401).json({ error: "Korisnik nije pronađen" });
@@ -99,6 +98,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userItems = await storage.getItemsByOwner(freshUser.id);
       const itemCount = userItems.length;
       const featuredItem = userItems.find(item => item.isFeatured);
+      const totalAdsCreated = freshUser.totalAdsCreated || 0;
       
       const FREE_AD_LIMIT = 5;
       const hasSubscription = freshUser.subscriptionType === 'basic' || freshUser.subscriptionType === 'premium';
@@ -106,9 +106,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         totalAds: itemCount,
-        freeAdsUsed: Math.min(itemCount, FREE_AD_LIMIT),
+        totalAdsCreated,
+        freeAdsUsed: Math.min(totalAdsCreated, FREE_AD_LIMIT),
         freeAdsLimit: FREE_AD_LIMIT,
-        canCreateAd: subscriptionActive || itemCount < FREE_AD_LIMIT,
+        canCreateAd: subscriptionActive || totalAdsCreated < FREE_AD_LIMIT,
         subscriptionType: freshUser.subscriptionType,
         subscriptionStatus: subscriptionActive ? 'active' : 'inactive',
         subscriptionEndDate: freshUser.subscriptionEndDate,

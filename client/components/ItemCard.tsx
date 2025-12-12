@@ -14,15 +14,27 @@ const CARD_WIDTH = (width - Spacing.lg * 2 - Spacing.md) / 2;
 interface ItemCardProps {
   item: Item & { isPremium?: boolean };
   onPress: () => void;
+  showExpiration?: boolean;
 }
 
-export function ItemCard({ item, onPress }: ItemCardProps) {
+export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProps) {
   const { theme } = useTheme();
 
   const getImageUrl = (path: string) => {
     if (path.startsWith('http')) return path;
     return `${getApiUrl()}${path}`;
   };
+
+  const getDaysRemaining = () => {
+    if (!item.expiresAt) return null;
+    const expiresAt = new Date(item.expiresAt);
+    const now = new Date();
+    const diffMs = expiresAt.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  const daysRemaining = showExpiration ? getDaysRemaining() : null;
 
   return (
     <Pressable
@@ -68,6 +80,14 @@ export function ItemCard({ item, onPress }: ItemCardProps) {
         <ThemedText type="body" style={{ color: theme.primary, fontWeight: '700', marginTop: Spacing.xs }}>
           {item.pricePerDay} RSD<ThemedText type="small" style={{ color: theme.textSecondary, fontWeight: '400' }}>/dan</ThemedText>
         </ThemedText>
+        {daysRemaining !== null ? (
+          <View style={[styles.expirationRow, { backgroundColor: daysRemaining <= 7 ? '#FFF3CD' : theme.backgroundSecondary }]}>
+            <Feather name="clock" size={10} color={daysRemaining <= 7 ? '#856404' : theme.textSecondary} />
+            <ThemedText type="small" style={{ color: daysRemaining <= 7 ? '#856404' : theme.textSecondary, marginLeft: 4 }}>
+              {daysRemaining === 0 ? 'Ističe danas' : `Ističe za ${daysRemaining} dana`}
+            </ThemedText>
+          </View>
+        ) : null}
       </View>
     </Pressable>
   );
@@ -118,5 +138,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: Spacing.xs,
+  },
+  expirationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    borderRadius: BorderRadius.xs,
   },
 });
