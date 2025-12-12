@@ -18,6 +18,13 @@ type SubscriptionStatus = {
   canBecomeEarlyAdopter: boolean;
   subscriptionEndDate: string | null;
   isPremiumListing: boolean;
+  freeFeatureUsed?: boolean;
+};
+
+type AdStats = {
+  isPremium: boolean;
+  freeFeatureUsed: boolean;
+  featuredCount: number;
 };
 
 type HomeData = {
@@ -86,8 +93,13 @@ export default function SubscriptionScreen() {
     queryKey: ['/api/home'],
   });
 
+  const { data: adStats, isLoading: adStatsLoading } = useQuery<AdStats>({
+    queryKey: ['/api/user/ad-stats'],
+  });
+
   const remainingSlots = status?.remainingEarlyAdopterSlots ?? homeData?.remainingEarlyAdopterSlots ?? 0;
-  const isLoading = statusLoading && homeLoading;
+  const isLoading = statusLoading && homeLoading && adStatsLoading;
+  const showSingleFeatureOption = adStats?.isPremium && adStats?.freeFeatureUsed;
 
   const claimEarlyAdopterMutation = useMutation({
     mutationFn: async () => {
@@ -114,6 +126,22 @@ export default function SubscriptionScreen() {
         'Stripe integracija',
         'Stripe plaćanje će biti dostupno uskoro. Kontaktirajte nas za više informacija.',
       );
+    },
+  });
+
+  const buyFeatureMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('POST', '/api/subscription/buy-feature');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/user/ad-stats'] });
+      Alert.alert(
+        'Stripe integracija',
+        'Plaćanje za istaknuti oglas će biti dostupno uskoro. Kontaktirajte nas za više informacija.',
+      );
+    },
+    onError: (error: Error) => {
+      Alert.alert('Greška', error.message);
     },
   });
 
@@ -313,6 +341,51 @@ export default function SubscriptionScreen() {
         );
         })}
 
+        {showSingleFeatureOption ? (
+          <Card style={StyleSheet.flatten([styles.singleFeatureCard, { borderColor: theme.warning, borderWidth: 2 }])}>
+            <View style={styles.singleFeatureHeader}>
+              <Feather name="star" size={28} color={theme.warning} />
+              <View style={styles.singleFeatureText}>
+                <ThemedText type="h3">Kupi istaknuti oglas</ThemedText>
+                <ThemedText type="body" style={{ color: theme.textSecondary }}>
+                  Istaknite jedan od vaših oglasa na vrhu pretrage
+                </ThemedText>
+              </View>
+            </View>
+            <View style={styles.singleFeaturePrice}>
+              <ThemedText type="h1" style={{ color: theme.warning }}>99</ThemedText>
+              <ThemedText type="body" style={{ color: theme.textSecondary }}> RSD</ThemedText>
+            </View>
+            <View style={styles.singleFeatureDetails}>
+              <View style={styles.featureRow}>
+                <Feather name="check" size={16} color={theme.success} />
+                <ThemedText type="small">Oglas se prikazuje na vrhu pretrage</ThemedText>
+              </View>
+              <View style={styles.featureRow}>
+                <Feather name="check" size={16} color={theme.success} />
+                <ThemedText type="small">Premium značka na oglasu</ThemedText>
+              </View>
+              <View style={styles.featureRow}>
+                <Feather name="check" size={16} color={theme.success} />
+                <ThemedText type="small">Važi dok je oglas aktivan</ThemedText>
+              </View>
+            </View>
+            <Pressable
+              style={[styles.buyFeatureButton, { backgroundColor: theme.warning }]}
+              onPress={() => buyFeatureMutation.mutate()}
+              disabled={buyFeatureMutation.isPending}
+            >
+              {buyFeatureMutation.isPending ? (
+                <ActivityIndicator color="#1A1A1A" />
+              ) : (
+                <ThemedText type="body" style={{ color: '#1A1A1A', fontWeight: '700' }}>
+                  Kupi za 99 RSD
+                </ThemedText>
+              )}
+            </Pressable>
+          </Card>
+        ) : null}
+
         <ThemedText type="small" style={[styles.disclaimer, { color: theme.textTertiary }]}>
           Plaćanje se vrši preko Stripe platforme. Pretplata se automatski obnavlja svakog meseca.
           Možete je otkazati u bilo kom trenutku.
@@ -414,5 +487,32 @@ const styles = StyleSheet.create({
   disclaimer: {
     textAlign: 'center',
     marginTop: Spacing.md,
+  },
+  singleFeatureCard: {
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+  singleFeatureHeader: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  singleFeatureText: {
+    flex: 1,
+    gap: Spacing.xs,
+  },
+  singleFeaturePrice: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: Spacing.md,
+  },
+  singleFeatureDetails: {
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  buyFeatureButton: {
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
   },
 });

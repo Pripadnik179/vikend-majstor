@@ -775,6 +775,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/subscription/buy-feature", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "Korisnik nije pronađen" });
+      }
+      
+      const isPremium = user.subscriptionType === 'premium' && 
+        user.subscriptionEndDate && 
+        new Date(user.subscriptionEndDate) > new Date();
+      
+      if (!isPremium) {
+        return res.status(403).json({ error: "Potrebna je Premium pretplata" });
+      }
+      
+      res.json({
+        message: "Stripe integracija će uskoro biti dostupna",
+        priceRsd: 99,
+        stripeConfigured: false,
+        placeholder: true
+      });
+    } catch (error) {
+      console.error("Error buying feature:", error);
+      res.status(500).json({ error: "Greška pri kupovini istaknutog oglasa" });
+    }
+  });
+
   app.post("/api/stripe/webhook", async (req, res) => {
     res.json({ received: true, message: "Stripe webhook placeholder - konfigurišite Stripe ključeve" });
   });
