@@ -32,10 +32,22 @@ export default function BookingDetailScreen() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<Booking>) => {
-      await apiRequest('PUT', `/api/bookings/${route.params.bookingId}`, data);
+      const response = await apiRequest('PUT', `/api/bookings/${route.params.bookingId}`, data);
+      if (response.status === 204) {
+        return null;
+      }
+      const text = await response.text();
+      if (!text) {
+        return null;
+      }
+      return JSON.parse(text);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/bookings', route.params.bookingId] });
+    },
+    onError: (error: Error) => {
+      Alert.alert('Greška', error.message || 'Došlo je do greške pri ažuriranju rezervacije');
     },
   });
 
@@ -224,10 +236,18 @@ export default function BookingDetailScreen() {
       <View style={styles.actions}>
         {booking.status === 'pending' && isOwner && (
           <>
-            <Button onPress={handleConfirm} style={styles.actionButton}>
-              Potvrdi rezervaciju
+            <Button 
+              onPress={handleConfirm} 
+              style={styles.actionButton}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? 'Potvrđivanje...' : 'Potvrdi rezervaciju'}
             </Button>
-            <Pressable style={styles.cancelButton} onPress={handleCancel}>
+            <Pressable 
+              style={[styles.cancelButton, updateMutation.isPending && { opacity: 0.5 }]} 
+              onPress={handleCancel}
+              disabled={updateMutation.isPending}
+            >
               <ThemedText type="body" style={{ color: theme.error }}>Odbij</ThemedText>
             </Pressable>
           </>

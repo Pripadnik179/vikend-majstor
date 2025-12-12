@@ -168,3 +168,22 @@ The app runs with `npm run all:dev` which starts:
 - Implemented lifetime 5-ad limit for free users via `totalAdsCreated` field (deleting ads doesn't reset counter)
 - Added DELETE `/api/items/:id` endpoint for item deletion
 - Added expiration countdown display in MyItemsScreen (shows days remaining until 30-day expiration)
+- Added push notification system for booking workflow (requires development build for full functionality)
+- Fixed SearchBar component to properly sync with parent state when clearFilters is called
+- Added error handling and loading states to BookingDetailScreen for better Android support
+
+## Push Notifications
+
+### Current Status
+Push notifications are implemented but require a development build with EAS configuration for full functionality.
+
+### Expo Go Limitations
+- Push notifications do NOT work in Expo Go (SDK 53+)
+- The app gracefully handles this by logging a message when projectId is not available
+- To enable full push notification support, create a development build using EAS
+
+### For Production
+1. Run `npx eas build:configure` to set up EAS
+2. The projectId will be automatically configured in app.json
+3. Build a development build: `npx eas build --profile development`
+4. Push notifications will work with the development build
