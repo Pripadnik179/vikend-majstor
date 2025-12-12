@@ -3,6 +3,12 @@ import { createServer, type Server } from "node:http";
 import { setupAuth, isAuthenticated } from "./auth";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { 
+  sendBookingRequestNotification, 
+  sendBookingRequestConfirmationToRenter,
+  sendBookingConfirmedNotification,
+  sendBookingCancelledNotification
+} from "./notifications";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
@@ -70,6 +76,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error finalizing upload:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/push-token", isAuthenticated, async (req, res) => {
+    try {
+      const { pushToken } = req.body;
+      if (!pushToken) {
+        return res.status(400).json({ error: "Push token je obavezan" });
+      }
+      
+      await storage.savePushToken(req.user!.id, pushToken);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error saving push token:", error);
+      res.status(500).json({ error: "Greška pri čuvanju push tokena" });
     }
   });
 
@@ -364,6 +385,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ownerId: item.ownerId,
       });
       
+      const renter = await storage.getUser(req.user!.id);
+      
+      sendBookingRequestConfirmationToRenter(req.user!.id, item.title, booking.id);
+      sendBookingRequestNotification(item.ownerId, renter?.name || 'Korisnik', item.title, booking.id);
+      
       res.status(201).json(booking);
     } catch (error) {
       console.error("Error creating booking:", error);
@@ -382,7 +408,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Nemate dozvolu za ovu akciju" });
       }
       
+      const previousStatus = booking.status;
       const updatedBooking = await storage.updateBooking(req.params.id, req.body);
+      
+      if (req.body.status && req.body.status !== previousStatus) {
+        const item = await storage.getItem(booking.itemId);
+        const owner = await storage.getUser(booking.ownerId);
+        
+        if (req.body.status === 'confirmed' && item && owner) {
+          sendBookingConfirmedNotification(booking.renterId, item.title, owner.name, booking.id);
+        } else if (req.body.status === 'cancelled' && item) {
+          const notifyUserId = req.user!.id === booking.ownerId ? booking.renterId : booking.ownerId;
+          sendBookingCancelledNotification(notifyUserId, item.title, booking.id);
+        }
+      }
+      
       res.json(updatedBooking);
     } catch (error) {
       console.error("Error updating booking:", error);

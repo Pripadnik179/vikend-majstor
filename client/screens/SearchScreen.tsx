@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet, TextInput, FlatList, Pressable, ActivityIndicator } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, StyleSheet, FlatList, Pressable, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Card } from '@/components/Card';
+import { SearchBar } from '@/components/SearchBar';
 import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -27,21 +28,16 @@ export default function SearchScreen() {
   const initialSubcategory = route.params?.subcategory || '';
   const initialQuery = route.params?.query || '';
 
-  const [searchInput, setSearchInput] = useState(initialQuery);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState(initialSubcategory);
   const [selectedToolType, setSelectedToolType] = useState(route.params?.toolType || '');
   const [selectedPowerSource, setSelectedPowerSource] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const searchInputRef = useRef<TextInput>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearchQuery(searchInput);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchInput]);
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
 
   const buildApiUrl = () => {
     const baseUrl = getApiUrl();
@@ -89,16 +85,6 @@ export default function SearchScreen() {
     setSelectedSubcategory('');
     setSelectedToolType('');
     setSelectedPowerSource('');
-    setSearchInput('');
-    setSearchQuery('');
-  }, []);
-
-  const handleSearchInputChange = useCallback((text: string) => {
-    setSearchInput(text);
-  }, []);
-
-  const handleClearSearch = useCallback(() => {
-    setSearchInput('');
     setSearchQuery('');
   }, []);
 
@@ -159,28 +145,12 @@ export default function SearchScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.searchHeader, { paddingTop: Spacing.md }]}>
-        <View style={[styles.searchBar, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
-          <Feather name="search" size={20} color={theme.textSecondary} />
-          <TextInput
-            ref={searchInputRef}
-            style={[styles.searchInput, { color: theme.text }]}
-            placeholder="Pretražite alate..."
-            placeholderTextColor={theme.textTertiary}
-            value={searchInput}
-            onChangeText={handleSearchInputChange}
-            maxLength={40}
-            autoCorrect={false}
-            autoCapitalize="none"
-            blurOnSubmit={false}
-            returnKeyType="search"
-          />
-          <Pressable 
-            onPress={handleClearSearch}
-            style={{ opacity: searchInput ? 1 : 0, pointerEvents: searchInput ? 'auto' : 'none' }}
-          >
-            <Feather name="x" size={20} color={theme.textSecondary} />
-          </Pressable>
-        </View>
+        <SearchBar 
+          initialValue={initialQuery}
+          onSearch={handleSearch}
+          placeholder="Pretražite alate..."
+          debounceMs={300}
+        />
         <Pressable 
           style={[styles.filterButton, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}
           onPress={() => setShowFilters(!showFilters)}
@@ -310,20 +280,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
     gap: Spacing.sm,
-  },
-  searchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    height: 44,
-    gap: Spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
   },
   filterButton: {
     width: 44,

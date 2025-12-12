@@ -413,6 +413,12 @@ export class DatabaseStorage implements IStorage {
     
     return updatedUser;
   }
+
+  async savePushToken(userId: string, pushToken: string): Promise<void> {
+    await db.update(users)
+      .set({ pushToken })
+      .where(eq(users.id, userId));
+  }
 }
 
 export const storage = new DatabaseStorage();

@@ -1,6 +1,19 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import type { User } from '@shared/schema';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 type AuthUser = Omit<User, 'password'>;
 
@@ -43,6 +56,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
+
+  useEffect(() => {
+    if (user) {
+      registerForPushNotifications();
+    }
+  }, [user]);
+
+  const registerForPushNotifications = async () => {
+    if (Platform.OS === 'web') return;
+    if (!Device.isDevice) return;
+
+    try {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== 'granted') return;
+
+      const tokenData = await Notifications.getExpoPushTokenAsync();
+      const pushToken = tokenData.data;
+      
+      await apiRequest('POST', '/api/push-token', { pushToken });
+      console.log('Push token registered:', pushToken);
+
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FFCC00',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to register for push notifications:', error);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     const response = await apiRequest('POST', '/api/auth/login', { email, password });

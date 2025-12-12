@@ -29,6 +29,7 @@ export const users = pgTable("users", {
   premiumListingEndDate: timestamp("premium_listing_end_date"),
   stripeCustomerId: text("stripe_customer_id"),
   totalAdsCreated: integer("total_ads_created").default(0).notNull(),
+  pushToken: text("push_token"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
