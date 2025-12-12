@@ -286,7 +286,13 @@ export default function MyItemsScreen() {
                 { backgroundColor: pressed ? theme.warning + '20' : 'transparent' },
               ]}
               disabled={featureMutation.isPending}
-              onPress={() => featureMutation.mutate({ itemId: item.id, action: 'feature' })}
+              onPress={() => {
+                if (adStats?.freeFeatureUsed) {
+                  navigation.navigate('Subscription');
+                } else {
+                  featureMutation.mutate({ itemId: item.id, action: 'feature' });
+                }
+              }}
             >
               <Feather name="award" size={18} color={theme.warning} />
               <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs }}>
