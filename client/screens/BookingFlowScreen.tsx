@@ -10,11 +10,12 @@ import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollV
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { DateRangePicker } from '@/components/DateRangePicker';
 import { useTheme } from '@/hooks/useTheme';
 import { apiRequest } from '@/lib/query-client';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
-import type { Item, User } from '@shared/schema';
+import type { Item, User, Booking } from '@shared/schema';
 
 type ItemWithOwner = Item & { owner: User };
 
@@ -32,6 +33,11 @@ export default function BookingFlowScreen() {
 
   const { data: item, isLoading: isLoadingItem } = useQuery<ItemWithOwner>({
     queryKey: ['/api/items', route.params.itemId],
+  });
+
+  const { data: itemBookings = [] } = useQuery<Booking[]>({
+    queryKey: ['/api/items', route.params.itemId, 'bookings'],
+    enabled: !!route.params.itemId,
   });
 
   const today = new Date();
@@ -60,6 +66,13 @@ export default function BookingFlowScreen() {
     setStartDate(start);
     setEndDate(end);
   };
+
+  const confirmedBookings = itemBookings.filter(
+    (b) => b.status === 'confirmed' || b.status === 'pending'
+  ).map(b => ({
+    startDate: b.startDate.toString(),
+    endDate: b.endDate.toString(),
+  }));
 
   const calculateDays = () => {
     if (!startDate || !endDate) return 0;
@@ -152,20 +165,15 @@ export default function BookingFlowScreen() {
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="h4" style={styles.sectionTitle}>Izabrani period</ThemedText>
-        <Card style={styles.dateCard}>
-          <View style={styles.dateRow}>
-            <View style={styles.dateColumn}>
-              <ThemedText type="small" style={{ color: theme.textSecondary }}>Od</ThemedText>
-              <ThemedText type="h4">{formatDate(startDate)}</ThemedText>
-            </View>
-            <Feather name="arrow-right" size={20} color={theme.textTertiary} />
-            <View style={styles.dateColumn}>
-              <ThemedText type="small" style={{ color: theme.textSecondary }}>Do</ThemedText>
-              <ThemedText type="h4">{formatDate(endDate)}</ThemedText>
-            </View>
-          </View>
-        </Card>
+        <ThemedText type="h4" style={styles.sectionTitle}>Ili izaberite tačne datume</ThemedText>
+        <DateRangePicker
+          bookings={confirmedBookings}
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          minDate={today}
+        />
       </View>
 
       <View style={styles.section}>

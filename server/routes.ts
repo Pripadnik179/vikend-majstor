@@ -75,9 +75,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/items", async (req, res) => {
     try {
-      const { category, city, search } = req.query;
+      const { category, subCategory, toolType, powerSource, city, search } = req.query;
       const items = await storage.getItems({
         category: category as string | undefined,
+        subCategory: subCategory as string | undefined,
+        toolType: toolType as string | undefined,
+        powerSource: powerSource as string | undefined,
         city: city as string | undefined,
         search: search as string | undefined,
       });
@@ -100,6 +103,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching item:", error);
       res.status(500).json({ error: "Greška pri učitavanju stvari" });
+    }
+  });
+
+  app.get("/api/items/:id/bookings", async (req, res) => {
+    try {
+      const bookings = await storage.getItemBookings(req.params.id);
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching item bookings:", error);
+      res.status(500).json({ error: "Greška pri učitavanju rezervacija" });
     }
   });
 
@@ -453,6 +466,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ error: "Greška pri učitavanju korisnika" });
+    }
+  });
+
+  app.get("/api/subscription/status", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user!.id);
+      if (!user) {
+        return res.status(404).json({ error: "Korisnik nije pronađen" });
+      }
+      
+      const subscriptionInfo = await storage.getSubscriptionStatus(user.id);
+      const earlyAdopterCount = await storage.getEarlyAdopterCount();
+      const remainingEarlyAdopterSlots = Math.max(0, 100 - earlyAdopterCount);
+      
+      res.json({
+        ...subscriptionInfo,
+        earlyAdopterCount,
+        remainingEarlyAdopterSlots,
+        canBecomeEarlyAdopter: remainingEarlyAdopterSlots > 0 && !user.isEarlyAdopter,
+        prices: {
+          basic: 500,
+          premium: 1000
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching subscription status:", error);
+      res.status(500).json({ error: "Greška pri učitavanju pretplate" });
+    }
+  });
+
+  app.post("/api/subscription/activate-early-adopter", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user!.id);
+      if (!user) {
+        return res.status(404).json({ error: "Korisnik nije pronađen" });
+      }
+      
+      if (user.isEarlyAdopter) {
+        return res.status(400).json({ error: "Već ste early adopter korisnik" });
+      }
+      
+      const earlyAdopterCount = await storage.getEarlyAdopterCount();
+      if (earlyAdopterCount >= 100) {
+        return res.status(400).json({ error: "Nema više dostupnih mesta za early adopter program" });
+      }
+      
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 30);
+      
+      const updatedUser = await storage.activateEarlyAdopter(user.id, endDate);
+      
+      res.json({
+        message: "Uspešno ste postali early adopter! Imate besplatno korišćenje 30 dana.",
+        subscriptionEndDate: endDate,
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error("Error activating early adopter:", error);
+      res.status(500).json({ error: "Greška pri aktivaciji early adopter programa" });
+    }
+  });
+
+  app.post("/api/subscription/create-checkout", isAuthenticated, async (req, res) => {
+    try {
+      const { planType } = req.body;
+      
+      if (!planType || !['basic', 'premium'].includes(planType)) {
+        return res.status(400).json({ error: "Nevažeći tip pretplate" });
+      }
+      
+      const priceRsd = planType === 'basic' ? 500 : 1000;
+      
+      res.json({
+        message: "Stripe integracija će uskoro biti dostupna",
+        planType,
+        priceRsd,
+        stripeConfigured: false,
+        placeholder: true
+      });
+    } catch (error) {
+      console.error("Error creating checkout:", error);
+      res.status(500).json({ error: "Greška pri kreiranju naplate" });
+    }
+  });
+
+  app.post("/api/stripe/webhook", async (req, res) => {
+    res.json({ received: true, message: "Stripe webhook placeholder - konfigurišite Stripe ključeve" });
+  });
+
+  app.get("/api/categories", async (_req, res) => {
+    try {
+      const { CATEGORIES, POWER_SOURCES } = await import("../shared/schema");
+      res.json({ categories: CATEGORIES, powerSources: POWER_SOURCES });
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ error: "Greška pri učitavanju kategorija" });
     }
   });
 

@@ -1,0 +1,38 @@
+1. Google login na Androidu ne radi
+• 	Trenutno dobijam poruku: “Google prijava nije dostupna. Google OAuth kredencijali nisu konfigurirani za ovu platformu.”
+• 	Potrebno je da se u Google Cloud Console doda Android konfiguracija:
+• 	Package name aplikacije (npr. )
+• 	SHA‑1 ključ iz debug/prod keystore-a
+• 	Povezivanje sa OAuth consent screen-om
+• 	Cilj: da Google login radi na Androidu isto kao na iOS-u.
+
+2. Monetizacija – prva 100 korisnika gratis + Stripe placeholder
+• 	Model naplate:
+• 	Prvih 100 korisnika imaju besplatno mesec dana neograničen broj oglasa.
+• 	Nakon toga: 500 RSD mesečno za neograničene oglase.
+• 	Opcija premium isticanja oglasa na vrhu stranice: 1.000 RSD mesečno.
+• 	Potrebno je da se ovo implementira u backend logiku (praćenje broja korisnika i trajanja gratis perioda).
+• 	Ostavi placeholder / hook za Stripe integraciju:
+• 	Backend endpoint (npr. ) koji se kasnije može povezati sa Stripe API-jem.
+• 	Na frontend-u mesto za dugme “Plati” ili “Pretplati se” koje sada može biti neaktivno ili simulirano.
+• 	Cilj: da kasnije mogu jednostavno da dodam Stripe ključeve i povežem naplatu.
+
+3. Rezervacija – fleksibilan izbor datuma
+• 	Trenutno korisnik može da izabere samo “danas”, “vikend”, “tri dana”, “nedelja”.
+• 	Potrebno je da se omogući odabir od kog dana do kog dana (date picker).
+• 	Cilj: da korisnik precizno rezerviše alat u periodu koji mu odgovara.
+
+4. Kategorizacija alata – dva ulaza u katalog
+• 	Potrebno je dodati dva nivoa navigacije:
+1. 	Glavni meni – po delatnosti/projektu (Građevinarstvo, Bašta, Renoviranje, Obrada drveta, Auto-mehanika, Čišćenje).
+• 	Svaka kategorija ima podkategorije (npr. Građevinarstvo → Betoniranje, Zidanje, Rušenje…).
+2. 	Sekundarni meni – po vrsti alata (A–Z katalog) (Električni alati, Akumulatorski, Ručni, Pneumatski, Građevinske mašine, Merni/laserski).
+• 	Sa podkategorijama (npr. Električni alati → Bušilice, Brusilice, Testere…).
+• 	Na homepage-u: veliki baneri koji vode na glavne delatnosti (npr. “Renovirate kupatilo? Pogledajte alate za keramiku”).
+• 	U kategorijama: fasetno filtriranje (brend, napajanje, snaga, dostupnost).
+
+✅ Cilj
+• 	Da login radi na svim platformama.
+• 	Da monetizacija bude jasna i zakonski čista (pretplate, gratis period, Stripe hook).
+• 	Da rezervacija bude fleksibilna i intuitivna.
+• 	Da katalog alata bude efikasan i prilagođen i početnicima i profesionalcima.

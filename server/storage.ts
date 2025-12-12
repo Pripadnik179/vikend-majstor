@@ -1,14 +1,15 @@
 import { 
-  users, items, bookings, conversations, messages, reviews,
+  users, items, bookings, conversations, messages, reviews, subscriptions,
   type User, type InsertUser,
   type Item, type InsertItem,
   type Booking, type InsertBooking,
   type Conversation,
   type Message, type InsertMessage,
-  type Review, type InsertReview
+  type Review, type InsertReview,
+  type Subscription, type InsertSubscription
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, sql } from "drizzle-orm";
+import { eq, and, or, desc, sql, count } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -16,7 +17,14 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, data: Partial<InsertUser>): Promise<User | undefined>;
   
-  getItems(filters?: { category?: string; city?: string; search?: string }): Promise<Item[]>;
+  getItems(filters?: { 
+    category?: string; 
+    subCategory?: string;
+    toolType?: string;
+    powerSource?: string;
+    city?: string; 
+    search?: string;
+  }): Promise<Item[]>;
   getItem(id: string): Promise<Item | undefined>;
   getItemsByOwner(ownerId: string): Promise<Item[]>;
   createItem(item: InsertItem): Promise<Item>;
@@ -64,16 +72,36 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async getItems(filters?: { category?: string; city?: string; search?: string }): Promise<Item[]> {
-    let query = db.select().from(items).where(eq(items.isAvailable, true));
-    
+  async getItems(filters?: { 
+    category?: string; 
+    subCategory?: string;
+    toolType?: string;
+    powerSource?: string;
+    city?: string; 
+    search?: string;
+  }): Promise<Item[]> {
     const conditions = [eq(items.isAvailable, true)];
     
     if (filters?.category) {
       conditions.push(eq(items.category, filters.category));
     }
+    if (filters?.subCategory) {
+      conditions.push(eq(items.subCategory, filters.subCategory));
+    }
+    if (filters?.toolType) {
+      conditions.push(eq(items.toolType, filters.toolType));
+    }
+    if (filters?.powerSource) {
+      conditions.push(eq(items.powerSource, filters.powerSource));
+    }
     if (filters?.city) {
       conditions.push(eq(items.city, filters.city));
+    }
+    if (filters?.search) {
+      const searchTerm = `%${filters.search}%`;
+      conditions.push(
+        sql`(${items.title} ILIKE ${searchTerm} OR ${items.description} ILIKE ${searchTerm})`
+      );
     }
     
     const result = await db.select().from(items).where(and(...conditions)).orderBy(desc(items.createdAt));
@@ -238,6 +266,91 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, insertReview.revieweeId));
     
     return review;
+  }
+
+  async getEarlyAdopterCount(): Promise<number> {
+    const result = await db.select({ count: count() }).from(users).where(eq(users.isEarlyAdopter, true));
+    return result[0]?.count || 0;
+  }
+
+  async getSubscriptionStatus(userId: string): Promise<{
+    subscriptionType: string;
+    subscriptionStatus: string;
+    subscriptionEndDate: Date | null;
+    isEarlyAdopter: boolean;
+    isPremiumListing: boolean;
+    premiumListingEndDate: Date | null;
+    canPostItems: boolean;
+  }> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error("Korisnik nije pronađen");
+    }
+
+    const now = new Date();
+    let canPostItems = false;
+
+    if (user.isEarlyAdopter && user.subscriptionEndDate && new Date(user.subscriptionEndDate) > now) {
+      canPostItems = true;
+    } else if (user.subscriptionType !== 'free' && user.subscriptionStatus === 'active' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) > now) {
+      canPostItems = true;
+    }
+
+    return {
+      subscriptionType: user.subscriptionType,
+      subscriptionStatus: user.subscriptionStatus,
+      subscriptionEndDate: user.subscriptionEndDate,
+      isEarlyAdopter: user.isEarlyAdopter,
+      isPremiumListing: user.isPremiumListing,
+      premiumListingEndDate: user.premiumListingEndDate,
+      canPostItems
+    };
+  }
+
+  async activateEarlyAdopter(userId: string, endDate: Date): Promise<User> {
+    const [updatedUser] = await db.update(users)
+      .set({
+        isEarlyAdopter: true,
+        subscriptionType: 'basic',
+        subscriptionStatus: 'active',
+        subscriptionStartDate: new Date(),
+        subscriptionEndDate: endDate
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    return updatedUser;
+  }
+
+  async createSubscription(subscription: InsertSubscription): Promise<Subscription> {
+    const [newSubscription] = await db.insert(subscriptions).values(subscription).returning();
+    return newSubscription;
+  }
+
+  async updateUserSubscription(userId: string, subscriptionType: 'free' | 'basic' | 'premium', endDate: Date): Promise<User> {
+    const [updatedUser] = await db.update(users)
+      .set({
+        subscriptionType,
+        subscriptionStatus: 'active',
+        subscriptionStartDate: new Date(),
+        subscriptionEndDate: endDate
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    return updatedUser;
+  }
+
+  async activatePremiumListing(userId: string, endDate: Date): Promise<User> {
+    const [updatedUser] = await db.update(users)
+      .set({
+        isPremiumListing: true,
+        premiumListingEndDate: endDate
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    return updatedUser;
   }
 }
 

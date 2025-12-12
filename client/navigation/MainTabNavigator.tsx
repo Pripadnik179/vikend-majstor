@@ -6,6 +6,7 @@ import { BlurView } from "expo-blur";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import HomeStackNavigator from "@/navigation/HomeStackNavigator";
+import CategoriesScreen from "@/screens/CategoriesScreen";
 import BookingsStackNavigator from "@/navigation/BookingsStackNavigator";
 import MessagesStackNavigator from "@/navigation/MessagesStackNavigator";
 import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
@@ -74,6 +75,16 @@ export default function MainTabNavigator() {
             title: "Početna",
             tabBarIcon: ({ color, size }) => (
               <Feather name="home" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="CategoriesTab"
+          component={CategoriesScreen}
+          options={{
+            title: "Kategorije",
+            tabBarIcon: ({ color, size }) => (
+              <Feather name="grid" size={size} color={color} />
             ),
           }}
         />

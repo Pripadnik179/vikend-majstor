@@ -10,6 +10,8 @@ import ChatScreen from "@/screens/ChatScreen";
 import ReviewScreen from "@/screens/ReviewScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
 import MyItemsScreen from "@/screens/MyItemsScreen";
+import SearchScreen from "@/screens/SearchScreen";
+import SubscriptionScreen from "@/screens/SubscriptionScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/hooks/useTheme";
@@ -98,6 +100,19 @@ export default function RootStackNavigator() {
             name="MyItems"
             component={MyItemsScreen}
             options={{ headerTitle: "Moje Stvari" }}
+          />
+          <Stack.Screen
+            name="Search"
+            component={SearchScreen}
+            options={{ headerTitle: "Pretraga" }}
+          />
+          <Stack.Screen
+            name="Subscription"
+            component={SubscriptionScreen}
+            options={{ 
+              presentation: "modal",
+              headerTitle: "Pretplata",
+            }}
           />
         </>
       ) : (

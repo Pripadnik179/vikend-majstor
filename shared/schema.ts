@@ -5,6 +5,8 @@ import { z } from "zod";
 
 export const userRoleEnum = pgEnum("user_role", ["owner", "renter"]);
 export const bookingStatusEnum = pgEnum("booking_status", ["pending", "confirmed", "active", "completed", "cancelled"]);
+export const subscriptionTypeEnum = pgEnum("subscription_type", ["free", "basic", "premium"]);
+export const subscriptionStatusEnum = pgEnum("subscription_status", ["active", "expired", "cancelled"]);
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -18,6 +20,14 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").default("renter").notNull(),
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
   totalRatings: integer("total_ratings").default(0),
+  subscriptionType: subscriptionTypeEnum("subscription_type").default("free").notNull(),
+  subscriptionStatus: subscriptionStatusEnum("subscription_status").default("active").notNull(),
+  subscriptionStartDate: timestamp("subscription_start_date"),
+  subscriptionEndDate: timestamp("subscription_end_date"),
+  isEarlyAdopter: boolean("is_early_adopter").default(false).notNull(),
+  isPremiumListing: boolean("is_premium_listing").default(false).notNull(),
+  premiumListingEndDate: timestamp("premium_listing_end_date"),
+  stripeCustomerId: text("stripe_customer_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -28,6 +38,27 @@ export const usersRelations = relations(users, ({ many }) => ({
   sentMessages: many(messages, { relationName: "sentMessages" }),
   receivedMessages: many(messages, { relationName: "receivedMessages" }),
   reviews: many(reviews),
+  subscriptions: many(subscriptions),
+}));
+
+export const subscriptions = pgTable("subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: subscriptionTypeEnum("type").notNull(),
+  status: subscriptionStatusEnum("status").default("active").notNull(),
+  priceRsd: integer("price_rsd").notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
 }));
 
 export const items = pgTable("items", {
@@ -36,6 +67,12 @@ export const items = pgTable("items", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   category: text("category").notNull(),
+  subCategory: text("sub_category"),
+  toolType: text("tool_type"),
+  toolSubType: text("tool_sub_type"),
+  brand: text("brand"),
+  powerSource: text("power_source"),
+  powerWatts: integer("power_watts"),
   pricePerDay: integer("price_per_day").notNull(),
   deposit: integer("deposit").notNull(),
   city: text("city").notNull(),
@@ -44,6 +81,7 @@ export const items = pgTable("items", {
   longitude: decimal("longitude", { precision: 10, scale: 7 }),
   images: text("images").array().notNull().default(sql`ARRAY[]::text[]`),
   isAvailable: boolean("is_available").default(true).notNull(),
+  isFeatured: boolean("is_featured").default(false).notNull(),
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
   totalRatings: integer("total_ratings").default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -208,6 +246,11 @@ export const insertReviewSchema = createInsertSchema(reviews).omit({
   createdAt: true,
 });
 
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Item = typeof items.$inferSelect;
@@ -219,3 +262,69 @@ export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+
+export const CATEGORIES = {
+  byProject: {
+    gradjevinarstvo: {
+      name: "Građevinarstvo",
+      subcategories: ["Betoniranje", "Zidanje", "Rušenje", "Armiranje", "Fasaderski radovi"]
+    },
+    basta: {
+      name: "Bašta",
+      subcategories: ["Košenje", "Orezivanje", "Kopanje", "Navodnjavanje", "Čišćenje"]
+    },
+    renoviranje: {
+      name: "Renoviranje",
+      subcategories: ["Keramika", "Podovi", "Malterisanje", "Gipsarija", "Farbanje"]
+    },
+    drvoprerađivanje: {
+      name: "Obrada drveta",
+      subcategories: ["Tesarenje", "Stolarija", "Rezanje", "Brušenje", "Glodanje"]
+    },
+    autoMehanika: {
+      name: "Auto-mehanika",
+      subcategories: ["Dijagnostika", "Vulkanizerstvo", "Lakiranje", "Poliranje", "Servisiranje"]
+    },
+    ciscenje: {
+      name: "Čišćenje",
+      subcategories: ["Pranje pod pritiskom", "Usisavanje", "Parno čišćenje", "Industrijska čišćenja"]
+    }
+  },
+  byToolType: {
+    elektricni: {
+      name: "Električni alati",
+      subcategories: ["Bušilice", "Brusilice", "Testere", "Blanjevi", "Glodalice"]
+    },
+    akumulatorski: {
+      name: "Akumulatorski alati",
+      subcategories: ["Bušilice", "Odvijači", "Brusilice", "Pile", "Višenamjenski"]
+    },
+    rucni: {
+      name: "Ručni alati",
+      subcategories: ["Čekići", "Klešta", "Odvijači", "Ključevi", "Testeri"]
+    },
+    pneumatski: {
+      name: "Pneumatski alati",
+      subcategories: ["Pištolji", "Bušilice", "Brusilice", "Kompresori", "Prskalice"]
+    },
+    gradevinskemasine: {
+      name: "Građevinske mašine",
+      subcategories: ["Mini bageri", "Vibroploci", "Mešalice", "Agregati", "Skele"]
+    },
+    merniLaserski: {
+      name: "Merni/laserski",
+      subcategories: ["Laseri", "Niveliri", "Detektori", "Merni metri", "Multimetri"]
+    }
+  }
+};
+
+export const POWER_SOURCES = ["Električni (struja)", "Akumulator", "Benzinski", "Dizel", "Pneumatski", "Ručni"];
+
+export const SUBSCRIPTION_PRICES = {
+  basic: 500,
+  premium: 1000,
+  earlyAdopterFreeDays: 30,
+  maxEarlyAdopters: 100
+};

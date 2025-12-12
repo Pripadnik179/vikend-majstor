@@ -12,10 +12,13 @@ export type RootStackParamList = {
   Review: { bookingId: string };
   Settings: undefined;
   MyItems: undefined;
+  Search: { category?: string; subcategory?: string; toolType?: string; query?: string };
+  Subscription: undefined;
 };
 
 export type MainTabParamList = {
   HomeTab: undefined;
+  CategoriesTab: undefined;
   BookingsTab: undefined;
   MessagesTab: undefined;
   ProfileTab: undefined;
