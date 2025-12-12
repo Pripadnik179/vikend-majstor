@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { View, StyleSheet, TextInput, FlatList, Pressable, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -27,12 +27,21 @@ export default function SearchScreen() {
   const initialSubcategory = route.params?.subcategory || '';
   const initialQuery = route.params?.query || '';
 
+  const [searchInput, setSearchInput] = useState(initialQuery);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState(initialSubcategory);
   const [selectedToolType, setSelectedToolType] = useState(route.params?.toolType || '');
   const [selectedPowerSource, setSelectedPowerSource] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const searchInputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const buildApiUrl = () => {
     const baseUrl = getApiUrl();
@@ -77,6 +86,7 @@ export default function SearchScreen() {
     setSelectedSubcategory('');
     setSelectedToolType('');
     setSelectedPowerSource('');
+    setSearchInput('');
     setSearchQuery('');
   };
 
@@ -140,14 +150,18 @@ export default function SearchScreen() {
         <View style={[styles.searchBar, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
           <Feather name="search" size={20} color={theme.textSecondary} />
           <TextInput
+            ref={searchInputRef}
             style={[styles.searchInput, { color: theme.text }]}
             placeholder="Pretražite alate..."
             placeholderTextColor={theme.textTertiary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+            value={searchInput}
+            onChangeText={setSearchInput}
+            maxLength={40}
+            autoCorrect={false}
+            autoCapitalize="none"
           />
-          {searchQuery ? (
-            <Pressable onPress={() => setSearchQuery('')}>
+          {searchInput ? (
+            <Pressable onPress={() => { setSearchInput(''); setSearchQuery(''); }}>
               <Feather name="x" size={20} color={theme.textSecondary} />
             </Pressable>
           ) : null}

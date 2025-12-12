@@ -260,6 +260,7 @@ export default function AddItemScreen() {
           placeholderTextColor={theme.textTertiary}
           value={title}
           onChangeText={setTitle}
+          maxLength={40}
         />
       </View>
 
@@ -271,6 +272,7 @@ export default function AddItemScreen() {
           placeholderTextColor={theme.textTertiary}
           value={description}
           onChangeText={setDescription}
+          maxLength={300}
           multiline
           numberOfLines={4}
           textAlignVertical="top"
