@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import type { User } from '@shared/schema';
 
@@ -68,6 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!Device.isDevice) return;
 
     try {
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+      
+      if (!projectId) {
+        console.log('Push notifications require EAS projectId - skipping in Expo Go');
+        return;
+      }
+
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
 
@@ -78,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (finalStatus !== 'granted') return;
 
-      const tokenData = await Notifications.getExpoPushTokenAsync();
+      const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
       const pushToken = tokenData.data;
       
       await apiRequest('POST', '/api/push-token', { pushToken });
@@ -93,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
       }
     } catch (error) {
-      console.error('Failed to register for push notifications:', error);
+      console.log('Push notification setup skipped:', error);
     }
   };
 
