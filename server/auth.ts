@@ -84,12 +84,19 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ error: "Korisnik sa ovim emailom već postoji" });
       }
 
+      const earlyAdopterCount = await storage.getEarlyAdopterCount();
+      const isEarlyAdopter = earlyAdopterCount < 100;
+
       const hashedPassword = await hashPassword(password);
       const user = await storage.createUser({
         email,
         password: hashedPassword,
         name,
         role: role || "renter",
+        isEarlyAdopter,
+        subscriptionType: isEarlyAdopter ? "premium" : "free",
+        subscriptionStatus: isEarlyAdopter ? "active" : undefined,
+        subscriptionEndDate: isEarlyAdopter ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null,
       });
 
       req.session.userId = user.id;
@@ -175,6 +182,9 @@ export function setupAuth(app: Express) {
       let user = await storage.getUserByEmail(email);
 
       if (!user) {
+        const earlyAdopterCount = await storage.getEarlyAdopterCount();
+        const isEarlyAdopter = earlyAdopterCount < 100;
+
         const randomPassword = randomBytes(32).toString("hex");
         const hashedPassword = await hashPassword(randomPassword);
         user = await storage.createUser({
@@ -183,6 +193,10 @@ export function setupAuth(app: Express) {
           name: name || email.split('@')[0],
           role: "renter",
           avatarUrl: picture || undefined,
+          isEarlyAdopter,
+          subscriptionType: isEarlyAdopter ? "premium" : "free",
+          subscriptionStatus: isEarlyAdopter ? "active" : undefined,
+          subscriptionEndDate: isEarlyAdopter ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null,
         });
       }
 
@@ -227,6 +241,9 @@ export function setupAuth(app: Express) {
       let user = await storage.getUserByEmail(userEmail);
 
       if (!user) {
+        const earlyAdopterCount = await storage.getEarlyAdopterCount();
+        const isEarlyAdopter = earlyAdopterCount < 100;
+
         const randomPassword = randomBytes(32).toString("hex");
         const hashedPassword = await hashPassword(randomPassword);
         const userName = fullName && fullName.trim() ? fullName.trim() : 'Apple User';
@@ -235,6 +252,10 @@ export function setupAuth(app: Express) {
           password: hashedPassword,
           name: userName,
           role: "renter",
+          isEarlyAdopter,
+          subscriptionType: isEarlyAdopter ? "premium" : "free",
+          subscriptionStatus: isEarlyAdopter ? "active" : undefined,
+          subscriptionEndDate: isEarlyAdopter ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null,
         });
       } else if (fullName && fullName.trim() && user.name === 'Apple User') {
         await storage.updateUser(user.id, { name: fullName.trim() });

@@ -300,7 +300,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getEarlyAdopterCount(): Promise<number> {
-    const result = await db.select({ count: count() }).from(users).where(eq(users.isEarlyAdopter, true));
+    const result = await db.select({ count: count() }).from(users);
     return result[0]?.count || 0;
   }
 

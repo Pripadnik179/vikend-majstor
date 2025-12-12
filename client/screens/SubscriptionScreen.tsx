@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,6 +18,11 @@ type SubscriptionStatus = {
   canBecomeEarlyAdopter: boolean;
   subscriptionEndDate: string | null;
   isPremiumListing: boolean;
+};
+
+type HomeData = {
+  remainingEarlyAdopterSlots: number;
+  premiumItems: unknown[];
 };
 
 const PLANS = [
@@ -55,13 +60,20 @@ export default function SubscriptionScreen() {
   const queryClient = useQueryClient();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
-  const { data: status, isLoading } = useQuery<SubscriptionStatus>({
+  const { data: status, isLoading: statusLoading } = useQuery<SubscriptionStatus>({
     queryKey: ['/api/subscription/status'],
   });
 
+  const { data: homeData, isLoading: homeLoading } = useQuery<HomeData>({
+    queryKey: ['/api/home'],
+  });
+
+  const remainingSlots = status?.remainingEarlyAdopterSlots ?? homeData?.remainingEarlyAdopterSlots ?? 0;
+  const isLoading = statusLoading && homeLoading;
+
   const claimEarlyAdopterMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('/api/subscription/activate-early-adopter', { method: 'POST' });
+      return apiRequest('POST', '/api/subscription/activate-early-adopter');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] });
@@ -77,10 +89,7 @@ export default function SubscriptionScreen() {
 
   const subscribeMutation = useMutation({
     mutationFn: async (planType: string) => {
-      return apiRequest('/api/subscription/create-checkout', {
-        method: 'POST',
-        body: { planType },
-      });
+      return apiRequest('POST', '/api/subscription/create-checkout', { planType });
     },
     onSuccess: () => {
       Alert.alert(
@@ -121,7 +130,7 @@ export default function SubscriptionScreen() {
         showsVerticalScrollIndicator={false}
       >
         {status?.isEarlyAdopter && (
-          <Card style={[styles.statusCard, { borderColor: theme.accent }]}>
+          <Card style={StyleSheet.flatten([styles.statusCard, { borderColor: theme.accent }])}>
             <View style={styles.statusHeader}>
               <View style={[styles.badge, { backgroundColor: theme.accent }]}>
                 <Feather name="star" size={14} color="#FFFFFF" />
@@ -141,48 +150,58 @@ export default function SubscriptionScreen() {
           </Card>
         )}
 
-        {status?.canBecomeEarlyAdopter && !status.isEarlyAdopter && (
-          <Card style={[styles.earlyAdopterCard, { borderColor: theme.accent, borderWidth: 2 }]}>
+        {remainingSlots > 0 && !status?.isEarlyAdopter && (
+          <Card style={StyleSheet.flatten([styles.earlyAdopterCard, { borderColor: theme.accent, borderWidth: 2 }])}>
             <View style={styles.earlyAdopterContent}>
               <Feather name="gift" size={32} color={theme.accent} />
               <View style={styles.earlyAdopterText}>
-                <ThemedText type="h3">Specijalna ponuda!</ThemedText>
+                <ThemedText type="h3">Program ranih korisnika</ThemedText>
                 <ThemedText type="body" style={{ color: theme.textSecondary }}>
-                  Preostalo je još {status.remainingEarlyAdopterSlots} mesta za rane korisnike.
-                  Dobijte besplatan mesec premium pristupa!
+                  Preostalo je još {remainingSlots} mesta za rane korisnike.
+                </ThemedText>
+                <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.xs }}>
+                  Postanite jedan od prvih 100 korisnika i dobijte besplatan mesec Premium pristupa!
                 </ThemedText>
               </View>
             </View>
-            <Pressable
-              style={[styles.claimButton, { backgroundColor: theme.accent }]}
-              onPress={handleClaimEarlyAdopter}
-              disabled={claimEarlyAdopterMutation.isPending}
-            >
-              {claimEarlyAdopterMutation.isPending ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <ThemedText type="body" style={{ color: '#FFFFFF', fontWeight: '700' }}>
-                  Preuzmi besplatan mesec
-                </ThemedText>
-              )}
-            </Pressable>
+            {status ? (
+              <Pressable
+                style={[styles.claimButton, { backgroundColor: theme.accent }]}
+                onPress={handleClaimEarlyAdopter}
+                disabled={claimEarlyAdopterMutation.isPending}
+              >
+                {claimEarlyAdopterMutation.isPending ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <ThemedText type="body" style={{ color: '#FFFFFF', fontWeight: '700' }}>
+                    Preuzmi besplatan mesec
+                  </ThemedText>
+                )}
+              </Pressable>
+            ) : (
+              <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: Spacing.sm, textAlign: 'center' }}>
+                Prijavite se da preuzmete besplatan mesec
+              </ThemedText>
+            )}
           </Card>
         )}
 
         <ThemedText type="h3" style={styles.plansTitle}>Planovi pretplate</ThemedText>
 
-        {PLANS.map((plan) => (
+        {PLANS.map((plan) => {
+          const planStyle: ViewStyle = {
+            ...styles.planCard,
+            ...(plan.recommended ? { borderColor: theme.primary, borderWidth: 2 } : {}),
+            ...(status?.subscriptionType === plan.id ? { borderColor: theme.success, borderWidth: 2 } : {}),
+          };
+          return (
           <Card 
             key={plan.id} 
-            style={[
-              styles.planCard,
-              plan.recommended && { borderColor: theme.primary, borderWidth: 2 },
-              status?.subscriptionType === plan.id && { borderColor: theme.success, borderWidth: 2 },
-            ]}
+            style={planStyle}
           >
             {plan.recommended && (
               <View style={[styles.recommendedBadge, { backgroundColor: theme.primary }]}>
-                <ThemedText type="caption" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                <ThemedText type="small" style={{ color: '#FFFFFF', fontWeight: '600' }}>
                   PREPORUČENO
                 </ThemedText>
               </View>
@@ -190,7 +209,7 @@ export default function SubscriptionScreen() {
             {status?.subscriptionType === plan.id && (
               <View style={[styles.activeBadge, { backgroundColor: theme.success }]}>
                 <Feather name="check-circle" size={12} color="#FFFFFF" />
-                <ThemedText type="caption" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                <ThemedText type="small" style={{ color: '#FFFFFF', fontWeight: '600' }}>
                   AKTIVNO
                 </ThemedText>
               </View>
@@ -237,7 +256,8 @@ export default function SubscriptionScreen() {
               </Pressable>
             )}
           </Card>
-        ))}
+        );
+        })}
 
         <ThemedText type="small" style={[styles.disclaimer, { color: theme.textTertiary }]}>
           Plaćanje se vrši preko Stripe platforme. Pretplata se automatski obnavlja svakog meseca.
