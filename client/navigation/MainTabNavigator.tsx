@@ -10,6 +10,7 @@ import CategoriesScreen from "@/screens/CategoriesScreen";
 import BookingsStackNavigator from "@/navigation/BookingsStackNavigator";
 import MessagesStackNavigator from "@/navigation/MessagesStackNavigator";
 import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
+import { BeVisibleModal } from "@/components/BeVisibleModal";
 import { useTheme } from "@/hooks/useTheme";
 import { Colors, Spacing, Shadows } from "@/constants/theme";
 import type { MainTabParamList, RootStackParamList } from "./types";
@@ -43,6 +44,7 @@ export default function MainTabNavigator() {
 
   return (
     <View style={{ flex: 1 }}>
+      <BeVisibleModal />
       <Tab.Navigator
         initialRouteName="HomeTab"
         screenOptions={{

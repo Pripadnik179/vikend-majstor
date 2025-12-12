@@ -134,7 +134,15 @@ The app runs with `npm run all:dev` which starts:
 - Registration automatically sets: isEarlyAdopter=true, subscriptionType="premium", 30-day subscriptionEndDate
 - Counter shows remaining slots on homepage banner and subscription page
 
+## Promotional Modals
+- **BeVisibleModal**: Shows 2 seconds after app load for free users, promoting subscription upgrade
+- **UpgradeLimitModal**: Shows immediately when free user with 5 ads tries to add new ad
+  - Displays plan comparison (Standard vs Premium)
+  - Navigates to Subscription screen on upgrade button click
+
 ## Recent Changes (December 2024)
+- Added "Budi vidljiv" promotional popup for free users on app startup
+- Added immediate upgrade modal when free user reaches 5 ad limit in AddItemScreen
 - Added Apple Sign-In support for iOS users
 - Implemented Google OAuth infrastructure
 - Added availability calendar to item detail page

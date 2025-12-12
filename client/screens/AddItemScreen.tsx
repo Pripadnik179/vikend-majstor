@@ -12,16 +12,21 @@ import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/Button';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
+import { UpgradeLimitModal } from '@/components/UpgradeLimitModal';
 import { useTheme } from '@/hooks/useTheme';
+import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import { uploadFileToStorage, finalizeUpload } from '@/utils/objectStorageExpo';
 import { Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
 
+const FREE_ITEM_LIMIT = 5;
+
 export default function AddItemScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { user } = useAuth();
   const route = useRoute<RouteProp<RootStackParamList, 'EditItem'>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const queryClient = useQueryClient();
@@ -39,11 +44,26 @@ export default function AddItemScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  const { data: myItems } = useQuery<Item[]>({
+    queryKey: ['/api/my-items'],
+    enabled: !isEditing,
+  });
 
   const { data: existingItem } = useQuery<Item>({
     queryKey: ['/api/items', itemId],
     enabled: isEditing && !!itemId,
   });
+
+  const itemCount = myItems?.length || 0;
+  const isAtLimit = !isEditing && user?.subscriptionType === 'free' && itemCount >= FREE_ITEM_LIMIT;
+
+  useEffect(() => {
+    if (isAtLimit) {
+      setShowUpgradeModal(true);
+    }
+  }, [isAtLimit]);
 
   useEffect(() => {
     if (existingItem) {
@@ -153,8 +173,21 @@ export default function AddItemScreen() {
 
   const selectedCategory = CATEGORIES.find(c => c.id === category);
 
+  const handleUpgradeModalClose = () => {
+    setShowUpgradeModal(false);
+    if (isAtLimit) {
+      navigation.goBack();
+    }
+  };
+
   return (
-    <KeyboardAwareScrollViewCompat
+    <>
+      <UpgradeLimitModal 
+        visible={showUpgradeModal} 
+        onClose={handleUpgradeModalClose}
+        itemCount={itemCount}
+      />
+      <KeyboardAwareScrollViewCompat
       style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
       contentContainerStyle={[
         styles.container,
@@ -308,6 +341,7 @@ export default function AddItemScreen() {
         {isLoading ? <ActivityIndicator color="#FFFFFF" /> : (isEditing ? 'Sačuvaj izmene' : 'Dodaj stvar')}
       </Button>
     </KeyboardAwareScrollViewCompat>
+    </>
   );
 }
 
