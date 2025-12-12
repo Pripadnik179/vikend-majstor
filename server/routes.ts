@@ -455,6 +455,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Ne možete rezervisati sopstvenu stvar" });
       }
       
+      const requestedStart = new Date(req.body.startDate);
+      const requestedEnd = new Date(req.body.endDate);
+      
+      const existingBookings = await storage.getItemBookings(req.body.itemId);
+      const conflictingBooking = existingBookings.find(b => {
+        if (b.status !== 'confirmed' && b.status !== 'pending') return false;
+        
+        const bookingStart = new Date(b.startDate);
+        const bookingEnd = new Date(b.endDate);
+        
+        return (requestedStart <= bookingEnd && requestedEnd >= bookingStart);
+      });
+      
+      if (conflictingBooking) {
+        return res.status(409).json({ 
+          error: "Izabrani datumi su već rezervisani. Molimo izaberite druge datume." 
+        });
+      }
+      
       const booking = await storage.createBooking({
         ...req.body,
         startDate: new Date(req.body.startDate),

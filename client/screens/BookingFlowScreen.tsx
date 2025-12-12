@@ -59,17 +59,44 @@ export default function BookingFlowScreen() {
     return d;
   }
 
+  const confirmedBookings = itemBookings.filter(
+    (b) => b.status === 'confirmed' || b.status === 'pending'
+  );
+
+  const bookedDates = new Set<string>();
+  confirmedBookings.forEach(booking => {
+    const start = new Date(booking.startDate);
+    const end = new Date(booking.endDate);
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      bookedDates.add(d.toISOString().split('T')[0]);
+    }
+  });
+
+  const isDateRangeAvailable = (start: Date, end: Date): boolean => {
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      if (bookedDates.has(d.toISOString().split('T')[0])) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   const selectQuickDate = (option: typeof quickDates[0]) => {
     const start = new Date(option.start);
+    start.setHours(0, 0, 0, 0);
     const end = new Date(start);
     end.setDate(start.getDate() + option.days - 1);
+    
+    if (!isDateRangeAvailable(start, end)) {
+      Alert.alert('Nedostupno', 'Izabrani datumi su već rezervisani. Molimo izaberite druge datume.');
+      return;
+    }
+    
     setStartDate(start);
     setEndDate(end);
   };
 
-  const confirmedBookings = itemBookings.filter(
-    (b) => b.status === 'confirmed' || b.status === 'pending'
-  ).map(b => ({
+  const confirmedBookingsForPicker = confirmedBookings.map(b => ({
     startDate: b.startDate.toString(),
     endDate: b.endDate.toString(),
   }));
@@ -167,7 +194,7 @@ export default function BookingFlowScreen() {
       <View style={styles.section}>
         <ThemedText type="h4" style={styles.sectionTitle}>Ili izaberite tačne datume</ThemedText>
         <DateRangePicker
-          bookings={confirmedBookings}
+          bookings={confirmedBookingsForPicker}
           startDate={startDate}
           endDate={endDate}
           onStartDateChange={setStartDate}
