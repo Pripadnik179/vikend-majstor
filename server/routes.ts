@@ -269,6 +269,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const booking = await storage.createBooking({
         ...req.body,
+        startDate: new Date(req.body.startDate),
+        endDate: new Date(req.body.endDate),
         renterId: req.user!.id,
         ownerId: item.ownerId,
       });
