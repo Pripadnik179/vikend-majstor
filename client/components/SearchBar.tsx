@@ -5,22 +5,30 @@ import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
 
 interface SearchBarProps {
-  initialValue?: string;
+  value?: string;
   onSearch: (query: string) => void;
   placeholder?: string;
   debounceMs?: number;
 }
 
 function SearchBarComponent({ 
-  initialValue = '', 
+  value = '', 
   onSearch, 
   placeholder = 'Pretražite alate...', 
   debounceMs = 300 
 }: SearchBarProps) {
   const { theme } = useTheme();
-  const [inputValue, setInputValue] = useState(initialValue);
+  const [inputValue, setInputValue] = useState(value);
   const inputRef = useRef<TextInput>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInternalChange = useRef(false);
+
+  useEffect(() => {
+    if (!isInternalChange.current && value !== inputValue) {
+      setInputValue(value);
+    }
+    isInternalChange.current = false;
+  }, [value]);
 
   useEffect(() => {
     if (debounceTimer.current) {
@@ -37,7 +45,13 @@ function SearchBarComponent({
     };
   }, [inputValue, debounceMs]);
 
+  const handleChange = (text: string) => {
+    isInternalChange.current = true;
+    setInputValue(text);
+  };
+
   const handleClear = () => {
+    isInternalChange.current = true;
     setInputValue('');
     onSearch('');
     inputRef.current?.focus();
@@ -52,7 +66,7 @@ function SearchBarComponent({
         placeholder={placeholder}
         placeholderTextColor={theme.textTertiary}
         value={inputValue}
-        onChangeText={setInputValue}
+        onChangeText={handleChange}
         maxLength={40}
         autoCorrect={false}
         autoCapitalize="none"

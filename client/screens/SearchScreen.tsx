@@ -146,7 +146,7 @@ export default function SearchScreen() {
     <ThemedView style={styles.container}>
       <View style={[styles.searchHeader, { paddingTop: Spacing.md }]}>
         <SearchBar 
-          initialValue={initialQuery}
+          value={searchQuery}
           onSearch={handleSearch}
           placeholder="Pretražite alate..."
           debounceMs={300}
