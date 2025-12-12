@@ -431,6 +431,24 @@ export class DatabaseStorage implements IStorage {
         .where(and(eq(items.id, itemId), eq(items.ownerId, userId)));
     }
   }
+
+  async featureItem(itemId: string): Promise<void> {
+    await db.update(items)
+      .set({ isFeatured: true })
+      .where(eq(items.id, itemId));
+  }
+
+  async unfeatureItem(itemId: string): Promise<void> {
+    await db.update(items)
+      .set({ isFeatured: false })
+      .where(eq(items.id, itemId));
+  }
+
+  async markFreeFeatureUsed(userId: string): Promise<void> {
+    await db.update(users)
+      .set({ freeFeatureUsed: true })
+      .where(eq(users.id, userId));
+  }
 }
 
 export const storage = new DatabaseStorage();

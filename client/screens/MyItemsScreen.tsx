@@ -24,6 +24,8 @@ interface AdStats {
   subscriptionEndDate: string | null;
   featuredItemId: string | null;
   isPremium: boolean;
+  freeFeatureUsed: boolean;
+  featuredCount: number;
 }
 
 export default function MyItemsScreen() {
@@ -76,17 +78,38 @@ export default function MyItemsScreen() {
 
   const featureMutation = useMutation({
     mutationFn: async ({ itemId, action }: { itemId: string; action: 'feature' | 'unfeature' }) => {
-      await apiRequest('POST', `/api/items/${itemId}/feature`, { action });
+      const response = await apiRequest('POST', `/api/items/${itemId}/feature`, { action });
+      if (!response.ok) {
+        const data = await response.json();
+        throw { code: data.code, message: data.error, price: data.price };
+      }
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/my-items'] });
       queryClient.invalidateQueries({ queryKey: ['/api/items'] });
       queryClient.invalidateQueries({ queryKey: ['/api/user/ad-stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/home'] });
+      if (data?.message) {
+        Alert.alert('Uspeh', data.message);
+      }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Feature error:', error);
-      Alert.alert('Greška', 'Došlo je do greške pri isticanju oglasa');
+      if (error.code === 'PAYMENT_REQUIRED') {
+        Alert.alert(
+          'Potrebno plaćanje',
+          `Već ste iskoristili besplatno isticanje. Dodatno isticanje košta ${error.price} RSD.`,
+          [
+            { text: 'Otkaži', style: 'cancel' },
+            { text: 'Kupi', onPress: () => navigation.navigate('Subscription') },
+          ]
+        );
+      } else if (error.code === 'CANNOT_REMOVE_FREE') {
+        Alert.alert('Nije moguće', error.message);
+      } else {
+        Alert.alert('Greška', error.message || 'Došlo je do greške pri isticanju oglasa');
+      }
     },
   });
 
@@ -253,25 +276,30 @@ export default function MyItemsScreen() {
           </ThemedText>
         </Pressable>
         {adStats?.isPremium ? (
-          <Pressable
-            style={({ pressed }) => [
-              styles.actionButton,
-              { backgroundColor: pressed ? theme.warning + '20' : 'transparent' },
-            ]}
-            disabled={featureMutation.isPending}
-            onPress={() => {
-              if (isFeatured) {
-                featureMutation.mutate({ itemId: item.id, action: 'unfeature' });
-              } else {
-                featureMutation.mutate({ itemId: item.id, action: 'feature' });
-              }
-            }}
-          >
-            <Feather name={isFeatured ? "star" : "award"} size={18} color={theme.warning} />
-            <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs }}>
-              {featureMutation.isPending ? 'Učitavam...' : (isFeatured ? 'Ukloni sa vrha' : 'Istakni oglas')}
-            </ThemedText>
-          </Pressable>
+          isFeatured ? (
+            <View style={[styles.actionButton, { backgroundColor: theme.warning + '20' }]}>
+              <Feather name="star" size={18} color={theme.warning} />
+              <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs, fontWeight: '600' }}>
+                Istaknut
+              </ThemedText>
+            </View>
+          ) : (
+            <Pressable
+              style={({ pressed }) => [
+                styles.actionButton,
+                { backgroundColor: pressed ? theme.warning + '20' : 'transparent' },
+              ]}
+              disabled={featureMutation.isPending}
+              onPress={() => featureMutation.mutate({ itemId: item.id, action: 'feature' })}
+            >
+              <Feather name="award" size={18} color={theme.warning} />
+              <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs }}>
+                {featureMutation.isPending ? 'Učitavam...' : (
+                  adStats?.freeFeatureUsed ? 'Istakni (99 RSD)' : 'Istakni (besplatno)'
+                )}
+              </ThemedText>
+            </Pressable>
+          )
         ) : null}
         <Pressable
           style={({ pressed }) => [

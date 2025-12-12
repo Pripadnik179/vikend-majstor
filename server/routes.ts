@@ -118,7 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userItems = await storage.getItemsByOwner(freshUser.id);
       const itemCount = userItems.length;
-      const featuredItem = userItems.find(item => item.isFeatured);
+      const featuredItems = userItems.filter(item => item.isFeatured);
       const totalAdsCreated = freshUser.totalAdsCreated || 0;
       
       const FREE_AD_LIMIT = 5;
@@ -134,8 +134,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionType: freshUser.subscriptionType,
         subscriptionStatus: subscriptionActive ? 'active' : 'inactive',
         subscriptionEndDate: freshUser.subscriptionEndDate,
-        featuredItemId: featuredItem?.id || null,
+        featuredItemId: featuredItems[0]?.id || null,
         isPremium: freshUser.subscriptionType === 'premium' && subscriptionActive,
+        freeFeatureUsed: freshUser.freeFeatureUsed,
+        featuredCount: featuredItems.length,
       });
     } catch (error) {
       console.error("Error fetching ad stats:", error);
@@ -266,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/items/:id/feature", isAuthenticated, async (req, res) => {
     try {
-      const { action } = req.body;
+      const { action, paid } = req.body;
       
       if (!action || !['feature', 'unfeature'].includes(action)) {
         return res.status(400).json({ error: "Nevažeća akcija" });
@@ -299,10 +301,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (action === 'feature') {
-        await storage.setFeaturedItem(req.user!.id, req.params.id);
-        res.json({ success: true, message: "Oglas je uspešno istaknut" });
+        if (item.isFeatured) {
+          return res.json({ success: true, message: "Ovaj oglas je već istaknut" });
+        }
+        
+        const userItems = await storage.getItemsByOwner(user.id);
+        const currentFeaturedCount = userItems.filter(i => i.isFeatured).length;
+        
+        if (!user.freeFeatureUsed) {
+          await storage.featureItem(req.params.id);
+          await storage.markFreeFeatureUsed(user.id);
+          res.json({ success: true, message: "Oglas je uspešno istaknut (besplatno u okviru Premium pretplate)" });
+        } else if (currentFeaturedCount > 0 && !paid) {
+          return res.status(402).json({ 
+            error: "Već ste iskoristili besplatno isticanje. Dodatno isticanje košta 99 RSD.",
+            code: "PAYMENT_REQUIRED",
+            price: 99
+          });
+        } else {
+          await storage.featureItem(req.params.id);
+          res.json({ success: true, message: "Oglas je uspešno istaknut" });
+        }
       } else {
-        await storage.setFeaturedItem(req.user!.id, null);
+        const userItems = await storage.getItemsByOwner(user.id);
+        const featuredItems = userItems.filter(i => i.isFeatured);
+        
+        if (featuredItems.length <= 1 && user.freeFeatureUsed) {
+          return res.status(403).json({ 
+            error: "Ne možete ukloniti besplatni istaknuti oglas. Možete samo zameniti plaćenim isticanjem.",
+            code: "CANNOT_REMOVE_FREE"
+          });
+        }
+        
+        await storage.unfeatureItem(req.params.id);
         res.json({ success: true, message: "Oglas je uklonjen sa vrha" });
       }
     } catch (error) {

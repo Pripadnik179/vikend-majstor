@@ -27,6 +27,7 @@ export const users = pgTable("users", {
   isEarlyAdopter: boolean("is_early_adopter").default(false).notNull(),
   isPremiumListing: boolean("is_premium_listing").default(false).notNull(),
   premiumListingEndDate: timestamp("premium_listing_end_date"),
+  freeFeatureUsed: boolean("free_feature_used").default(false).notNull(),
   stripeCustomerId: text("stripe_customer_id"),
   totalAdsCreated: integer("total_ads_created").default(0).notNull(),
   pushToken: text("push_token"),
