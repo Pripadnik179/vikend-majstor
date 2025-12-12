@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { apiRequest } from '@/lib/query-client';
 
 Notifications.setNotificationHandler({
@@ -86,8 +87,15 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
       return null;
     }
 
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+    
+    if (!projectId) {
+      console.log('Push notifications require EAS projectId. Please configure eas.json for production notifications.');
+      return null;
+    }
+
     const tokenData = await Notifications.getExpoPushTokenAsync({
-      projectId: undefined,
+      projectId,
     });
     token = tokenData.data;
     console.log('Expo push token:', token);
