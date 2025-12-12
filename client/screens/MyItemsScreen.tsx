@@ -62,19 +62,36 @@ export default function MyItemsScreen() {
   };
 
   const deleteMutation = useMutation({
-    mutationFn: async (itemId: string) => {
-      await apiRequest('DELETE', `/api/items/${itemId}`);
+    mutationFn: async ({ itemId, force = false }: { itemId: string; force?: boolean }) => {
+      const url = force ? `/api/items/${itemId}?force=true` : `/api/items/${itemId}`;
+      await apiRequest('DELETE', url);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/my-items'] });
       queryClient.invalidateQueries({ queryKey: ['/api/items'] });
       queryClient.invalidateQueries({ queryKey: ['/api/user/ad-stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/home'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/bookings/'] });
       Alert.alert('Uspeh', 'Oglas je uspešno obrisan');
     },
-    onError: (error) => {
+    onError: (error: any, variables) => {
       console.error('Delete error:', error);
-      Alert.alert('Greška', 'Došlo je do greške pri brisanju oglasa');
+      if (error.code === 'HAS_ACTIVE_BOOKINGS') {
+        Alert.alert(
+          'Oglas je trenutno izdat',
+          error.message || 'Ovaj oglas ima aktivne rezervacije. Brisanjem se otkazuju sve povezane rezervacije.',
+          [
+            { text: 'Otkaži', style: 'cancel' },
+            { 
+              text: 'Obriši svejedno', 
+              style: 'destructive',
+              onPress: () => deleteMutation.mutate({ itemId: variables.itemId, force: true }),
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Greška', 'Došlo je do greške pri brisanju oglasa');
+      }
     },
   });
 
@@ -121,7 +138,7 @@ export default function MyItemsScreen() {
     if (Platform.OS === 'web') {
       const confirmed = window.confirm(`Da li ste sigurni da želite da obrišete "${item.title}"?`);
       if (confirmed) {
-        deleteMutation.mutate(item.id);
+        deleteMutation.mutate({ itemId: item.id });
       }
     } else {
       Alert.alert(
@@ -132,7 +149,7 @@ export default function MyItemsScreen() {
           { 
             text: 'Obriši', 
             style: 'destructive',
-            onPress: () => deleteMutation.mutate(item.id),
+            onPress: () => deleteMutation.mutate({ itemId: item.id }),
           },
         ]
       );

@@ -250,12 +250,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/items/:id", isAuthenticated, async (req, res) => {
     try {
+      const forceDelete = req.query.force === 'true';
+      
       const item = await storage.getItem(req.params.id);
       if (!item) {
         return res.status(404).json({ error: "Stvar nije pronađena" });
       }
       if (item.ownerId !== req.user!.id) {
         return res.status(403).json({ error: "Nemate dozvolu za ovu akciju" });
+      }
+      
+      const activeBookings = await storage.getItemBookings(req.params.id);
+      const now = new Date();
+      const currentlyRented = activeBookings.filter(b => 
+        (b.status === 'confirmed' || b.status === 'pending') && 
+        new Date(b.endDate) >= now
+      );
+      
+      if (currentlyRented.length > 0 && !forceDelete) {
+        return res.status(409).json({ 
+          error: "Ovaj oglas ima aktivne rezervacije",
+          code: "HAS_ACTIVE_BOOKINGS",
+          activeBookingsCount: currentlyRented.length,
+          message: `Ovaj oglas je trenutno izdat ili ima ${currentlyRented.length} aktivnih rezervacija. Brisanjem se otkazuju sve povezane rezervacije.`
+        });
       }
       
       await storage.deleteItem(req.params.id);
