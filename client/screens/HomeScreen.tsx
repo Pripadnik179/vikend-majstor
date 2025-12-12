@@ -8,12 +8,11 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
 import { ItemCard } from '@/components/ItemCard';
-import { CategoryFilter } from '@/components/CategoryFilter';
 import { FilterModal, FilterState } from '@/components/FilterModal';
 import { PromoBanner } from '@/components/PromoBanner';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
-import { Colors, Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
+import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
 
@@ -38,13 +37,12 @@ export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
   const { data: items = [], isLoading, refetch } = useQuery<Item[]>({
-    queryKey: ['/api/items', selectedCategory].filter(Boolean),
+    queryKey: ['/api/items'],
   });
 
   const { data: homeData } = useQuery<HomeData>({
@@ -66,15 +64,14 @@ export default function HomeScreen() {
       const matchesSearch = !search || 
         item.title.toLowerCase().includes(search.toLowerCase()) ||
         item.city.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory = !selectedCategory || item.category === selectedCategory;
       const matchesMinPrice = filters.minPrice === null || item.pricePerDay >= filters.minPrice;
       const matchesMaxPrice = filters.maxPrice === null || item.pricePerDay <= filters.maxPrice;
       const matchesRating = filters.minRating === null || parseFloat(item.rating || '0') >= filters.minRating;
       const matchesDeposit = filters.maxDeposit === null || item.deposit <= filters.maxDeposit;
       const matchesCity = !filters.city || item.city.toLowerCase().includes(filters.city.toLowerCase());
-      return matchesSearch && matchesCategory && matchesMinPrice && matchesMaxPrice && matchesRating && matchesDeposit && matchesCity;
+      return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesRating && matchesDeposit && matchesCity;
     });
-  }, [items, search, selectedCategory, filters]);
+  }, [items, search, filters]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -135,11 +132,6 @@ export default function HomeScreen() {
           ) : null}
         </Pressable>
       </View>
-      <CategoryFilter
-        categories={[...CATEGORIES]}
-        selected={selectedCategory}
-        onSelect={setSelectedCategory}
-      />
     </View>
   );
 
@@ -150,7 +142,7 @@ export default function HomeScreen() {
         Nema dostupnih stvari
       </ThemedText>
       <ThemedText type="body" style={[styles.emptyText, { color: theme.textTertiary }]}>
-        {search || selectedCategory 
+        {search 
           ? 'Pokušaj sa drugim filterima'
           : 'Budi prvi koji će dodati stvar'}
       </ThemedText>

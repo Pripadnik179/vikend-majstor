@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -17,9 +17,10 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import { uploadFileToStorage, finalizeUpload } from '@/utils/objectStorageExpo';
-import { Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
+import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
+import { CATEGORIES as SCHEMA_CATEGORIES, POWER_SOURCES } from '@shared/schema';
 
 const FREE_ITEM_LIMIT = 5;
 
@@ -37,6 +38,8 @@ export default function AddItemScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const [subCategory, setSubCategory] = useState('');
+  const [powerSource, setPowerSource] = useState('');
   const [pricePerDay, setPricePerDay] = useState('');
   const [deposit, setDeposit] = useState('');
   const [city, setCity] = useState('');
@@ -44,7 +47,24 @@ export default function AddItemScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [showSubCategoryPicker, setShowSubCategoryPicker] = useState(false);
+  const [showPowerSourcePicker, setShowPowerSourcePicker] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  const allCategories = useMemo(() => {
+    const cats: { key: string; name: string; subcategories: string[] }[] = [];
+    Object.entries(SCHEMA_CATEGORIES.byProject).forEach(([key, c]) => {
+      cats.push({ key, name: c.name, subcategories: c.subcategories });
+    });
+    Object.entries(SCHEMA_CATEGORIES.byToolType).forEach(([key, c]) => {
+      cats.push({ key, name: c.name, subcategories: c.subcategories });
+    });
+    return cats;
+  }, []);
+
+  const selectedCategoryData = useMemo(() => {
+    return allCategories.find(c => c.name === category);
+  }, [allCategories, category]);
 
   const { data: myItems } = useQuery<Item[]>({
     queryKey: ['/api/my-items'],
@@ -70,6 +90,8 @@ export default function AddItemScreen() {
       setTitle(existingItem.title);
       setDescription(existingItem.description);
       setCategory(existingItem.category);
+      setSubCategory(existingItem.subCategory || '');
+      setPowerSource(existingItem.powerSource || '');
       setPricePerDay(existingItem.pricePerDay.toString());
       setDeposit(existingItem.deposit.toString());
       setCity(existingItem.city);
@@ -123,6 +145,8 @@ export default function AddItemScreen() {
         title,
         description,
         category,
+        subCategory: subCategory || null,
+        powerSource: powerSource || null,
         pricePerDay: parseInt(pricePerDay),
         deposit: parseInt(deposit),
         city,
@@ -171,7 +195,6 @@ export default function AddItemScreen() {
     { backgroundColor: theme.backgroundDefault, borderColor: theme.border, color: theme.text },
   ];
 
-  const selectedCategory = CATEGORIES.find(c => c.id === category);
 
   const handleUpgradeModalClose = () => {
     setShowUpgradeModal(false);
@@ -260,33 +283,125 @@ export default function AddItemScreen() {
           style={[inputStyle, styles.picker]}
           onPress={() => setShowCategoryPicker(!showCategoryPicker)}
         >
-          <ThemedText type="body" style={{ color: selectedCategory ? theme.text : theme.textTertiary }}>
-            {selectedCategory?.label || 'Izaberi kategoriju'}
+          <ThemedText type="body" style={{ color: category ? theme.text : theme.textTertiary }}>
+            {category || 'Izaberi kategoriju'}
           </ThemedText>
           <Feather name="chevron-down" size={20} color={theme.textTertiary} />
         </Pressable>
-        {showCategoryPicker && (
-          <View style={[styles.categoryList, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
-            {CATEGORIES.map((cat) => (
+        {showCategoryPicker ? (
+          <ScrollView style={[styles.categoryList, { backgroundColor: theme.backgroundDefault, borderColor: theme.border, maxHeight: 250 }]}>
+            {allCategories.map((cat) => (
               <Pressable
-                key={cat.id}
+                key={cat.key}
                 style={[
                   styles.categoryItem,
-                  category === cat.id && { backgroundColor: theme.primaryLight },
+                  category === cat.name && { backgroundColor: theme.primaryLight },
                 ]}
                 onPress={() => {
-                  setCategory(cat.id);
+                  setCategory(cat.name);
+                  setSubCategory('');
                   setShowCategoryPicker(false);
                 }}
               >
-                <Feather name={cat.icon as any} size={18} color={category === cat.id ? theme.primary : theme.text} />
-                <ThemedText type="body" style={{ marginLeft: Spacing.sm, color: category === cat.id ? theme.primary : theme.text }}>
-                  {cat.label}
+                <ThemedText type="body" style={{ color: category === cat.name ? theme.primary : theme.text }}>
+                  {cat.name}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </ScrollView>
+        ) : null}
+      </View>
+
+      {selectedCategoryData ? (
+        <View style={styles.section}>
+          <ThemedText type="h4" style={styles.label}>Podkategorija</ThemedText>
+          <Pressable
+            style={[inputStyle, styles.picker]}
+            onPress={() => setShowSubCategoryPicker(!showSubCategoryPicker)}
+          >
+            <ThemedText type="body" style={{ color: subCategory ? theme.text : theme.textTertiary }}>
+              {subCategory || 'Izaberi podkategoriju'}
+            </ThemedText>
+            <Feather name="chevron-down" size={20} color={theme.textTertiary} />
+          </Pressable>
+          {showSubCategoryPicker ? (
+            <ScrollView style={[styles.categoryList, { backgroundColor: theme.backgroundDefault, borderColor: theme.border, maxHeight: 200 }]}>
+              <Pressable
+                style={[styles.categoryItem, !subCategory && { backgroundColor: theme.primaryLight }]}
+                onPress={() => {
+                  setSubCategory('');
+                  setShowSubCategoryPicker(false);
+                }}
+              >
+                <ThemedText type="body" style={{ color: !subCategory ? theme.primary : theme.text }}>
+                  Sve
+                </ThemedText>
+              </Pressable>
+              {selectedCategoryData.subcategories.map((sub) => (
+                <Pressable
+                  key={sub}
+                  style={[
+                    styles.categoryItem,
+                    subCategory === sub && { backgroundColor: theme.primaryLight },
+                  ]}
+                  onPress={() => {
+                    setSubCategory(sub);
+                    setShowSubCategoryPicker(false);
+                  }}
+                >
+                  <ThemedText type="body" style={{ color: subCategory === sub ? theme.primary : theme.text }}>
+                    {sub}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </ScrollView>
+          ) : null}
+        </View>
+      ) : null}
+
+      <View style={styles.section}>
+        <ThemedText type="h4" style={styles.label}>Napajanje</ThemedText>
+        <Pressable
+          style={[inputStyle, styles.picker]}
+          onPress={() => setShowPowerSourcePicker(!showPowerSourcePicker)}
+        >
+          <ThemedText type="body" style={{ color: powerSource ? theme.text : theme.textTertiary }}>
+            {powerSource || 'Izaberi napajanje'}
+          </ThemedText>
+          <Feather name="chevron-down" size={20} color={theme.textTertiary} />
+        </Pressable>
+        {showPowerSourcePicker ? (
+          <View style={[styles.categoryList, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+            <Pressable
+              style={[styles.categoryItem, !powerSource && { backgroundColor: theme.primaryLight }]}
+              onPress={() => {
+                setPowerSource('');
+                setShowPowerSourcePicker(false);
+              }}
+            >
+              <ThemedText type="body" style={{ color: !powerSource ? theme.primary : theme.text }}>
+                Nije navedeno
+              </ThemedText>
+            </Pressable>
+            {POWER_SOURCES.map((ps) => (
+              <Pressable
+                key={ps}
+                style={[
+                  styles.categoryItem,
+                  powerSource === ps && { backgroundColor: theme.primaryLight },
+                ]}
+                onPress={() => {
+                  setPowerSource(ps);
+                  setShowPowerSourcePicker(false);
+                }}
+              >
+                <ThemedText type="body" style={{ color: powerSource === ps ? theme.primary : theme.text }}>
+                  {ps}
                 </ThemedText>
               </Pressable>
             ))}
           </View>
-        )}
+        ) : null}
       </View>
 
       <View style={styles.row}>
