@@ -94,7 +94,7 @@ export default function RootStackNavigator() {
           <Stack.Screen
             name="Settings"
             component={SettingsScreen}
-            options={{ headerTitle: "Postavke" }}
+            options={{ headerTitle: "Podešavanja" }}
           />
           <Stack.Screen
             name="MyItems"

@@ -34,7 +34,7 @@ export default function ProfileScreen() {
 
   const menuItems = [
     { icon: 'package', label: 'Moje Stvari', onPress: () => navigation.navigate('MyItems') },
-    { icon: 'settings', label: 'Postavke', onPress: () => navigation.navigate('Settings') },
+    { icon: 'settings', label: 'Podešavanja', onPress: () => navigation.navigate('Settings') },
     { icon: 'help-circle', label: 'Pomoć', onPress: () => {} },
     { icon: 'info', label: 'O Aplikaciji', onPress: () => {} },
   ];
