@@ -90,25 +90,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/user/ad-stats", isAuthenticated, async (req, res) => {
     try {
-      const user = req.user!;
-      const userItems = await storage.getItemsByOwner(user.id);
+      // Fetch fresh user data from database (not stale session data)
+      const freshUser = await storage.getUser(req.user!.id);
+      if (!freshUser) {
+        return res.status(401).json({ error: "Korisnik nije pronađen" });
+      }
+      
+      const userItems = await storage.getItemsByOwner(freshUser.id);
       const itemCount = userItems.length;
       const featuredItem = userItems.find(item => item.isFeatured);
       
       const FREE_AD_LIMIT = 2;
-      const hasSubscription = user.subscriptionType === 'basic' || user.subscriptionType === 'premium';
-      const subscriptionActive = hasSubscription && user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
+      const hasSubscription = freshUser.subscriptionType === 'basic' || freshUser.subscriptionType === 'premium';
+      const subscriptionActive = hasSubscription && freshUser.subscriptionEndDate && new Date(freshUser.subscriptionEndDate) > new Date();
       
       res.json({
         totalAds: itemCount,
         freeAdsUsed: Math.min(itemCount, FREE_AD_LIMIT),
         freeAdsLimit: FREE_AD_LIMIT,
         canCreateAd: subscriptionActive || itemCount < FREE_AD_LIMIT,
-        subscriptionType: user.subscriptionType,
+        subscriptionType: freshUser.subscriptionType,
         subscriptionStatus: subscriptionActive ? 'active' : 'inactive',
-        subscriptionEndDate: user.subscriptionEndDate,
+        subscriptionEndDate: freshUser.subscriptionEndDate,
         featuredItemId: featuredItem?.id || null,
-        isPremium: user.subscriptionType === 'premium' && subscriptionActive,
+        isPremium: freshUser.subscriptionType === 'premium' && subscriptionActive,
       });
     } catch (error) {
       console.error("Error fetching ad stats:", error);
@@ -171,13 +176,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/items", isAuthenticated, async (req, res) => {
     try {
-      const user = req.user!;
-      const userItems = await storage.getItemsByOwner(user.id);
+      // Fetch fresh user data from database (not stale session data)
+      const freshUser = await storage.getUser(req.user!.id);
+      if (!freshUser) {
+        return res.status(401).json({ error: "Korisnik nije pronađen" });
+      }
+      
+      const userItems = await storage.getItemsByOwner(freshUser.id);
       const itemCount = userItems.length;
       
       const FREE_AD_LIMIT = 2;
-      const hasSubscription = user.subscriptionType === 'basic' || user.subscriptionType === 'premium';
-      const subscriptionActive = hasSubscription && user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
+      const hasSubscription = freshUser.subscriptionType === 'basic' || freshUser.subscriptionType === 'premium';
+      const subscriptionActive = hasSubscription && freshUser.subscriptionEndDate && new Date(freshUser.subscriptionEndDate) > new Date();
       
       if (itemCount >= FREE_AD_LIMIT && !subscriptionActive) {
         return res.status(403).json({ 
@@ -190,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const item = await storage.createItem({
         ...req.body,
-        ownerId: user.id,
+        ownerId: freshUser.id,
       });
       res.status(201).json(item);
     } catch (error) {

@@ -104,7 +104,8 @@ export class DatabaseStorage implements IStorage {
       );
     }
     
-    const result = await db.select().from(items).where(and(...conditions)).orderBy(desc(items.createdAt));
+    // Sort by isFeatured first (premium items at top), then by createdAt
+    const result = await db.select().from(items).where(and(...conditions)).orderBy(desc(items.isFeatured), desc(items.createdAt));
     return result;
   }
 
