@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, FlatList, StyleSheet, Pressable, RefreshControl, ActivityIndicator, Alert, StyleProp, ViewStyle } from 'react-native';
+import { View, FlatList, StyleSheet, Pressable, RefreshControl, ActivityIndicator, Alert, StyleProp, ViewStyle, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -66,6 +66,11 @@ export default function MyItemsScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/my-items'] });
       queryClient.invalidateQueries({ queryKey: ['/api/items'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/ad-stats'] });
+    },
+    onError: (error) => {
+      console.error('Delete error:', error);
+      Alert.alert('Greška', 'Došlo je do greške pri brisanju oglasa');
     },
   });
 
@@ -76,18 +81,25 @@ export default function MyItemsScreen() {
   }, [refetch, refetchStats]);
 
   const handleDelete = (item: Item) => {
-    Alert.alert(
-      'Obriši stvar',
-      `Da li ste sigurni da želite da obrišete "${item.title}"?`,
-      [
-        { text: 'Otkaži', style: 'cancel' },
-        { 
-          text: 'Obriši', 
-          style: 'destructive',
-          onPress: () => deleteMutation.mutate(item.id),
-        },
-      ]
-    );
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`Da li ste sigurni da želite da obrišete "${item.title}"?`);
+      if (confirmed) {
+        deleteMutation.mutate(item.id);
+      }
+    } else {
+      Alert.alert(
+        'Obriši stvar',
+        `Da li ste sigurni da želite da obrišete "${item.title}"?`,
+        [
+          { text: 'Otkaži', style: 'cancel' },
+          { 
+            text: 'Obriši', 
+            style: 'destructive',
+            onPress: () => deleteMutation.mutate(item.id),
+          },
+        ]
+      );
+    }
   };
 
   const getImageUrl = (path: string) => {
