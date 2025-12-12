@@ -132,12 +132,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
+    console.log('Login: starting request...');
     const response = await apiRequest('POST', '/api/auth/login', { email, password });
+    console.log('Login: got response');
     const userData = await response.json();
+    console.log('Login: parsed user data', userData?.email);
     if (userData.authToken) {
+      console.log('Login: saving auth token...');
       await saveAuthToken(userData.authToken);
+      console.log('Login: auth token saved');
     }
+    console.log('Login: setting user...');
     setUser(userData);
+    console.log('Login: done');
   };
 
   const register = async (email: string, password: string, name: string, role?: string) => {
