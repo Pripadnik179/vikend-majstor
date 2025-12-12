@@ -88,21 +88,37 @@ export default function SearchScreen() {
       onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
       style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
     >
-      <Card style={styles.itemCard}>
+      <Card style={StyleSheet.flatten([styles.itemCard, item.isFeatured && { borderColor: '#F97316', borderWidth: 2 }])}>
         <View style={styles.itemContent}>
-          {item.images && item.images.length > 0 ? (
-            <Image
-              source={{ uri: item.images[0] }}
-              style={styles.itemImage}
-              contentFit="cover"
-            />
-          ) : (
-            <View style={[styles.itemImage, styles.placeholderImage, { backgroundColor: theme.backgroundDefault }]}>
-              <Feather name="image" size={24} color={theme.textTertiary} />
-            </View>
-          )}
+          <View style={{ position: 'relative' }}>
+            {item.images && item.images.length > 0 ? (
+              <Image
+                source={{ uri: item.images[0] }}
+                style={styles.itemImage}
+                contentFit="cover"
+              />
+            ) : (
+              <View style={[styles.itemImage, styles.placeholderImage, { backgroundColor: theme.backgroundDefault }]}>
+                <Feather name="image" size={24} color={theme.textTertiary} />
+              </View>
+            )}
+            {item.isFeatured ? (
+              <View style={styles.featuredBadge}>
+                <Feather name="star" size={10} color="#FFFFFF" />
+              </View>
+            ) : null}
+          </View>
           <View style={styles.itemInfo}>
-            <ThemedText type="h4" numberOfLines={1}>{item.title}</ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.xs }}>
+              <ThemedText type="h4" numberOfLines={1} style={{ flex: 1 }}>{item.title}</ThemedText>
+              {item.isFeatured ? (
+                <View style={[styles.featuredLabel, { backgroundColor: '#F97316' }]}>
+                  <ThemedText type="small" style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}>
+                    Premium
+                  </ThemedText>
+                </View>
+              ) : null}
+            </View>
             <ThemedText type="small" style={{ color: theme.textSecondary }} numberOfLines={1}>
               {item.city}{item.district ? `, ${item.district}` : ''}
             </ThemedText>
@@ -143,7 +159,7 @@ export default function SearchScreen() {
           <Feather name="sliders" size={20} color={theme.primary} />
           {activeFilterCount > 0 ? (
             <View style={[styles.filterBadge, { backgroundColor: theme.primary }]}>
-              <ThemedText type="caption" style={{ color: '#FFFFFF', fontSize: 10 }}>
+              <ThemedText type="small" style={{ color: '#FFFFFF', fontSize: 10 }}>
                 {activeFilterCount}
               </ThemedText>
             </View>
@@ -172,7 +188,7 @@ export default function SearchScreen() {
                   onPress={() => setSelectedCategory(cat)}
                 >
                   <ThemedText 
-                    type="caption" 
+                    type="small" 
                     style={{ color: selectedCategory === cat ? '#FFFFFF' : theme.text }}
                   >
                     {cat || 'Sve'}
@@ -201,7 +217,7 @@ export default function SearchScreen() {
                   onPress={() => setSelectedPowerSource(ps)}
                 >
                   <ThemedText 
-                    type="caption" 
+                    type="small" 
                     style={{ color: selectedPowerSource === ps ? '#FFFFFF' : theme.text }}
                   >
                     {ps || 'Sve'}
@@ -237,7 +253,7 @@ export default function SearchScreen() {
         </View>
       ) : (
         <FlatList
-          data={filteredItems}
+          data={items}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + Spacing.xl }]}
@@ -312,7 +328,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.round,
+    borderRadius: BorderRadius.full,
     borderWidth: 1,
     marginRight: Spacing.xs,
   },
@@ -370,5 +386,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 100,
+  },
+  featuredBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#F97316',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  featuredLabel: {
+    paddingHorizontal: Spacing.xs,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.xs,
   },
 });
