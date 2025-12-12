@@ -5,14 +5,14 @@ import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { getApiUrl } from '@/lib/query-client';
-import { Spacing, BorderRadius } from '@/constants/theme';
+import { Spacing, BorderRadius, Colors } from '@/constants/theme';
 import type { Item } from '@shared/schema';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - Spacing.lg * 2 - Spacing.md) / 2;
 
 interface ItemCardProps {
-  item: Item;
+  item: Item & { isPremium?: boolean };
   onPress: () => void;
 }
 
@@ -36,17 +36,25 @@ export function ItemCard({ item, onPress }: ItemCardProps) {
       ]}
       onPress={onPress}
     >
-      {item.images && item.images.length > 0 ? (
-        <Image
-          source={{ uri: getImageUrl(item.images[0]) }}
-          style={styles.image}
-          contentFit="cover"
-        />
-      ) : (
-        <View style={[styles.image, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary }]}>
-          <Feather name="image" size={32} color={theme.textTertiary} />
-        </View>
-      )}
+      <View style={styles.imageContainer}>
+        {item.images && item.images.length > 0 ? (
+          <Image
+            source={{ uri: getImageUrl(item.images[0]) }}
+            style={styles.image}
+            contentFit="cover"
+          />
+        ) : (
+          <View style={[styles.image, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary }]}>
+            <Feather name="image" size={32} color={theme.textTertiary} />
+          </View>
+        )}
+        {item.isPremium ? (
+          <View style={styles.premiumBadge}>
+            <Feather name="star" size={10} color={Colors.light.accent} />
+            <ThemedText style={styles.premiumText}>PREMIUM</ThemedText>
+          </View>
+        ) : null}
+      </View>
       <View style={styles.content}>
         <ThemedText type="body" style={styles.title} numberOfLines={1}>
           {item.title}
@@ -71,6 +79,9 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     overflow: 'hidden',
   },
+  imageContainer: {
+    position: 'relative',
+  },
   image: {
     width: '100%',
     height: CARD_WIDTH * 0.75,
@@ -78,6 +89,24 @@ const styles = StyleSheet.create({
   placeholderImage: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  premiumBadge: {
+    position: 'absolute',
+    top: Spacing.xs,
+    left: Spacing.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.light.primary,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.sm,
+    gap: 4,
+  },
+  premiumText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: Colors.light.accent,
+    letterSpacing: 0.5,
   },
   content: {
     padding: Spacing.sm,

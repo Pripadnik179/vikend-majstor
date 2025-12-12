@@ -132,7 +132,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         city: city as string | undefined,
         search: search as string | undefined,
       });
-      res.json(items);
+      
+      const now = new Date();
+      const itemsWithPremium = await Promise.all(
+        items.map(async (item) => {
+          const owner = await storage.getUser(item.ownerId);
+          const isPremium = owner?.subscriptionType === 'premium' && 
+            owner?.subscriptionEndDate && 
+            new Date(owner.subscriptionEndDate) > now;
+          return { ...item, isPremium: !!isPremium };
+        })
+      );
+      
+      res.json(itemsWithPremium);
     } catch (error) {
       console.error("Error fetching items:", error);
       res.status(500).json({ error: "Greška pri učitavanju stvari" });
