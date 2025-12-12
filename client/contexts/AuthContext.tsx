@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
+import { saveAuthToken, getAuthToken, clearAuthToken } from '@/lib/authToken';
 import type { User } from '@shared/schema';
 
 let Notifications: typeof import('expo-notifications') | null = null;
@@ -47,15 +48,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
+      const token = await getAuthToken();
       const baseUrl = getApiUrl();
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(new URL('/api/auth/me', baseUrl).toString(), {
         credentials: 'include',
+        headers,
       });
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
       } else {
         setUser(null);
+        await clearAuthToken();
       }
     } catch {
       setUser(null);
@@ -125,6 +134,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     const response = await apiRequest('POST', '/api/auth/login', { email, password });
     const userData = await response.json();
+    if (userData.authToken) {
+      await saveAuthToken(userData.authToken);
+    }
     setUser(userData);
   };
 
@@ -136,12 +148,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role: role || 'renter',
     });
     const userData = await response.json();
+    if (userData.authToken) {
+      await saveAuthToken(userData.authToken);
+    }
     setUser(userData);
   };
 
   const loginWithGoogle = async (accessToken: string) => {
     const response = await apiRequest('POST', '/api/auth/google', { accessToken });
     const userData = await response.json();
+    if (userData.authToken) {
+      await saveAuthToken(userData.authToken);
+    }
     setUser(userData);
   };
 
@@ -151,10 +169,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       fullName: fullName ? `${fullName.givenName || ''} ${fullName.familyName || ''}`.trim() : undefined,
     });
     const userData = await response.json();
+    if (userData.authToken) {
+      await saveAuthToken(userData.authToken);
+    }
     setUser(userData);
   };
 
   const logout = async () => {
+    await clearAuthToken();
     await apiRequest('POST', '/api/auth/logout');
     setUser(null);
   };

@@ -41,6 +41,10 @@ async function comparePasswords(
   return timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);
 }
 
+function generateAuthToken(userId: string, secret: string): string {
+  return Buffer.from(`${userId}:${secret}`).toString('base64');
+}
+
 export function setupAuth(app: Express) {
   const sessionSecret = process.env.SESSION_SECRET;
   if (!sessionSecret) {
@@ -62,12 +66,36 @@ export function setupAuth(app: Express) {
   );
 
   app.use(async (req, res, next) => {
+    // First check session cookie
     if (req.session.userId) {
       const user = await storage.getUser(req.session.userId);
       if (user) {
         req.user = user;
       }
     }
+    
+    // Then check Authorization header (for mobile apps)
+    if (!req.user) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        // Token format: base64(userId:sessionSecret)
+        try {
+          const decoded = Buffer.from(token, 'base64').toString('utf-8');
+          const [userId, secret] = decoded.split(':');
+          if (secret === sessionSecret && userId) {
+            const user = await storage.getUser(userId);
+            if (user) {
+              req.user = user;
+              req.session.userId = userId;
+            }
+          }
+        } catch (e) {
+          // Invalid token format, ignore
+        }
+      }
+    }
+    
     next();
   });
 
@@ -102,7 +130,8 @@ export function setupAuth(app: Express) {
       req.session.userId = user.id;
       
       const { password: _, ...userWithoutPassword } = user;
-      res.status(201).json(userWithoutPassword);
+      const authToken = generateAuthToken(user.id, sessionSecret);
+      res.status(201).json({ ...userWithoutPassword, authToken });
     } catch (error) {
       console.error("Registration error:", error);
       res.status(500).json({ error: "Greška pri registraciji" });
@@ -130,7 +159,8 @@ export function setupAuth(app: Express) {
       req.session.userId = user.id;
       
       const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      const authToken = generateAuthToken(user.id, sessionSecret);
+      res.json({ ...userWithoutPassword, authToken });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ error: "Greška pri prijavi" });
@@ -203,7 +233,8 @@ export function setupAuth(app: Express) {
       req.session.userId = user.id;
       
       const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      const authToken = generateAuthToken(user.id, sessionSecret);
+      res.json({ ...userWithoutPassword, authToken });
     } catch (error) {
       console.error("Google auth error:", error);
       res.status(500).json({ error: "Greška pri Google prijavi" });
@@ -265,7 +296,8 @@ export function setupAuth(app: Express) {
       req.session.userId = user.id;
       
       const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      const authToken = generateAuthToken(user.id, sessionSecret);
+      res.json({ ...userWithoutPassword, authToken });
     } catch (error) {
       console.error("Apple auth error:", error);
       res.status(500).json({ error: "Greška pri Apple prijavi" });
