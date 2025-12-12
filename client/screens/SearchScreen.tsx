@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { View, StyleSheet, TextInput, FlatList, Pressable, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -68,6 +68,9 @@ export default function SearchScreen() {
       if (!response.ok) throw new Error('Failed to fetch items');
       return response.json();
     },
+    staleTime: 1000,
+    placeholderData: (previousData) => previousData,
+    refetchOnWindowFocus: false,
   });
 
   const allCategories = useMemo(() => {
@@ -81,14 +84,23 @@ export default function SearchScreen() {
     return [...new Set(cats)];
   }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSelectedCategory('');
     setSelectedSubcategory('');
     setSelectedToolType('');
     setSelectedPowerSource('');
     setSearchInput('');
     setSearchQuery('');
-  };
+  }, []);
+
+  const handleSearchInputChange = useCallback((text: string) => {
+    setSearchInput(text);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchInput('');
+    setSearchQuery('');
+  }, []);
 
   const activeFilterCount = [selectedCategory, selectedSubcategory, selectedToolType, selectedPowerSource]
     .filter(Boolean).length;
@@ -155,16 +167,19 @@ export default function SearchScreen() {
             placeholder="Pretražite alate..."
             placeholderTextColor={theme.textTertiary}
             value={searchInput}
-            onChangeText={setSearchInput}
+            onChangeText={handleSearchInputChange}
             maxLength={40}
             autoCorrect={false}
             autoCapitalize="none"
+            blurOnSubmit={false}
+            returnKeyType="search"
           />
-          {searchInput ? (
-            <Pressable onPress={() => { setSearchInput(''); setSearchQuery(''); }}>
-              <Feather name="x" size={20} color={theme.textSecondary} />
-            </Pressable>
-          ) : null}
+          <Pressable 
+            onPress={handleClearSearch}
+            style={{ opacity: searchInput ? 1 : 0, pointerEvents: searchInput ? 'auto' : 'none' }}
+          >
+            <Feather name="x" size={20} color={theme.textSecondary} />
+          </Pressable>
         </View>
         <Pressable 
           style={[styles.filterButton, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}
