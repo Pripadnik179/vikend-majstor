@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, ScrollView, Dimensions, Text } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
@@ -24,7 +24,12 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleEarlyAdopterPress = () => {
-    navigation.navigate('Subscription');
+    console.log('Early adopter banner pressed - navigating to Subscription');
+    try {
+      navigation.navigate('Subscription');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
   };
 
   const handlePremiumItemPress = (itemId: string) => {
@@ -48,69 +53,69 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
         contentContainerStyle={styles.scrollContent}
       >
         {earlyAdopterSlotsRemaining > 0 ? (
-          <Pressable onPress={handleEarlyAdopterPress}>
-            <Card style={StyleSheet.flatten([styles.bannerCard, { backgroundColor: theme.primary }])}>
-              <View style={styles.earlyAdopterContent}>
-                <View style={[styles.earlyAdopterIcon, { backgroundColor: 'rgba(0,0,0,0.15)' }]}>
-                  <Feather name="gift" size={32} color="#1A1A1A" />
-                </View>
-                <View style={styles.earlyAdopterText}>
-                  <ThemedText type="h4" style={[styles.bannerTitle, { color: '#1A1A1A' }]}>
-                    Program ranih usvojilaca
-                  </ThemedText>
-                  <ThemedText type="body" style={[styles.bannerSubtitle, { color: 'rgba(0,0,0,0.7)' }]}>
-                    Ostalo jos {earlyAdopterSlotsRemaining} besplatnih mesta
-                  </ThemedText>
-                  <View style={styles.bannerCta}>
-                    <Text style={[styles.bannerCtaText, { color: '#1A1A1A' }]}>
-                      Saznaj vise
-                    </Text>
-                    <Feather name="arrow-right" size={14} color="#1A1A1A" />
-                  </View>
+          <Card 
+            style={StyleSheet.flatten([styles.bannerCard, { backgroundColor: theme.primary }])}
+            onPress={handleEarlyAdopterPress}
+          >
+            <View style={styles.earlyAdopterContent}>
+              <View style={[styles.earlyAdopterIcon, { backgroundColor: 'rgba(0,0,0,0.15)' }]}>
+                <Feather name="gift" size={32} color="#1A1A1A" />
+              </View>
+              <View style={styles.earlyAdopterText}>
+                <ThemedText type="h4" style={[styles.bannerTitle, { color: '#1A1A1A' }]}>
+                  Program ranih usvojilaca
+                </ThemedText>
+                <ThemedText type="body" style={[styles.bannerSubtitle, { color: 'rgba(0,0,0,0.7)' }]}>
+                  Ostalo jos {earlyAdopterSlotsRemaining} besplatnih mesta
+                </ThemedText>
+                <View style={styles.bannerCta}>
+                  <Text style={[styles.bannerCtaText, { color: '#1A1A1A' }]}>
+                    Saznaj vise
+                  </Text>
+                  <Feather name="arrow-right" size={14} color="#1A1A1A" />
                 </View>
               </View>
-            </Card>
-          </Pressable>
+            </View>
+          </Card>
         ) : null}
 
         {premiumItems.slice(0, 5).map((item) => (
-          <Pressable
+          <Card 
             key={item.id}
+            style={StyleSheet.flatten([styles.bannerCard, styles.premiumCard])}
             onPress={() => handlePremiumItemPress(item.id)}
           >
-            <Card style={StyleSheet.flatten([styles.bannerCard, styles.premiumCard])}>
-              <View style={[styles.premiumBadge, { backgroundColor: theme.accent }]}>
-                <Feather name="star" size={12} color="#FFFFFF" />
-                <Text style={styles.premiumBadgeText}>
-                  Premium
+            <View style={[styles.premiumBadge, { backgroundColor: theme.accent }]}>
+              <Feather name="star" size={12} color="#FFFFFF" />
+              <Text style={styles.premiumBadgeText}>
+                Premium
+              </Text>
+            </View>
+            {item.images && item.images.length > 0 ? (
+              <Image
+                source={{ uri: item.images[0] }}
+                style={styles.premiumImage}
+                contentFit="cover"
+              />
+            ) : (
+              <View style={[styles.premiumImage, styles.premiumPlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
+                <Feather name="package" size={40} color={theme.textTertiary} />
+              </View>
+            )}
+            <View style={styles.premiumInfo}>
+              <Text style={[styles.premiumTitle, { color: theme.text }]} numberOfLines={1}>
+                {item.title}
+              </Text>
+              <View style={styles.premiumPriceRow}>
+                <ThemedText type="h4" style={{ color: theme.primary }}>
+                  {item.pricePerDay} RSD
+                </ThemedText>
+                <Text style={[styles.perDay, { color: theme.textSecondary }]}>
+                  /dan
                 </Text>
               </View>
-              {item.images && item.images.length > 0 ? (
-                <Image
-                  source={{ uri: item.images[0] }}
-                  style={styles.premiumImage}
-                  contentFit="cover"
-                />
-              ) : (
-                <View style={[styles.premiumImage, styles.premiumPlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
-                  <Feather name="package" size={40} color={theme.textTertiary} />
-                </View>
-              )}
-              <View style={styles.premiumInfo}>
-                <Text style={[styles.premiumTitle, { color: theme.text }]} numberOfLines={1}>
-                  {item.title}
-                </Text>
-                <View style={styles.premiumPriceRow}>
-                  <ThemedText type="h4" style={{ color: theme.primary }}>
-                    {item.pricePerDay} RSD
-                  </ThemedText>
-                  <Text style={[styles.perDay, { color: theme.textSecondary }]}>
-                    /dan
-                  </Text>
-                </View>
-              </View>
-            </Card>
-          </Pressable>
+            </View>
+          </Card>
         ))}
       </ScrollView>
     </View>
