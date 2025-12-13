@@ -2,36 +2,21 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { getAuthTokenSync } from "./authToken";
 
 /**
- * Gets the base URL for the Express API server (e.g., "http://localhost:3000")
+ * Gets the base URL for the Express API server
  * @returns {string} The API base URL
  */
 export function getApiUrl(): string {
-  // For web platform in development, use localhost
-  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-    // We're in a browser
-    const hostname = window.location.hostname;
-    
-    // Local development
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://localhost:5000';
-    }
-    
-    // Replit web preview - need to use the origin but with port 5000 routing
-    // Replit proxies multiple ports, so we access via same origin
-    // The API is served from the same domain with /api routes
-    return window.location.origin;
-  }
-  
-  // For native apps (iOS/Android), use the EXPO_PUBLIC_DOMAIN
-  let host = process.env.EXPO_PUBLIC_DOMAIN;
+  const host = process.env.EXPO_PUBLIC_DOMAIN;
 
   if (!host) {
     throw new Error("EXPO_PUBLIC_DOMAIN is not set");
   }
 
-  let url = new URL(`https://${host}`);
-
-  return url.href;
+  // Remove port suffix if present (Replit proxy handles port routing)
+  // EXPO_PUBLIC_DOMAIN may be set to "domain:5000" but we need just "domain"
+  const cleanHost = host.replace(/:5000$/, '');
+  
+  return `https://${cleanHost}`;
 }
 
 function getAuthHeaders(): Record<string, string> {
