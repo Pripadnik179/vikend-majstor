@@ -103,8 +103,8 @@ export default function AuthScreen() {
         await register(email, password, name);
       }
     } catch (error: any) {
+      console.log('Auth error:', error);
       Alert.alert('Greška', error.message || 'Došlo je do greške');
-    } finally {
       setIsLoading(false);
     }
   };
