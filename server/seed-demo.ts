@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { users, items } from "../shared/schema";
+import { eq } from "drizzle-orm";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 import * as fs from "fs";
@@ -30,8 +31,9 @@ async function uploadImage(localPath: string, remoteName: string): Promise<strin
     
     const fileBuffer = fs.readFileSync(localPath);
     
+    const contentType = remoteName.endsWith('.png') ? 'image/png' : 'image/jpeg';
     await file.save(fileBuffer, {
-      contentType: 'image/jpeg',
+      contentType,
       resumable: false,
     });
     
@@ -46,16 +48,16 @@ async function seed() {
   console.log("Starting seed...");
   
   const imageFiles = [
-    { local: "attached_assets/stock_images/power_drill_tool_con_6e5bd958.jpg", remote: "drill-1.jpg" },
-    { local: "attached_assets/stock_images/power_drill_tool_con_9805d62e.jpg", remote: "drill-2.jpg" },
-    { local: "attached_assets/stock_images/electric_circular_sa_6755b2fd.jpg", remote: "circular-saw-1.jpg" },
-    { local: "attached_assets/stock_images/electric_circular_sa_16027191.jpg", remote: "circular-saw-2.jpg" },
-    { local: "attached_assets/stock_images/pressure_washer_clea_fbdfbb21.jpg", remote: "pressure-washer-1.jpg" },
-    { local: "attached_assets/stock_images/pressure_washer_clea_fb9ad42a.jpg", remote: "pressure-washer-2.jpg" },
-    { local: "attached_assets/stock_images/lawn_mower_garden_eq_bf9c4527.jpg", remote: "lawn-mower-1.jpg" },
-    { local: "attached_assets/stock_images/lawn_mower_garden_eq_2af14b5e.jpg", remote: "lawn-mower-2.jpg" },
-    { local: "attached_assets/stock_images/angle_grinder_power__8dc7c250.jpg", remote: "angle-grinder-1.jpg" },
-    { local: "attached_assets/stock_images/angle_grinder_power__60352035.jpg", remote: "angle-grinder-2.jpg" },
+    { local: "attached_assets/generated_images/cordless_power_drill.png", remote: "cordless-power-drill.png" },
+    { local: "attached_assets/generated_images/angle_grinder_tool.png", remote: "angle-grinder.png" },
+    { local: "attached_assets/generated_images/circular_saw_tool.png", remote: "circular-saw.png" },
+    { local: "attached_assets/generated_images/pressure_washer_machine.png", remote: "pressure-washer.png" },
+    { local: "attached_assets/generated_images/concrete_mixer_machine.png", remote: "concrete-mixer.png" },
+    { local: "attached_assets/generated_images/gasoline_chainsaw.png", remote: "chainsaw.png" },
+    { local: "attached_assets/generated_images/electric_orbital_sander.png", remote: "orbital-sander.png" },
+    { local: "attached_assets/generated_images/portable_power_generator.png", remote: "generator.png" },
+    { local: "attached_assets/generated_images/rotary_hammer_drill.png", remote: "rotary-hammer.png" },
+    { local: "attached_assets/generated_images/tile_cutter_machine.png", remote: "tile-cutter.png" },
   ];
   
   console.log("Uploading images...");
@@ -133,27 +135,40 @@ async function seed() {
     const subscriptionEndDate = userData.subscriptionType !== 'free' 
       ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       : null;
-      
-    const [user] = await db.insert(users).values({
-      email: userData.email,
-      password: hashedPassword,
-      name: userData.name,
-      phone: userData.phone,
-      city: userData.city,
-      district: userData.district,
-      role: userData.role,
-      rating: userData.rating,
-      totalRatings: userData.totalRatings,
-      subscriptionType: userData.subscriptionType,
-      subscriptionEndDate,
-    }).returning();
     
-    createdUsers.push({ id: user.id, city: userData.city, district: userData.district || "" });
-    console.log(`Created user: ${userData.name}`);
+    // Check if user already exists
+    const existingUser = await db.select().from(users).where(eq(users.email, userData.email)).limit(1);
+    
+    if (existingUser.length > 0) {
+      const user = existingUser[0];
+      createdUsers.push({ id: user.id, city: userData.city, district: userData.district || "" });
+      console.log(`Using existing user: ${userData.name}`);
+    } else {
+      const [user] = await db.insert(users).values({
+        email: userData.email,
+        password: hashedPassword,
+        name: userData.name,
+        phone: userData.phone,
+        city: userData.city,
+        district: userData.district,
+        role: userData.role,
+        rating: userData.rating,
+        totalRatings: userData.totalRatings,
+        subscriptionType: userData.subscriptionType,
+        subscriptionEndDate,
+      }).returning();
+      
+      createdUsers.push({ id: user.id, city: userData.city, district: userData.district || "" });
+      console.log(`Created user: ${userData.name}`);
+    }
   }
   
   console.log("Creating items...");
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  
+  // imageUrls mapping:
+  // 0: cordless power drill, 1: angle grinder, 2: circular saw, 3: pressure washer
+  // 4: concrete mixer, 5: chainsaw, 6: orbital sander, 7: generator, 8: rotary hammer, 9: tile cutter
   
   const demoItems = [
     {
@@ -168,7 +183,7 @@ async function seed() {
       powerWatts: 650,
       pricePerDay: 800,
       deposit: 5000,
-      images: [imageUrls[0], imageUrls[1]],
+      images: [imageUrls[0]], // cordless power drill
       rating: "4.8",
       totalRatings: 6,
       isFeatured: true,
@@ -185,7 +200,7 @@ async function seed() {
       powerWatts: 1800,
       pricePerDay: 1200,
       deposit: 8000,
-      images: [imageUrls[2], imageUrls[3]],
+      images: [imageUrls[2]], // circular saw
       rating: "4.9",
       totalRatings: 8,
       isFeatured: false,
@@ -201,23 +216,22 @@ async function seed() {
       powerWatts: 2100,
       pricePerDay: 1500,
       deposit: 10000,
-      images: [imageUrls[4], imageUrls[5]],
+      images: [imageUrls[3]], // pressure washer
       rating: "4.6",
       totalRatings: 4,
       isFeatured: false,
     },
     {
       ownerIndex: 1,
-      title: "Honda benzinska kosilica HRX 476",
-      description: "Samohodna benzinska kosilica sa mulčiranjem. Širina košenja 47cm. Idealna za veće travnjake do 1000m2.",
+      title: "Stihl benzinska lančana testera MS 250",
+      description: "Profesionalna benzinska lančana testera za sečenje drveća i ogreva. Dužina mača 40cm. Automatsko podmazivanje lanca.",
       category: "Baštenski alati",
-      subCategory: "Kosilice",
-      toolType: "Benzinska kosilica",
-      brand: "Honda",
+      subCategory: "Lančane testere",
+      brand: "Stihl",
       powerSource: "Benzin",
-      pricePerDay: 2000,
-      deposit: 15000,
-      images: [imageUrls[6], imageUrls[7]],
+      pricePerDay: 1800,
+      deposit: 12000,
+      images: [imageUrls[5]], // chainsaw
       rating: "4.5",
       totalRatings: 3,
       isFeatured: true,
@@ -234,46 +248,14 @@ async function seed() {
       powerWatts: 2200,
       pricePerDay: 900,
       deposit: 6000,
-      images: [imageUrls[8], imageUrls[9]],
+      images: [imageUrls[1]], // angle grinder
       rating: "4.9",
       totalRatings: 7,
       isFeatured: false,
     },
     {
       ownerIndex: 2,
-      title: "Bosch udarni odvijač GDR 18V",
-      description: "Kompaktni akumulatorski udarni odvijač. Moment zatezanja 180Nm. Dva akumulatora u kompletu.",
-      category: "Električni alati",
-      subCategory: "Odvijači",
-      toolType: "Udarni odvijač",
-      brand: "Bosch",
-      powerSource: "Akumulator",
-      pricePerDay: 700,
-      deposit: 4000,
-      images: [imageUrls[0]],
-      rating: "4.7",
-      totalRatings: 5,
-      isFeatured: false,
-    },
-    {
-      ownerIndex: 3,
-      title: "Stihl električna lančana testera",
-      description: "Električna lančana testera za orezivanje drveća i sečenje ogreva. Dužina mača 35cm. Automatsko podmazivanje lanca.",
-      category: "Baštenski alati",
-      subCategory: "Lančane testere",
-      brand: "Stihl",
-      powerSource: "Struja",
-      powerWatts: 1800,
-      pricePerDay: 1000,
-      deposit: 7000,
-      images: [imageUrls[2]],
-      rating: "4.3",
-      totalRatings: 2,
-      isFeatured: false,
-    },
-    {
-      ownerIndex: 3,
-      title: "Hilti SDS-Plus čekić bušilica",
+      title: "Hilti TE 7-C SDS-Plus čekić bušilica",
       description: "Profesionalni čekić za bušenje u betonu i zidariji. Energija udara 2.6J. Uključen kofer sa setom burgija.",
       category: "Električni alati",
       subCategory: "Čekić bušilice",
@@ -282,40 +264,72 @@ async function seed() {
       powerWatts: 800,
       pricePerDay: 1100,
       deposit: 8000,
-      images: [imageUrls[1]],
+      images: [imageUrls[8]], // rotary hammer
+      rating: "4.7",
+      totalRatings: 5,
+      isFeatured: false,
+    },
+    {
+      ownerIndex: 3,
+      title: "Betonijer mešalica 160L",
+      description: "Električna mešalica za beton kapaciteta 160 litara. Idealna za manje građevinske radove. Točkovi za lako premeštanje.",
+      category: "Građevinska oprema",
+      subCategory: "Betonijeri",
+      brand: "Lescha",
+      powerSource: "Struja",
+      powerWatts: 650,
+      pricePerDay: 1500,
+      deposit: 10000,
+      images: [imageUrls[4]], // concrete mixer
+      rating: "4.3",
+      totalRatings: 2,
+      isFeatured: false,
+    },
+    {
+      ownerIndex: 3,
+      title: "Bosch orbitalna brusilica GEX 125",
+      description: "Profesionalna orbitalna brusilica za finu obradu drveta. Prečnik ploče 125mm. Priključak za usisavanje prašine.",
+      category: "Električni alati",
+      subCategory: "Brusilice",
+      toolType: "Orbitalna brusilica",
+      brand: "Bosch",
+      powerSource: "Struja",
+      powerWatts: 350,
+      pricePerDay: 600,
+      deposit: 4000,
+      images: [imageUrls[6]], // orbital sander
       rating: "4.4",
       totalRatings: 3,
       isFeatured: false,
     },
     {
       ownerIndex: 4,
-      title: "Husqvarna električni trimer za travu",
-      description: "Lagan električni trimer za održavanje ivica travnjaka. Širina košenja 35cm. Automatsko odmotavanje najlona.",
-      category: "Baštenski alati",
-      subCategory: "Trimeri",
-      brand: "Husqvarna",
-      powerSource: "Struja",
-      powerWatts: 900,
-      pricePerDay: 600,
-      deposit: 3000,
-      images: [imageUrls[7]],
+      title: "Honda agregat EU 22i",
+      description: "Tihi inverterski agregat snage 2.2kW. Idealan za kampovanje, gradilište ili rezervno napajanje. Potrošnja samo 1L/h.",
+      category: "Građevinska oprema",
+      subCategory: "Agregati",
+      brand: "Honda",
+      powerSource: "Benzin",
+      pricePerDay: 2500,
+      deposit: 20000,
+      images: [imageUrls[7]], // generator
       rating: "4.6",
       totalRatings: 4,
       isFeatured: false,
     },
     {
       ownerIndex: 4,
-      title: "Metabo vibraciona brusilica",
-      description: "Precizna vibraciona brusilica za finu obradu drveta. Elektronska regulacija broja okretaja. Priključak za usisavanje prašine.",
-      category: "Električni alati",
-      subCategory: "Brusilice",
-      toolType: "Vibraciona brusilica",
-      brand: "Metabo",
+      title: "Rubi mašina za sečenje pločica",
+      description: "Profesionalna mašina za sečenje keramičkih pločica do 60cm. Dijamantski disk i sistem vodenog hlađenja.",
+      category: "Građevinska oprema",
+      subCategory: "Mašine za sečenje",
+      toolType: "Mašina za pločice",
+      brand: "Rubi",
       powerSource: "Struja",
-      powerWatts: 300,
-      pricePerDay: 500,
-      deposit: 3000,
-      images: [imageUrls[9]],
+      powerWatts: 800,
+      pricePerDay: 1200,
+      deposit: 8000,
+      images: [imageUrls[9]], // tile cutter
       rating: "4.8",
       totalRatings: 6,
       isFeatured: false,
