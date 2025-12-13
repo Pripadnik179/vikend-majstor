@@ -6,6 +6,7 @@ import { promisify } from "util";
 import * as fs from "fs";
 import * as path from "path";
 import { objectStorageClient } from "./objectStorage";
+import { setObjectAclPolicy } from "./objectAcl";
 
 const scryptAsync = promisify(scrypt);
 
@@ -37,7 +38,12 @@ async function uploadImage(localPath: string, remoteName: string): Promise<strin
       resumable: false,
     });
     
-    return `https://storage.googleapis.com/${bucketId}/${destination}`;
+    await setObjectAclPolicy(file, {
+      owner: "system",
+      visibility: "public",
+    });
+    
+    return `/public-objects/items/${remoteName}`;
   } catch (error) {
     console.error(`Error uploading ${localPath}:`, error);
     return `https://via.placeholder.com/400x300?text=${encodeURIComponent(remoteName)}`;
