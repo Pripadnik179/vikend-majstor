@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
-import { apiRequest, getApiUrl } from '@/lib/query-client';
+import { apiRequest, getApiUrl, queryClient } from '@/lib/query-client';
 import { saveAuthToken, getAuthToken, clearAuthToken } from '@/lib/authToken';
 import type { User } from '@shared/schema';
 
@@ -183,8 +183,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    try {
+      // First call logout endpoint to destroy server session
+      await apiRequest('POST', '/api/auth/logout');
+    } catch (error) {
+      console.log('Logout API call failed, continuing with local cleanup:', error);
+    }
+    
+    // Clear auth token from storage
     await clearAuthToken();
-    await apiRequest('POST', '/api/auth/logout');
+    
+    // Clear all cached queries
+    queryClient.clear();
+    
+    // Set user to null
     setUser(null);
   };
 
