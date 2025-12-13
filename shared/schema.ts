@@ -20,6 +20,7 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").default("renter").notNull(),
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
   totalRatings: integer("total_ratings").default(0),
+  emailVerified: boolean("email_verified").default(false).notNull(),
   subscriptionType: subscriptionTypeEnum("subscription_type").default("free").notNull(),
   subscriptionStatus: subscriptionStatusEnum("subscription_status").default("active").notNull(),
   subscriptionStartDate: timestamp("subscription_start_date"),
@@ -33,6 +34,22 @@ export const users = pgTable("users", {
   pushToken: text("push_token"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const verificationTokens = pgTable("verification_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  token: text("token").notNull().unique(),
+  type: text("type").notNull().default("email"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const verificationTokensRelations = relations(verificationTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [verificationTokens.userId],
+    references: [users.id],
+  }),
+}));
 
 export const usersRelations = relations(users, ({ many }) => ({
   items: many(items),
@@ -268,6 +285,7 @@ export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+export type VerificationToken = typeof verificationTokens.$inferSelect;
 
 export const CATEGORIES = {
   byProject: {
