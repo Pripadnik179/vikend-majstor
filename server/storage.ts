@@ -1,12 +1,13 @@
 import { 
-  users, items, bookings, conversations, messages, reviews, subscriptions,
+  users, items, bookings, conversations, messages, reviews, subscriptions, verificationTokens,
   type User, type InsertUser,
   type Item, type InsertItem,
   type Booking, type InsertBooking,
   type Conversation,
   type Message, type InsertMessage,
   type Review, type InsertReview,
-  type Subscription, type InsertSubscription
+  type Subscription, type InsertSubscription,
+  type VerificationToken
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, sql, count, inArray, gt, lt, isNull } from "drizzle-orm";
@@ -449,6 +450,41 @@ export class DatabaseStorage implements IStorage {
     await db.update(users)
       .set({ freeFeatureUsed: true })
       .where(eq(users.id, userId));
+  }
+
+  async createVerificationToken(userId: string, type: string = 'email'): Promise<VerificationToken> {
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    
+    await db.delete(verificationTokens).where(
+      and(eq(verificationTokens.userId, userId), eq(verificationTokens.type, type))
+    );
+    
+    const [verificationToken] = await db.insert(verificationTokens).values({
+      userId,
+      token,
+      type,
+      expiresAt,
+    }).returning();
+    
+    return verificationToken;
+  }
+
+  async getVerificationToken(token: string): Promise<VerificationToken | undefined> {
+    const [result] = await db.select().from(verificationTokens).where(eq(verificationTokens.token, token));
+    return result || undefined;
+  }
+
+  async deleteVerificationToken(token: string): Promise<void> {
+    await db.delete(verificationTokens).where(eq(verificationTokens.token, token));
+  }
+
+  async verifyUserEmail(userId: string): Promise<User | undefined> {
+    const [user] = await db.update(users)
+      .set({ emailVerified: true })
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
   }
 }
 
