@@ -171,6 +171,8 @@ The app runs with `npm run all:dev` which starts:
 - Added push notification system for booking workflow (requires development build for full functionality)
 - Fixed SearchBar component to properly sync with parent state when clearFilters is called
 - Added error handling and loading states to BookingDetailScreen for better Android support
+- Fixed web login by updating getApiUrl() in client/lib/query-client.ts to handle web platform properly (uses window.location.origin for Replit webview, http://localhost:5000 for local dev)
+- Added token-based authentication for mobile devices (authToken saved to expo-secure-store)
 
 ## Push Notifications
 

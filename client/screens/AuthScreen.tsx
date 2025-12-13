@@ -75,7 +75,10 @@ export default function AuthScreen() {
       });
       
       if (credential.identityToken) {
-        await loginWithApple(credential.identityToken, credential.fullName);
+        await loginWithApple(credential.identityToken, credential.fullName ? {
+          givenName: credential.fullName.givenName ?? undefined,
+          familyName: credential.fullName.familyName ?? undefined,
+        } : null);
       } else {
         Alert.alert('Greška', 'Nije moguće dobiti Apple token');
       }
@@ -151,7 +154,7 @@ export default function AuthScreen() {
           disabled={isGoogleLoading}
         >
           {isGoogleLoading ? (
-            <ActivityIndicator color={Colors.primary} size="small" />
+            <ActivityIndicator color={Colors.light.primary} size="small" />
           ) : (
             <>
               <View style={styles.googleIcon}>
@@ -185,7 +188,7 @@ export default function AuthScreen() {
 
         <View style={styles.divider}>
           <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
-          <ThemedText type="caption" style={[styles.dividerText, { color: theme.textTertiary }]}>
+          <ThemedText type="small" style={[styles.dividerText, { color: theme.textTertiary }]}>
             ili
           </ThemedText>
           <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />

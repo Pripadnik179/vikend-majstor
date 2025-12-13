@@ -6,6 +6,23 @@ import { getAuthTokenSync } from "./authToken";
  * @returns {string} The API base URL
  */
 export function getApiUrl(): string {
+  // For web platform in development, use localhost
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    // We're in a browser
+    const hostname = window.location.hostname;
+    
+    // Local development
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:5000';
+    }
+    
+    // Replit web preview - need to use the origin but with port 5000 routing
+    // Replit proxies multiple ports, so we access via same origin
+    // The API is served from the same domain with /api routes
+    return window.location.origin;
+  }
+  
+  // For native apps (iOS/Android), use the EXPO_PUBLIC_DOMAIN
   let host = process.env.EXPO_PUBLIC_DOMAIN;
 
   if (!host) {
@@ -73,15 +90,20 @@ export async function apiRequest(
     ...(data ? { "Content-Type": "application/json" } : {}),
   };
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  try {
+    const res = await fetch(url.toString(), {
+      method,
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error: any) {
+    console.log('API Request failed:', url.toString(), error?.message || error);
+    throw new Error(error?.message || 'Network request failed');
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
