@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, Alert, ScrollView } from 'react-native';
+import { View, StyleSheet, Pressable, Alert, ScrollView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
@@ -22,14 +22,21 @@ export default function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleLogout = () => {
-    Alert.alert(
-      'Odjava',
-      'Da li ste sigurni da želite da se odjavite?',
-      [
-        { text: 'Otkaži', style: 'cancel' },
-        { text: 'Odjavi se', style: 'destructive', onPress: logout },
-      ]
-    );
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Da li ste sigurni da želite da se odjavite?');
+      if (confirmed) {
+        logout();
+      }
+    } else {
+      Alert.alert(
+        'Odjava',
+        'Da li ste sigurni da želite da se odjavite?',
+        [
+          { text: 'Otkaži', style: 'cancel' },
+          { text: 'Odjavi se', style: 'destructive', onPress: logout },
+        ]
+      );
+    }
   };
 
   const getSubscriptionLabel = () => {
