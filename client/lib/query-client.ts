@@ -10,38 +10,16 @@ export function getApiUrl(): string {
   const isWeb = typeof window !== 'undefined' && typeof document !== 'undefined';
   
   if (isWeb) {
-    // On web in Replit, we need to construct the API URL to port 5000
-    // The browser is viewing port 8081 (Expo), but API is on port 5000
+    // On web, use same origin - requests go through the proxy
+    // For localhost development, use localhost:5000
     const currentOrigin = window.location.origin;
     
-    // For Replit dev environment, replace the port in the URL
-    // Replit uses --PORT in subdomain for different ports
-    if (currentOrigin.includes('.replit.dev') || currentOrigin.includes('.repl.co')) {
-      // Extract the base domain and add port 5000
-      // Current URL might be: https://xxx--8081.replit.dev or https://xxx.replit.dev
-      const url = new URL(currentOrigin);
-      const hostname = url.hostname;
-      
-      // Check if hostname has port pattern (--PORT)
-      const portPattern = /--\d+\./;
-      if (portPattern.test(hostname)) {
-        // Replace existing port with 5000
-        const newHostname = hostname.replace(/--\d+\./, '--5000.');
-        return `${url.protocol}//${newHostname}`;
-      } else {
-        // No port in URL, add --5000 before the first dot
-        const parts = hostname.split('.');
-        parts[0] = parts[0] + '--5000';
-        return `${url.protocol}//${parts.join('.')}`;
-      }
-    }
-    
-    // For local development, use localhost:5000
-    if (currentOrigin.includes('localhost')) {
+    if (currentOrigin.includes('localhost:8081')) {
       return 'http://localhost:5000';
     }
     
-    // Fallback: use same origin (for production where both are on same server)
+    // For Replit and production: use same origin
+    // The Express server on port 5000 serves both API and static files
     return currentOrigin;
   }
   
@@ -52,18 +30,10 @@ export function getApiUrl(): string {
     throw new Error("EXPO_PUBLIC_DOMAIN is not set");
   }
 
-  // For mobile, keep the domain with port if present
-  // EXPO_PUBLIC_DOMAIN is set to "domain:5000" 
-  // We need to use the Replit port routing format
-  if (host.includes(':5000')) {
-    const domain = host.replace(/:5000$/, '');
-    // Add --5000 port routing for Replit
-    const parts = domain.split('.');
-    parts[0] = parts[0] + '--5000';
-    return `https://${parts.join('.')}`;
-  }
+  // Remove port suffix if present - mobile connects to port 5000 directly via Replit proxy
+  const cleanHost = host.replace(/:5000$/, '');
   
-  return `https://${host}`;
+  return `https://${cleanHost}`;
 }
 
 function getAuthHeaders(): Record<string, string> {
