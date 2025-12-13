@@ -19,7 +19,19 @@ function setupCors(app: express.Application) {
     const origins = new Set<string>();
 
     if (process.env.REPLIT_DEV_DOMAIN) {
-      origins.add(`https://${process.env.REPLIT_DEV_DOMAIN}`);
+      const baseDomain = process.env.REPLIT_DEV_DOMAIN;
+      origins.add(`https://${baseDomain}`);
+      
+      // Add port-specific domains for Replit's port routing
+      // Format: xxx--PORT.spock.replit.dev
+      const parts = baseDomain.split('.');
+      if (parts.length >= 3) {
+        // Add common ports used in development
+        for (const port of ['8081', '8082', '3000', '5173']) {
+          const portDomain = `${parts[0]}--${port}.${parts.slice(1).join('.')}`;
+          origins.add(`https://${portDomain}`);
+        }
+      }
     }
 
     if (process.env.REPLIT_DOMAINS) {
@@ -30,13 +42,21 @@ function setupCors(app: express.Application) {
 
     const origin = req.header("origin");
 
-    if (origin && origins.has(origin)) {
+    // Check if origin matches any allowed origin or is a Replit domain with port
+    let isAllowed = origin && origins.has(origin);
+    
+    // Also allow any Replit domain with port pattern
+    if (!isAllowed && origin && (origin.includes('.replit.dev') || origin.includes('.repl.co'))) {
+      isAllowed = true;
+    }
+
+    if (isAllowed && origin) {
       res.header("Access-Control-Allow-Origin", origin);
       res.header(
         "Access-Control-Allow-Methods",
         "GET, POST, PUT, DELETE, OPTIONS",
       );
-      res.header("Access-Control-Allow-Headers", "Content-Type");
+      res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
       res.header("Access-Control-Allow-Credentials", "true");
     }
 
