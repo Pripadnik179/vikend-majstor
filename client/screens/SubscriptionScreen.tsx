@@ -157,11 +157,11 @@ export default function SubscriptionScreen() {
 
   const handleClaimEarlyAdopter = () => {
     Alert.alert(
-      'Rani korisnik',
-      'Želite li da postanete rani korisnik i dobijete besplatan mesec premium pristupa?',
+      'Aktiviraj Premium',
+      'Želite li da aktivirate besplatni Premium pristup kao rani korisnik?',
       [
         { text: 'Otkaži', style: 'cancel' },
-        { text: 'Da, želim!', onPress: () => claimEarlyAdopterMutation.mutate() },
+        { text: 'Da, aktiviraj!', onPress: () => claimEarlyAdopterMutation.mutate() },
       ],
     );
   };
@@ -222,13 +222,13 @@ export default function SubscriptionScreen() {
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <ThemedText type="body" style={{ color: '#FFFFFF', fontWeight: '700' }}>
-                    Preuzmi besplatan mesec
+                    Aktiviraj Premium besplatno
                   </ThemedText>
                 )}
               </Pressable>
             ) : (
               <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: Spacing.sm, textAlign: 'center' }}>
-                Prijavite se da preuzmete besplatan mesec
+                Prijavite se da aktivirate Premium besplatno
               </ThemedText>
             )}
           </Card>

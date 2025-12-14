@@ -404,7 +404,7 @@ export class DatabaseStorage implements IStorage {
     const [updatedUser] = await db.update(users)
       .set({
         isEarlyAdopter: true,
-        subscriptionType: 'basic',
+        subscriptionType: 'premium',
         subscriptionStatus: 'active',
         subscriptionStartDate: new Date(),
         subscriptionEndDate: endDate
