@@ -76,6 +76,7 @@ The app supports multiple authentication methods:
 - Up to 4 photos per item with Object Storage
 - Category and location-based organization
 - Advanced filtering (price range, rating, deposit)
+- Activity tags (activityTags) - items can be tagged for activities like Renoviranje, Gradnja, Bašta, etc.
 
 ### Booking System
 - Date-based booking requests
