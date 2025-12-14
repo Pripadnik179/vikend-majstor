@@ -100,6 +100,7 @@ export const items = pgTable("items", {
   latitude: decimal("latitude", { precision: 10, scale: 7 }),
   longitude: decimal("longitude", { precision: 10, scale: 7 }),
   images: text("images").array().notNull().default(sql`ARRAY[]::text[]`),
+  adType: text("ad_type").notNull().default("renting"),
   isAvailable: boolean("is_available").default(true).notNull(),
   isFeatured: boolean("is_featured").default(false).notNull(),
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),

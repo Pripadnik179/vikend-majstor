@@ -147,7 +147,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/items", async (req, res) => {
     try {
-      const { category, subCategory, toolType, powerSource, city, search } = req.query;
+      const { category, subCategory, toolType, powerSource, city, search, adType, minPrice, maxPrice, period, hasImages } = req.query;
+      
+      let createdAfter: Date | undefined;
+      if (period === 'today') {
+        createdAfter = new Date();
+        createdAfter.setHours(0, 0, 0, 0);
+      } else if (period === 'week') {
+        createdAfter = new Date();
+        createdAfter.setDate(createdAfter.getDate() - 7);
+      } else if (period === 'month') {
+        createdAfter = new Date();
+        createdAfter.setMonth(createdAfter.getMonth() - 1);
+      }
+      
       const items = await storage.getItems({
         category: category as string | undefined,
         subCategory: subCategory as string | undefined,
@@ -155,6 +168,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         powerSource: powerSource as string | undefined,
         city: city as string | undefined,
         search: search as string | undefined,
+        adType: adType as string | undefined,
+        minPrice: minPrice ? parseInt(minPrice as string) : undefined,
+        maxPrice: maxPrice ? parseInt(maxPrice as string) : undefined,
+        createdAfter,
+        hasImages: hasImages === 'true',
       });
       
       const now = new Date();

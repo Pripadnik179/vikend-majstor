@@ -26,6 +26,11 @@ export interface IStorage {
     powerSource?: string;
     city?: string; 
     search?: string;
+    adType?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    createdAfter?: Date;
+    hasImages?: boolean;
   }): Promise<Item[]>;
   getItem(id: string): Promise<Item | undefined>;
   getItemsByOwner(ownerId: string): Promise<Item[]>;
@@ -88,6 +93,11 @@ export class DatabaseStorage implements IStorage {
     powerSource?: string;
     city?: string; 
     search?: string;
+    adType?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    createdAfter?: Date;
+    hasImages?: boolean;
   }): Promise<Item[]> {
     const now = new Date();
     const conditions = [
@@ -115,6 +125,21 @@ export class DatabaseStorage implements IStorage {
       conditions.push(
         sql`(${items.title} ILIKE ${searchTerm} OR ${items.description} ILIKE ${searchTerm})`
       );
+    }
+    if (filters?.adType && filters.adType !== 'all') {
+      conditions.push(eq(items.adType, filters.adType));
+    }
+    if (filters?.minPrice !== undefined) {
+      conditions.push(sql`${items.pricePerDay} >= ${filters.minPrice}`);
+    }
+    if (filters?.maxPrice !== undefined) {
+      conditions.push(sql`${items.pricePerDay} <= ${filters.maxPrice}`);
+    }
+    if (filters?.createdAfter) {
+      conditions.push(gt(items.createdAt, filters.createdAfter));
+    }
+    if (filters?.hasImages) {
+      conditions.push(sql`array_length(${items.images}, 1) > 0`);
     }
     
     // Sort by isFeatured first (premium items at top), then by createdAt
