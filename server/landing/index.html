@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VikendMajstor - Iznajmi alat od komšije</title>
+  <meta name="description" content="P2P platforma za iznajmljivanje alata. Pronađi alat koji ti treba ili zaradi iznajmljujući svoje alate komšijama.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary: #FFCC00;
+      --primary-dark: #E6B800;
+      --accent: #1A1A1A;
+      --text: #1A1A1A;
+      --text-secondary: #666666;
+      --background: #FFFFFF;
+      --background-light: #F8F8F8;
+      --border: #E0E0E0;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      background: var(--background);
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      z-index: 1000;
+    }
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 72px;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    
+    .logo-text {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+    
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .nav-links a:hover {
+      color: var(--text);
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      font-size: 16px;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: var(--accent);
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #333;
+      transform: translateY(-2px);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+    }
+    
+    .btn-outline:hover {
+      background: var(--accent);
+      color: white;
+    }
+    
+    /* Hero Section */
+    .hero {
+      padding: 160px 0 100px;
+      background: linear-gradient(135deg, #FFFBEB 0%, #FFF 50%, #F8F8F8 100%);
+    }
+    
+    .hero-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    
+    .hero-text h1 {
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 24px;
+    }
+    
+    .hero-text h1 span {
+      color: var(--primary-dark);
+    }
+    
+    .hero-text p {
+      font-size: 20px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      max-width: 480px;
+    }
+    
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    
+    .hero-image {
+      position: relative;
+    }
+    
+    .hero-image-wrapper {
+      background: var(--primary);
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-image-wrapper::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+    }
+    
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    
+    .tool-card-mini {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tool-card-mini img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+    
+    .tool-card-mini p {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    
+    /* How It Works */
+    .how-it-works {
+      padding: 100px 0;
+      background: var(--background);
+    }
+    
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    
+    .section-header h2 {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    
+    .section-header p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+    }
+    
+    .step {
+      text-align: center;
+      padding: 40px 24px;
+      background: var(--background-light);
+      border-radius: 16px;
+      position: relative;
+    }
+    
+    .step-number {
+      width: 56px;
+      height: 56px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+      margin: 0 auto 24px;
+    }
+    
+    .step h3 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .step p {
+      color: var(--text-secondary);
+      font-size: 16px;
+    }
+    
+    .step-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    /* Featured Tools */
+    .featured-tools {
+      padding: 100px 0;
+      background: var(--background-light);
+    }
+    
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    
+    .tool-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .tool-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+    
+    .tool-card-image {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: var(--background-light);
+    }
+    
+    .tool-card-content {
+      padding: 16px;
+    }
+    
+    .tool-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .tool-card-location {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    
+    .tool-card-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    
+    .tool-card-price span {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+    
+    /* Early Adopter */
+    .early-adopter {
+      padding: 80px 0;
+      background: var(--accent);
+      color: white;
+    }
+    
+    .early-adopter-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 40px;
+    }
+    
+    .early-adopter-text h2 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    
+    .early-adopter-text p {
+      font-size: 18px;
+      opacity: 0.8;
+      max-width: 500px;
+    }
+    
+    .slots-counter {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255, 204, 0, 0.15);
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 24px 32px;
+    }
+    
+    .slots-number {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    
+    .slots-label {
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    
+    /* CTA Section */
+    .cta {
+      padding: 100px 0;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      text-align: center;
+    }
+    
+    .cta h2 {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: var(--accent);
+    }
+    
+    .cta p {
+      font-size: 20px;
+      color: var(--accent);
+      opacity: 0.8;
+      margin-bottom: 32px;
+    }
+    
+    .cta .btn {
+      font-size: 18px;
+      padding: 16px 40px;
+    }
+    
+    /* Footer */
+    footer {
+      background: var(--accent);
+      color: white;
+      padding: 60px 0 24px;
+    }
+    
+    .footer-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+    
+    .footer-brand p {
+      margin-top: 16px;
+      opacity: 0.7;
+      font-size: 14px;
+      max-width: 300px;
+    }
+    
+    .footer-links h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    
+    .footer-links ul {
+      list-style: none;
+    }
+    
+    .footer-links li {
+      margin-bottom: 12px;
+    }
+    
+    .footer-links a {
+      color: white;
+      opacity: 0.7;
+      text-decoration: none;
+      font-size: 14px;
+      transition: opacity 0.2s;
+    }
+    
+    .footer-links a:hover {
+      opacity: 1;
+    }
+    
+    .footer-bottom {
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.6;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .hero-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      
+      .hero-image {
+        display: none;
+      }
+      
+      .tools-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .footer-content {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      
+      .hero {
+        padding: 120px 0 60px;
+      }
+      
+      .hero-text h1 {
+        font-size: 36px;
+      }
+      
+      .hero-buttons {
+        flex-direction: column;
+      }
+      
+      .hero-stats {
+        gap: 24px;
+      }
+      
+      .steps {
+        grid-template-columns: 1fr;
+      }
+      
+      .early-adopter-content {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-content">
+      <a href="/" class="logo">
+        <div class="logo-icon">V</div>
+        <span class="logo-text">VikendMajstor</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#kako-radi">Kako radi</a>
+        <a href="#alati">Alati</a>
+        <a href="#o-nama">O nama</a>
+        <a href="/app" class="btn btn-primary">Otvori aplikaciju</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-content">
+      <div class="hero-text">
+        <h1>Iznajmi alat <span>od komšije</span></h1>
+        <p>Zašto kupovati skupu opremu za jednokratnu upotrebu? Pronađi alat u svom kraju i uštedi novac, ili zaradi iznajmljujući svoje alate.</p>
+        <div class="hero-buttons">
+          <a href="/app" class="btn btn-primary">Pregledaj alate</a>
+          <a href="/app" class="btn btn-outline">Postani iznajmljivač</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-number" id="tools-count">50+</div>
+            <div class="stat-label">Dostupnih alata</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number" id="cities-count">10+</div>
+            <div class="stat-label">Gradova</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number" id="users-count">100+</div>
+            <div class="stat-label">Korisnika</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-image">
+        <div class="hero-image-wrapper">
+          <div class="tool-grid" id="mini-tools">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-it-works" id="kako-radi">
+    <div class="container">
+      <div class="section-header">
+        <h2>Kako funkcioniše?</h2>
+        <p>Jednostavan proces u tri koraka - od pretrage do korišćenja alata</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Pronađi alat</h3>
+          <p>Pretraži dostupne alate u tvom kraju. Filtriraj po kategoriji, ceni ili lokaciji.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Rezerviši termin</h3>
+          <p>Izaberi datume, kontaktiraj vlasnika i dogovori detalje preuzimanja.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Koristi i vrati</h3>
+          <p>Preuzmi alat, završi svoj projekat i vrati ga vlasniku. Jednostavno!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured-tools" id="alati">
+    <div class="container">
+      <div class="section-header">
+        <h2>Popularni alati</h2>
+        <p>Pogledaj neke od najtraženijih alata na platformi</p>
+      </div>
+      <div class="tools-grid" id="tools-grid">
+      </div>
+    </div>
+  </section>
+
+  <section class="early-adopter">
+    <div class="container early-adopter-content">
+      <div class="early-adopter-text">
+        <h2>Postani rani korisnik</h2>
+        <p>Pridruži se prvim korisnicima i dobij besplatan mesec Premium pristupa. Ograničen broj mesta!</p>
+        <a href="/app" class="btn btn-primary" style="margin-top: 24px;">Aktiviraj Premium besplatno</a>
+      </div>
+      <div class="slots-counter">
+        <div class="slots-number" id="remaining-slots">--</div>
+        <div class="slots-label">preostalih<br>mesta</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container">
+      <h2>Spreman da počneš?</h2>
+      <p>Registruj se besplatno i pronađi alat koji ti treba već danas.</p>
+      <a href="/app" class="btn btn-secondary">Otvori aplikaciju</a>
+    </div>
+  </section>
+
+  <footer id="o-nama">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="logo">
+            <div class="logo-icon">V</div>
+            <span class="logo-text" style="color: white;">VikendMajstor</span>
+          </div>
+          <p>P2P platforma za iznajmljivanje alata. Povezujemo ljude koji imaju alate sa onima kojima su potrebni.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Platforma</h4>
+          <ul>
+            <li><a href="/app">Aplikacija</a></li>
+            <li><a href="#kako-radi">Kako radi</a></li>
+            <li><a href="#alati">Alati</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Podrška</h4>
+          <ul>
+            <li><a href="#">Česta pitanja</a></li>
+            <li><a href="#">Kontakt</a></li>
+            <li><a href="#">Pomoć</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Pravno</h4>
+          <ul>
+            <li><a href="#">Uslovi korišćenja</a></li>
+            <li><a href="#">Politika privatnosti</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2024 VikendMajstor. Sva prava zadržana.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    async function loadData() {
+      try {
+        const [itemsRes, homeRes] = await Promise.all([
+          fetch('/api/items?limit=8'),
+          fetch('/api/home')
+        ]);
+        
+        const items = await itemsRes.json();
+        const homeData = await homeRes.json();
+        
+        const toolsGrid = document.getElementById('tools-grid');
+        const miniTools = document.getElementById('mini-tools');
+        const remainingSlots = document.getElementById('remaining-slots');
+        
+        if (Array.isArray(items) && items.length > 0) {
+          toolsGrid.innerHTML = items.slice(0, 8).map(item => `
+            <div class="tool-card">
+              <img src="${item.images && item.images[0] ? item.images[0] : '/placeholder-tool.png'}" alt="${item.title}" class="tool-card-image" onerror="this.src='/placeholder-tool.png'">
+              <div class="tool-card-content">
+                <div class="tool-card-title">${item.title}</div>
+                <div class="tool-card-location">${item.city}</div>
+                <div class="tool-card-price">${item.pricePerDay} RSD <span>/dan</span></div>
+              </div>
+            </div>
+          `).join('');
+          
+          miniTools.innerHTML = items.slice(0, 4).map(item => `
+            <div class="tool-card-mini">
+              <img src="${item.images && item.images[0] ? item.images[0] : '/placeholder-tool.png'}" alt="${item.title}" onerror="this.style.display='none'">
+              <p>${item.title.split(' ').slice(0, 2).join(' ')}</p>
+            </div>
+          `).join('');
+          
+          document.getElementById('tools-count').textContent = items.length + '+';
+        }
+        
+        if (homeData.remainingEarlyAdopterSlots !== undefined) {
+          remainingSlots.textContent = homeData.remainingEarlyAdopterSlots;
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    }
+    
+    loadData();
+  </script>
+</body>
+</html>

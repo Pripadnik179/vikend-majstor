@@ -9,9 +9,31 @@ import {
   sendBookingConfirmedNotification,
   sendBookingCancelledNotification
 } from "./notifications";
+import * as path from "path";
+import * as fs from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
+
+  app.get("/", (req, res) => {
+    const userAgent = req.headers['user-agent'] || '';
+    const isExpoRequest = userAgent.includes('Expo') || req.headers['expo-platform'];
+    
+    if (isExpoRequest) {
+      return res.json({ status: 'ok', type: 'api' });
+    }
+    
+    const landingPath = path.join(__dirname, 'landing', 'index.html');
+    if (fs.existsSync(landingPath)) {
+      return res.sendFile(landingPath);
+    }
+    
+    res.json({ status: 'ok', message: 'VikendMajstor API' });
+  });
+
+  app.get("/app", (req, res) => {
+    res.redirect('exp://');
+  });
 
   app.get("/public-objects/:filePath(*)", async (req, res) => {
     const filePath = req.params.filePath;
