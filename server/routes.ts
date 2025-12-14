@@ -32,7 +32,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/app", (req, res) => {
-    res.redirect('exp://');
+    const userAgent = req.headers['user-agent'] || '';
+    const isAndroid = /Android/i.test(userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+    
+    if (isAndroid || isIOS) {
+      return res.redirect('exp://');
+    }
+    
+    const webAppPath = path.join(process.cwd(), 'static-build', 'web', 'index.html');
+    if (fs.existsSync(webAppPath)) {
+      return res.sendFile(webAppPath);
+    }
+    
+    res.redirect('/');
   });
 
   app.get("/public-objects/:filePath(*)", async (req, res) => {
