@@ -106,6 +106,7 @@ export const items = pgTable("items", {
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
   totalRatings: integer("total_ratings").default(0),
   expiresAt: timestamp("expires_at"),
+  activityTags: text("activity_tags").array(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -318,7 +319,7 @@ export const CATEGORIES = {
   byToolType: {
     elektricni: {
       name: "Električni alati",
-      subcategories: ["Bušilice", "Brusilice", "Testere", "Blanjevi", "Glodalice"]
+      subcategories: ["Bušilice", "Brusilice", "Testere", "Rendei", "Glodalice"]
     },
     akumulatorski: {
       name: "Akumulatorski alati",
@@ -344,6 +345,21 @@ export const CATEGORIES = {
 };
 
 export const POWER_SOURCES = ["Električni (struja)", "Akumulator", "Benzinski", "Dizel", "Pneumatski", "Ručni"];
+
+export const ACTIVITIES = [
+  "Renoviranje kupatila",
+  "Renoviranje kuhinje",
+  "Baštenski radovi",
+  "Stolarski radovi",
+  "Električarski radovi",
+  "Vodoinstalaterski radovi",
+  "Farbanje i dekoracija",
+  "Montaža nameštaja",
+  "Popravke u domaćinstvu",
+  "Zidarski radovi",
+  "Keramičarski radovi",
+  "Podopolaganje",
+];
 
 export const SUBSCRIPTION_PRICES = {
   basic: 500,

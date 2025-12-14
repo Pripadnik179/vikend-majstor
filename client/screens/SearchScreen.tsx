@@ -14,7 +14,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
-import { CATEGORIES, POWER_SOURCES } from '@shared/schema';
+import { CATEGORIES, POWER_SOURCES, ACTIVITIES } from '@shared/schema';
 import { Image } from 'expo-image';
 import { getApiUrl } from '@/lib/query-client';
 
@@ -40,6 +40,7 @@ export default function SearchScreen() {
   const [maxPrice, setMaxPrice] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [hasImagesOnly, setHasImagesOnly] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState('');
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -58,6 +59,7 @@ export default function SearchScreen() {
     if (maxPrice) url.searchParams.append('maxPrice', maxPrice);
     if (selectedPeriod !== 'all') url.searchParams.append('period', selectedPeriod);
     if (hasImagesOnly) url.searchParams.append('hasImages', 'true');
+    if (selectedActivity) url.searchParams.append('activityTag', selectedActivity);
     return url.toString();
   };
 
@@ -73,6 +75,7 @@ export default function SearchScreen() {
       maxPrice,
       period: selectedPeriod,
       hasImages: hasImagesOnly,
+      activityTag: selectedActivity,
     }],
     queryFn: async () => {
       const url = buildApiUrl();
@@ -107,6 +110,7 @@ export default function SearchScreen() {
     setMaxPrice('');
     setSelectedPeriod('all');
     setHasImagesOnly(false);
+    setSelectedActivity('');
   }, []);
 
   const activeFilterCount = [
@@ -119,6 +123,7 @@ export default function SearchScreen() {
     maxPrice,
     selectedPeriod !== 'all' ? selectedPeriod : '',
     hasImagesOnly ? 'images' : '',
+    selectedActivity,
   ].filter(Boolean).length;
 
   const adTypeOptions = [
@@ -347,6 +352,35 @@ export default function SearchScreen() {
                     style={{ color: selectedPowerSource === ps ? '#000' : theme.text }}
                   >
                     {ps || 'Sve'}
+                  </ThemedText>
+                </Pressable>
+              )}
+            />
+          </View>
+
+          <View style={styles.filterRow}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Delatnost</ThemedText>
+            <FlatList
+              horizontal
+              data={['', ...ACTIVITIES]}
+              keyExtractor={(item) => item || 'all'}
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item: activity }) => (
+                <Pressable
+                  style={[
+                    styles.filterChip,
+                    { 
+                      backgroundColor: selectedActivity === activity ? theme.primary : theme.backgroundRoot,
+                      borderColor: selectedActivity === activity ? theme.primary : theme.border,
+                    },
+                  ]}
+                  onPress={() => setSelectedActivity(activity)}
+                >
+                  <ThemedText 
+                    type="small" 
+                    style={{ color: selectedActivity === activity ? '#000' : theme.text }}
+                  >
+                    {activity || 'Sve'}
                   </ThemedText>
                 </Pressable>
               )}

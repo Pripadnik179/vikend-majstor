@@ -31,6 +31,7 @@ export interface IStorage {
     maxPrice?: number;
     createdAfter?: Date;
     hasImages?: boolean;
+    activityTag?: string;
   }): Promise<Item[]>;
   getItem(id: string): Promise<Item | undefined>;
   getItemsByOwner(ownerId: string): Promise<Item[]>;
@@ -98,6 +99,7 @@ export class DatabaseStorage implements IStorage {
     maxPrice?: number;
     createdAfter?: Date;
     hasImages?: boolean;
+    activityTag?: string;
   }): Promise<Item[]> {
     const now = new Date();
     const conditions = [
@@ -140,6 +142,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters?.hasImages) {
       conditions.push(sql`array_length(${items.images}, 1) > 0`);
+    }
+    if (filters?.activityTag) {
+      conditions.push(sql`${filters.activityTag} = ANY(${items.activityTags})`);
     }
     
     // Sort by isFeatured first (premium items at top), then by createdAt

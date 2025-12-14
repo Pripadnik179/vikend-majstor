@@ -20,7 +20,7 @@ import { uploadFileToStorage, finalizeUpload } from '@/utils/objectStorageExpo';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
-import { CATEGORIES as SCHEMA_CATEGORIES, POWER_SOURCES } from '@shared/schema';
+import { CATEGORIES as SCHEMA_CATEGORIES, POWER_SOURCES, ACTIVITIES } from '@shared/schema';
 
 const FREE_ITEM_LIMIT = 5;
 
@@ -51,6 +51,8 @@ export default function AddItemScreen() {
   const [showSubCategoryPicker, setShowSubCategoryPicker] = useState(false);
   const [showPowerSourcePicker, setShowPowerSourcePicker] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [activityTags, setActivityTags] = useState<string[]>([]);
+  const [showActivityPicker, setShowActivityPicker] = useState(false);
 
   const allCategories = useMemo(() => {
     const cats: { key: string; name: string; subcategories: string[] }[] = [];
@@ -99,6 +101,7 @@ export default function AddItemScreen() {
       setDistrict(existingItem.district || '');
       setImages(existingItem.images || []);
       setAdType((existingItem as any).adType || 'renting');
+      setActivityTags((existingItem as any).activityTags || []);
     }
   }, [existingItem]);
 
@@ -155,6 +158,7 @@ export default function AddItemScreen() {
         district: district || null,
         images,
         adType,
+        activityTags: activityTags.length > 0 ? activityTags : null,
         isAvailable: true,
       };
 
@@ -427,6 +431,66 @@ export default function AddItemScreen() {
         ) : null}
       </View>
 
+      <View style={styles.section}>
+        <ThemedText type="h4" style={styles.label}>Pogodno za delatnosti</ThemedText>
+        <Pressable
+          style={[inputStyle, styles.picker]}
+          onPress={() => setShowActivityPicker(!showActivityPicker)}
+        >
+          <ThemedText type="body" style={{ color: activityTags.length > 0 ? theme.text : theme.textTertiary, flex: 1 }}>
+            {activityTags.length > 0 ? `${activityTags.length} izabrano` : 'Izaberi delatnosti'}
+          </ThemedText>
+          <Feather name="chevron-down" size={20} color={theme.textTertiary} />
+        </Pressable>
+        {activityTags.length > 0 ? (
+          <View style={styles.tagsContainer}>
+            {activityTags.map((tag) => (
+              <Pressable
+                key={tag}
+                style={[styles.tag, { backgroundColor: theme.primary }]}
+                onPress={() => setActivityTags(activityTags.filter(t => t !== tag))}
+              >
+                <ThemedText type="small" style={{ color: '#000' }}>{tag}</ThemedText>
+                <Feather name="x" size={14} color="#000" style={{ marginLeft: 4 }} />
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+        {showActivityPicker ? (
+          <ScrollView style={[styles.categoryList, { backgroundColor: theme.backgroundDefault, borderColor: theme.border, maxHeight: 250 }]}>
+            {ACTIVITIES.map((activity) => {
+              const isSelected = activityTags.includes(activity);
+              return (
+                <Pressable
+                  key={activity}
+                  style={[
+                    styles.categoryItem,
+                    isSelected && { backgroundColor: theme.primaryLight },
+                  ]}
+                  onPress={() => {
+                    if (isSelected) {
+                      setActivityTags(activityTags.filter(t => t !== activity));
+                    } else {
+                      setActivityTags([...activityTags, activity]);
+                    }
+                  }}
+                >
+                  <Feather 
+                    name={isSelected ? "check-square" : "square"} 
+                    size={18} 
+                    color={isSelected ? theme.primary : theme.textTertiary} 
+                    style={{ marginRight: Spacing.sm }}
+                  />
+                  <ThemedText type="body" style={{ color: isSelected ? theme.primary : theme.text }}>
+                    {activity}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        ) : null}
+      </View>
+
       <View style={styles.row}>
         <View style={[styles.section, { flex: 1, marginRight: Spacing.md }]}>
           <ThemedText type="h4" style={styles.label}>Cena po danu (RSD) *</ThemedText>
@@ -569,5 +633,18 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     alignItems: 'center',
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.xs,
+    marginTop: Spacing.sm,
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
   },
 });
