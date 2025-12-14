@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, StyleSheet, FlatList, Pressable, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, FlatList, Pressable, ActivityIndicator, TextInput, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
@@ -34,6 +34,12 @@ export default function SearchScreen() {
   const [selectedToolType, setSelectedToolType] = useState(route.params?.toolType || '');
   const [selectedPowerSource, setSelectedPowerSource] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  
+  const [selectedAdType, setSelectedAdType] = useState<'all' | 'renting' | 'looking_for'>('all');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState<'all' | 'today' | 'week' | 'month'>('all');
+  const [hasImagesOnly, setHasImagesOnly] = useState(false);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -47,6 +53,11 @@ export default function SearchScreen() {
     if (selectedToolType) url.searchParams.append('toolType', selectedToolType);
     if (selectedPowerSource) url.searchParams.append('powerSource', selectedPowerSource);
     if (searchQuery) url.searchParams.append('search', searchQuery);
+    if (selectedAdType !== 'all') url.searchParams.append('adType', selectedAdType);
+    if (minPrice) url.searchParams.append('minPrice', minPrice);
+    if (maxPrice) url.searchParams.append('maxPrice', maxPrice);
+    if (selectedPeriod !== 'all') url.searchParams.append('period', selectedPeriod);
+    if (hasImagesOnly) url.searchParams.append('hasImages', 'true');
     return url.toString();
   };
 
@@ -57,6 +68,11 @@ export default function SearchScreen() {
       toolType: selectedToolType,
       powerSource: selectedPowerSource,
       search: searchQuery,
+      adType: selectedAdType,
+      minPrice,
+      maxPrice,
+      period: selectedPeriod,
+      hasImages: hasImagesOnly,
     }],
     queryFn: async () => {
       const url = buildApiUrl();
@@ -86,10 +102,37 @@ export default function SearchScreen() {
     setSelectedToolType('');
     setSelectedPowerSource('');
     setSearchQuery('');
+    setSelectedAdType('all');
+    setMinPrice('');
+    setMaxPrice('');
+    setSelectedPeriod('all');
+    setHasImagesOnly(false);
   }, []);
 
-  const activeFilterCount = [selectedCategory, selectedSubcategory, selectedToolType, selectedPowerSource]
-    .filter(Boolean).length;
+  const activeFilterCount = [
+    selectedCategory, 
+    selectedSubcategory, 
+    selectedToolType, 
+    selectedPowerSource,
+    selectedAdType !== 'all' ? selectedAdType : '',
+    minPrice,
+    maxPrice,
+    selectedPeriod !== 'all' ? selectedPeriod : '',
+    hasImagesOnly ? 'images' : '',
+  ].filter(Boolean).length;
+
+  const adTypeOptions = [
+    { value: 'all', label: 'Svi' },
+    { value: 'renting', label: 'Izdaje se' },
+    { value: 'looking_for', label: 'Traži se' },
+  ];
+
+  const periodOptions = [
+    { value: 'all', label: 'Svi' },
+    { value: 'today', label: 'Danas' },
+    { value: 'week', label: 'Ova nedelja' },
+    { value: 'month', label: 'Ovaj mesec' },
+  ];
 
   const renderItem = ({ item }: { item: Item }) => (
     <Pressable
@@ -127,9 +170,18 @@ export default function SearchScreen() {
                 </View>
               ) : null}
             </View>
-            <ThemedText type="small" style={{ color: theme.textSecondary }} numberOfLines={1}>
-              {item.city}{item.district ? `, ${item.district}` : ''}
-            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.xs }}>
+              <ThemedText type="small" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                {item.city}{item.district ? `, ${item.district}` : ''}
+              </ThemedText>
+              {(item as any).adType === 'looking_for' ? (
+                <View style={[styles.adTypeBadge, { backgroundColor: theme.primary }]}>
+                  <ThemedText type="small" style={{ color: '#000', fontSize: 9, fontWeight: '600' }}>
+                    Traži se
+                  </ThemedText>
+                </View>
+              ) : null}
+            </View>
             <View style={styles.priceRow}>
               <ThemedText type="body" style={{ color: theme.primary, fontWeight: '700' }}>
                 {item.pricePerDay} RSD
@@ -166,8 +218,83 @@ export default function SearchScreen() {
         </Pressable>
       </View>
 
-      {showFilters && (
+      {showFilters ? (
         <View style={[styles.filtersContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+          <View style={styles.filterRow}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Tip oglasa</ThemedText>
+            <View style={styles.chipRow}>
+              {adTypeOptions.map((opt) => (
+                <Pressable
+                  key={opt.value}
+                  style={[
+                    styles.filterChip,
+                    { 
+                      backgroundColor: selectedAdType === opt.value ? theme.primary : theme.backgroundRoot,
+                      borderColor: selectedAdType === opt.value ? theme.primary : theme.border,
+                    },
+                  ]}
+                  onPress={() => setSelectedAdType(opt.value as typeof selectedAdType)}
+                >
+                  <ThemedText 
+                    type="small" 
+                    style={{ color: selectedAdType === opt.value ? '#000' : theme.text }}
+                  >
+                    {opt.label}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.filterRow}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Cena (RSD)</ThemedText>
+            <View style={styles.priceInputRow}>
+              <TextInput
+                style={[styles.priceInput, { backgroundColor: theme.backgroundRoot, borderColor: theme.border, color: theme.text }]}
+                placeholder="Min"
+                placeholderTextColor={theme.textTertiary}
+                keyboardType="numeric"
+                value={minPrice}
+                onChangeText={setMinPrice}
+              />
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>-</ThemedText>
+              <TextInput
+                style={[styles.priceInput, { backgroundColor: theme.backgroundRoot, borderColor: theme.border, color: theme.text }]}
+                placeholder="Max"
+                placeholderTextColor={theme.textTertiary}
+                keyboardType="numeric"
+                value={maxPrice}
+                onChangeText={setMaxPrice}
+              />
+            </View>
+          </View>
+
+          <View style={styles.filterRow}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Period</ThemedText>
+            <View style={styles.chipRow}>
+              {periodOptions.map((opt) => (
+                <Pressable
+                  key={opt.value}
+                  style={[
+                    styles.filterChip,
+                    { 
+                      backgroundColor: selectedPeriod === opt.value ? theme.primary : theme.backgroundRoot,
+                      borderColor: selectedPeriod === opt.value ? theme.primary : theme.border,
+                    },
+                  ]}
+                  onPress={() => setSelectedPeriod(opt.value as typeof selectedPeriod)}
+                >
+                  <ThemedText 
+                    type="small" 
+                    style={{ color: selectedPeriod === opt.value ? '#000' : theme.text }}
+                  >
+                    {opt.label}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
           <View style={styles.filterRow}>
             <ThemedText type="small" style={{ color: theme.textSecondary }}>Kategorija</ThemedText>
             <FlatList
@@ -188,7 +315,7 @@ export default function SearchScreen() {
                 >
                   <ThemedText 
                     type="small" 
-                    style={{ color: selectedCategory === cat ? '#FFFFFF' : theme.text }}
+                    style={{ color: selectedCategory === cat ? '#000' : theme.text }}
                   >
                     {cat || 'Sve'}
                   </ThemedText>
@@ -217,7 +344,7 @@ export default function SearchScreen() {
                 >
                   <ThemedText 
                     type="small" 
-                    style={{ color: selectedPowerSource === ps ? '#FFFFFF' : theme.text }}
+                    style={{ color: selectedPowerSource === ps ? '#000' : theme.text }}
                   >
                     {ps || 'Sve'}
                   </ThemedText>
@@ -226,16 +353,26 @@ export default function SearchScreen() {
             />
           </View>
 
-          {activeFilterCount > 0 && (
+          <View style={styles.switchRow}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Samo sa slikom</ThemedText>
+            <Switch
+              value={hasImagesOnly}
+              onValueChange={setHasImagesOnly}
+              trackColor={{ false: theme.border, true: theme.primary }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+
+          {activeFilterCount > 0 ? (
             <Pressable style={styles.clearButton} onPress={clearFilters}>
               <Feather name="x-circle" size={16} color={theme.primary} />
               <ThemedText type="small" style={{ color: theme.primary }}>Očisti filtere</ThemedText>
             </Pressable>
-          )}
+          ) : null}
         </View>
-      )}
+      ) : null}
 
-      {(selectedCategory || selectedSubcategory) && (
+      {(selectedCategory || selectedSubcategory) ? (
         <View style={styles.breadcrumb}>
           <ThemedText type="small" style={{ color: theme.textSecondary }}>
             Pretražujete: 
@@ -244,7 +381,7 @@ export default function SearchScreen() {
             {selectedSubcategory || selectedCategory}
           </ThemedText>
         </View>
-      )}
+      ) : null}
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -310,12 +447,35 @@ const styles = StyleSheet.create({
   filterRow: {
     gap: Spacing.xs,
   },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.xs,
+  },
   filterChip: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.full,
     borderWidth: 1,
     marginRight: Spacing.xs,
+  },
+  priceInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  priceInput: {
+    flex: 1,
+    height: 40,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    paddingHorizontal: Spacing.md,
+    fontSize: 14,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   clearButton: {
     flexDirection: 'row',
@@ -386,6 +546,11 @@ const styles = StyleSheet.create({
   featuredLabel: {
     paddingHorizontal: Spacing.xs,
     paddingVertical: 2,
+    borderRadius: BorderRadius.xs,
+  },
+  adTypeBadge: {
+    paddingHorizontal: Spacing.xs,
+    paddingVertical: 1,
     borderRadius: BorderRadius.xs,
   },
 });

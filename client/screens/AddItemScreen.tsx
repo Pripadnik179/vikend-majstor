@@ -45,6 +45,7 @@ export default function AddItemScreen() {
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
   const [images, setImages] = useState<string[]>([]);
+  const [adType, setAdType] = useState<'renting' | 'looking_for'>('renting');
   const [isLoading, setIsLoading] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showSubCategoryPicker, setShowSubCategoryPicker] = useState(false);
@@ -97,6 +98,7 @@ export default function AddItemScreen() {
       setCity(existingItem.city);
       setDistrict(existingItem.district || '');
       setImages(existingItem.images || []);
+      setAdType((existingItem as any).adType || 'renting');
     }
   }, [existingItem]);
 
@@ -152,6 +154,7 @@ export default function AddItemScreen() {
         city,
         district: district || null,
         images,
+        adType,
         isAvailable: true,
       };
 
@@ -217,6 +220,24 @@ export default function AddItemScreen() {
         { paddingBottom: insets.bottom + Spacing.xl },
       ]}
     >
+      <View style={styles.section}>
+        <ThemedText type="h4" style={styles.label}>Tip oglasa</ThemedText>
+        <View style={styles.adTypeRow}>
+          <Pressable
+            style={[styles.adTypeButton, { borderColor: theme.border }, adType === 'renting' && { backgroundColor: theme.primary, borderColor: theme.primary }]}
+            onPress={() => setAdType('renting')}
+          >
+            <ThemedText style={{ color: adType === 'renting' ? '#000' : theme.text, fontWeight: '600' }}>Izdaje se</ThemedText>
+          </Pressable>
+          <Pressable
+            style={[styles.adTypeButton, { borderColor: theme.border }, adType === 'looking_for' && { backgroundColor: theme.primary, borderColor: theme.primary }]}
+            onPress={() => setAdType('looking_for')}
+          >
+            <ThemedText style={{ color: adType === 'looking_for' ? '#000' : theme.text, fontWeight: '600' }}>Traži se</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+
       <View style={styles.section}>
         <ThemedText type="h4" style={styles.label}>Fotografije (max 4)</ThemedText>
         <View style={styles.imagesGrid}>
@@ -537,5 +558,16 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: Spacing.lg,
+  },
+  adTypeRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  adTypeButton: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    alignItems: 'center',
   },
 });
