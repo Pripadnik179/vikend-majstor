@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Alert, ScrollView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useHeaderHeight } from '@react-navigation/elements';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,7 +14,6 @@ import type { RootStackParamList } from '@/navigation/types';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
   const { user, logout } = useAuth();
@@ -58,7 +56,7 @@ export default function ProfileScreen() {
     <ScrollView
       style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
       contentContainerStyle={{
-        paddingTop: headerHeight + Spacing.xl,
+        paddingTop: Spacing.lg,
         paddingBottom: tabBarHeight + Spacing.fabSize + Spacing.xl,
         paddingHorizontal: Spacing.lg,
       }}
