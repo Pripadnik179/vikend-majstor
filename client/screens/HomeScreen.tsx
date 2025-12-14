@@ -1,8 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, FlatList, StyleSheet, TextInput, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, FlatList, StyleSheet, TextInput, Pressable, RefreshControl, ActivityIndicator, Platform, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
@@ -12,6 +11,7 @@ import { FilterModal, FilterState } from '@/components/FilterModal';
 import { PromoBanner } from '@/components/PromoBanner';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
@@ -32,9 +32,12 @@ const DEFAULT_FILTERS: FilterState = {
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
-  const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { isDesktop, contentPaddingTop, contentPaddingBottom, numColumns, width } = useWebLayout();
+  
+  const tabBarHeight = isDesktop ? 0 : (Platform.OS === 'web' ? 0 : 80);
+  const effectiveNumColumns = Math.max(1, numColumns);
 
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -157,22 +160,33 @@ export default function HomeScreen() {
     );
   }
 
+  const paddingTop = isDesktop 
+    ? contentPaddingTop + Spacing.md 
+    : headerHeight + Spacing.md;
+  
+  const paddingBottom = isDesktop 
+    ? contentPaddingBottom + Spacing.xl 
+    : tabBarHeight + Spacing.fabSize + Spacing.xl;
+
+  const horizontalPadding = isDesktop ? Math.max(24, (width - 1400) / 2) : Spacing.lg;
+
   return (
     <>
       <FlatList
+        key={`list-${effectiveNumColumns}`}
         style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
         contentContainerStyle={{
-          paddingTop: headerHeight + Spacing.md,
-          paddingBottom: tabBarHeight + Spacing.fabSize + Spacing.xl,
-          paddingHorizontal: Spacing.lg,
+          paddingTop,
+          paddingBottom,
+          paddingHorizontal: horizontalPadding,
           flexGrow: 1,
         }}
         scrollIndicatorInsets={{ bottom: insets.bottom }}
         data={filteredItems}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
+        numColumns={effectiveNumColumns}
+        columnWrapperStyle={effectiveNumColumns > 1 ? styles.row : undefined}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         refreshControl={

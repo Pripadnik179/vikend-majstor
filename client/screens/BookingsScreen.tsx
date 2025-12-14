@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, FlatList, StyleSheet, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, FlatList, StyleSheet, Pressable, RefreshControl, ActivityIndicator, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
@@ -9,6 +8,7 @@ import { Feather } from '@expo/vector-icons';
 import { BookingCard } from '@/components/BookingCard';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Booking, Item, User } from '@shared/schema';
@@ -17,7 +17,8 @@ type BookingWithDetails = Booking & { item: Item; renter: User; owner: User };
 
 export default function BookingsScreen() {
   const insets = useSafeAreaInsets();
-  const tabBarHeight = useBottomTabBarHeight();
+  const { isDesktop, contentPaddingTop, contentPaddingBottom } = useWebLayout();
+  const tabBarHeight = isDesktop ? 0 : (Platform.OS === 'web' ? 0 : 80);
   const { theme } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -64,8 +65,11 @@ export default function BookingsScreen() {
     );
   }
 
+  const paddingTop = isDesktop ? contentPaddingTop : 0;
+  const paddingBottom = isDesktop ? contentPaddingBottom + Spacing.xl : tabBarHeight + Spacing.fabSize + Spacing.xl;
+
   return (
-    <View style={{ flex: 1, backgroundColor: theme.backgroundRoot }}>
+    <View style={{ flex: 1, backgroundColor: theme.backgroundRoot, paddingTop }}>
       <View style={[styles.tabContainer, { borderBottomColor: theme.border }]}>
         <Pressable
           style={[
@@ -101,7 +105,7 @@ export default function BookingsScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingTop: Spacing.lg,
-          paddingBottom: tabBarHeight + Spacing.fabSize + Spacing.xl,
+          paddingBottom,
           paddingHorizontal: Spacing.lg,
           flexGrow: 1,
         }}

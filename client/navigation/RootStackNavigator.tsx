@@ -1,6 +1,8 @@
 import React from "react";
+import { Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainTabNavigator from "@/navigation/MainTabNavigator";
+import WebNavigator from "@/navigation/WebNavigator";
 import AuthScreen from "@/screens/AuthScreen";
 import ItemDetailScreen from "@/screens/ItemDetailScreen";
 import AddItemScreen from "@/screens/AddItemScreen";

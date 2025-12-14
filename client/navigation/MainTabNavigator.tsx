@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Pressable, Platform } from "react-native";
+import { View, StyleSheet, Pressable, Platform, useWindowDimensions, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
@@ -17,9 +17,31 @@ import type { MainTabParamList, RootStackParamList } from "./types";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
+const isWeb = Platform.OS === 'web';
+
 function FloatingAddButton() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { isDark } = useTheme();
+  const { isDark, theme } = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = isWeb && width >= 768;
+
+  if (isDesktop) {
+    return (
+      <Pressable
+        style={({ pressed }) => [
+          styles.webAddButton,
+          { 
+            backgroundColor: isDark ? Colors.dark.accent : Colors.light.accent,
+            opacity: pressed ? 0.9 : 1,
+          },
+        ]}
+        onPress={() => navigation.navigate('AddItem')}
+      >
+        <Feather name="plus" size={20} color="#FFFFFF" />
+        <Text style={styles.webAddButtonText}>Dodaj oglas</Text>
+      </Pressable>
+    );
+  }
 
   return (
     <View style={styles.fabContainer}>
@@ -41,24 +63,47 @@ function FloatingAddButton() {
 
 export default function MainTabNavigator() {
   const { theme, isDark } = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = isWeb && width >= 768;
+
+  const webTabBarStyle = isDesktop ? {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 64,
+    flexDirection: 'row' as const,
+    backgroundColor: isDark ? Colors.dark.cardBackground : Colors.light.cardBackground,
+    borderBottomWidth: 1,
+    borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  } : {};
+
+  const mobileTabBarStyle = {
+    position: "absolute" as const,
+    backgroundColor: Platform.select({
+      ios: "transparent",
+      android: theme.backgroundRoot,
+      web: isDark ? Colors.dark.cardBackground : Colors.light.cardBackground,
+    }),
+    borderTopWidth: 0,
+    elevation: 0,
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <BeVisibleModal />
+      {isDesktop ? <FloatingAddButton /> : null}
       <Tab.Navigator
         initialRouteName="HomeTab"
         screenOptions={{
           tabBarActiveTintColor: theme.primary,
           tabBarInactiveTintColor: theme.tabIconDefault,
-          tabBarStyle: {
-            position: "absolute",
-            backgroundColor: Platform.select({
-              ios: "transparent",
-              android: theme.backgroundRoot,
-            }),
-            borderTopWidth: 0,
-            elevation: 0,
-          },
+          tabBarStyle: isDesktop ? webTabBarStyle : mobileTabBarStyle,
+          tabBarLabelStyle: isDesktop ? { fontSize: 14, fontWeight: '500', marginLeft: 8 } : undefined,
+          tabBarItemStyle: isDesktop ? { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, marginHorizontal: 4, borderRadius: 8 } : undefined,
           tabBarBackground: () =>
             Platform.OS === "ios" ? (
               <BlurView
@@ -121,7 +166,7 @@ export default function MainTabNavigator() {
           }}
         />
       </Tab.Navigator>
-      <FloatingAddButton />
+      {!isDesktop ? <FloatingAddButton /> : null}
     </View>
   );
 }
@@ -142,5 +187,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...Shadows.fab,
+  },
+  webAddButton: {
+    position: 'absolute',
+    top: 12,
+    right: 24,
+    zIndex: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 8,
+  },
+  webAddButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

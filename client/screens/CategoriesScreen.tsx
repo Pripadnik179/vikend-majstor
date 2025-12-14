@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import { CATEGORIES } from '@shared/schema';
@@ -32,6 +33,7 @@ const CATEGORY_ICONS: Record<string, keyof typeof Feather.glyphMap> = {
 export default function CategoriesScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { isDesktop, contentPaddingTop, contentPaddingBottom } = useWebLayout();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [activeTab, setActiveTab] = useState<TabType>('project');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
@@ -54,8 +56,11 @@ export default function CategoriesScreen() {
     navigation.navigate('Search', { category });
   };
 
+  const paddingTop = isDesktop ? contentPaddingTop + Spacing.md : insets.top;
+  const paddingBottom = isDesktop ? contentPaddingBottom + Spacing.xl : insets.bottom + 100;
+
   return (
-    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
+    <ThemedView style={[styles.container, { paddingTop }]}>
       <View style={styles.header}>
         <ThemedText type="h2">Kategorije</ThemedText>
       </View>
@@ -113,7 +118,7 @@ export default function CategoriesScreen() {
 
       <ScrollView 
         style={styles.list}
-        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[styles.listContent, { paddingBottom }]}
         showsVerticalScrollIndicator={false}
       >
         {Object.entries(categories).map(([key, category]) => {

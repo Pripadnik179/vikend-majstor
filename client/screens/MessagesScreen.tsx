@@ -1,13 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { View, FlatList, StyleSheet, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, FlatList, StyleSheet, Pressable, RefreshControl, ActivityIndicator, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Conversation, Message, User } from '@shared/schema';
@@ -20,7 +20,8 @@ type ConversationWithDetails = Conversation & {
 
 export default function MessagesScreen() {
   const insets = useSafeAreaInsets();
-  const tabBarHeight = useBottomTabBarHeight();
+  const { isDesktop, contentPaddingTop, contentPaddingBottom } = useWebLayout();
+  const tabBarHeight = isDesktop ? 0 : (Platform.OS === 'web' ? 0 : 80);
   const { theme } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -106,9 +107,12 @@ export default function MessagesScreen() {
     </View>
   );
 
+  const paddingTop = isDesktop ? contentPaddingTop + Spacing.md : 0;
+  const paddingBottom = isDesktop ? contentPaddingBottom + Spacing.xl : tabBarHeight + Spacing.fabSize + Spacing.xl;
+
   if (isLoading && !refreshing) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.backgroundRoot }]}>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.backgroundRoot, paddingTop }]}>
         <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
@@ -118,7 +122,8 @@ export default function MessagesScreen() {
     <FlatList
       style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
       contentContainerStyle={{
-        paddingBottom: tabBarHeight + Spacing.fabSize + Spacing.xl,
+        paddingTop,
+        paddingBottom,
         flexGrow: 1,
       }}
       scrollIndicatorInsets={{ bottom: insets.bottom }}

@@ -1,20 +1,21 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Alert, ScrollView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const tabBarHeight = useBottomTabBarHeight();
+  const { isDesktop, contentPaddingTop, contentPaddingBottom } = useWebLayout();
+  const tabBarHeight = isDesktop ? 0 : (Platform.OS === 'web' ? 0 : 80);
   const { theme } = useTheme();
   const { user, logout } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -52,12 +53,15 @@ export default function ProfileScreen() {
     { icon: 'info', label: 'O Aplikaciji', onPress: () => navigation.navigate('About') },
   ];
 
+  const paddingTop = isDesktop ? contentPaddingTop + Spacing.lg : Spacing.lg;
+  const paddingBottom = isDesktop ? contentPaddingBottom + Spacing.xl : tabBarHeight + Spacing.fabSize + Spacing.xl;
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
       contentContainerStyle={{
-        paddingTop: Spacing.lg,
-        paddingBottom: tabBarHeight + Spacing.fabSize + Spacing.xl,
+        paddingTop,
+        paddingBottom,
         paddingHorizontal: Spacing.lg,
       }}
       scrollIndicatorInsets={{ bottom: insets.bottom }}

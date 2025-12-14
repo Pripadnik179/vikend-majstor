@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { View, StyleSheet, Pressable, useWindowDimensions, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
@@ -8,8 +8,7 @@ import { getApiUrl } from '@/lib/query-client';
 import { Spacing, BorderRadius, Colors } from '@/constants/theme';
 import type { Item } from '@shared/schema';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - Spacing.lg * 2 - Spacing.md) / 2;
+const isWeb = Platform.OS === 'web';
 
 interface ItemCardProps {
   item: Item & { isPremium?: boolean };
@@ -19,6 +18,11 @@ interface ItemCardProps {
 
 export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProps) {
   const { theme } = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = isWeb && width >= 768;
+  const numColumns = isDesktop ? (width >= 1200 ? 4 : width >= 992 ? 3 : 2) : 2;
+  const horizontalPadding = isDesktop ? Math.max(24, (width - 1400) / 2) : Spacing.lg;
+  const cardWidth = (width - horizontalPadding * 2 - Spacing.md * (numColumns - 1)) / numColumns;
 
   const getImageUrl = (path: string) => {
     if (path.startsWith('http')) return path;
@@ -41,6 +45,7 @@ export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProp
       style={({ pressed }) => [
         styles.container,
         { 
+          width: cardWidth,
           backgroundColor: theme.backgroundDefault,
           opacity: pressed ? 0.9 : 1,
           transform: [{ scale: pressed ? 0.98 : 1 }],
@@ -52,11 +57,11 @@ export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProp
         {item.images && item.images.length > 0 ? (
           <Image
             source={{ uri: getImageUrl(item.images[0]) }}
-            style={styles.image}
+            style={[styles.image, { height: cardWidth * 0.75 }]}
             contentFit="cover"
           />
         ) : (
-          <View style={[styles.image, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary }]}>
+          <View style={[styles.image, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary, height: cardWidth * 0.75 }]}>
             <Feather name="image" size={32} color={theme.textTertiary} />
           </View>
         )}
@@ -95,7 +100,6 @@ export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProp
 
 const styles = StyleSheet.create({
   container: {
-    width: CARD_WIDTH,
     borderRadius: BorderRadius.md,
     overflow: 'hidden',
   },
@@ -104,7 +108,6 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: CARD_WIDTH * 0.75,
   },
   placeholderImage: {
     justifyContent: 'center',
