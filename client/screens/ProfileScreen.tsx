@@ -48,8 +48,8 @@ export default function ProfileScreen() {
     { icon: 'package', label: 'Moje Stvari', onPress: () => navigation.navigate('MyItems') },
     { icon: 'star', label: 'Pretplata', badge: getSubscriptionLabel(), onPress: () => navigation.navigate('Subscription') },
     { icon: 'settings', label: 'Podešavanja', onPress: () => navigation.navigate('Settings') },
-    { icon: 'help-circle', label: 'Pomoć', onPress: () => {} },
-    { icon: 'info', label: 'O Aplikaciji', onPress: () => {} },
+    { icon: 'help-circle', label: 'Pomoć', onPress: () => navigation.navigate('Help') },
+    { icon: 'info', label: 'O Aplikaciji', onPress: () => navigation.navigate('About') },
   ];
 
   return (

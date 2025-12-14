@@ -12,6 +12,8 @@ import SettingsScreen from "@/screens/SettingsScreen";
 import MyItemsScreen from "@/screens/MyItemsScreen";
 import SearchScreen from "@/screens/SearchScreen";
 import SubscriptionScreen from "@/screens/SubscriptionScreen";
+import HelpScreen from "@/screens/HelpScreen";
+import AboutScreen from "@/screens/AboutScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/hooks/useTheme";
@@ -94,12 +96,12 @@ export default function RootStackNavigator() {
           <Stack.Screen
             name="Settings"
             component={SettingsScreen}
-            options={{ headerTitle: "Podešavanja" }}
+            options={{ headerTitle: "Podešavanja", headerTransparent: false }}
           />
           <Stack.Screen
             name="MyItems"
             component={MyItemsScreen}
-            options={{ headerTitle: "Moje Stvari" }}
+            options={{ headerTitle: "Moje Stvari", headerTransparent: false }}
           />
           <Stack.Screen
             name="Search"
@@ -113,6 +115,16 @@ export default function RootStackNavigator() {
               presentation: "modal",
               headerTitle: "Pretplata",
             }}
+          />
+          <Stack.Screen
+            name="Help"
+            component={HelpScreen}
+            options={{ headerTitle: "Pomoć", headerTransparent: false }}
+          />
+          <Stack.Screen
+            name="About"
+            component={AboutScreen}
+            options={{ headerTitle: "O aplikaciji", headerTransparent: false }}
           />
         </>
       ) : (

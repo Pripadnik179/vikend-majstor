@@ -14,6 +14,8 @@ export type RootStackParamList = {
   MyItems: undefined;
   Search: { category?: string; subcategory?: string; toolType?: string; query?: string };
   Subscription: undefined;
+  Help: undefined;
+  About: undefined;
 };
 
 export type MainTabParamList = {
