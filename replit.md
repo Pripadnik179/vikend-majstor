@@ -174,6 +174,10 @@ The app runs with `npm run all:dev` which starts:
 - Added error handling and loading states to BookingDetailScreen for better Android support
 - Fixed web login by updating getApiUrl() in client/lib/query-client.ts to handle web platform properly (uses window.location.origin for Replit webview, http://localhost:5000 for local dev)
 - Added token-based authentication for mobile devices (authToken saved to expo-secure-store)
+- Fixed SearchScreen grid layout - added numColumns={2} for 2-column item display
+- Fixed white space issue in MainTabNavigator.tsx by correcting color references
+- Fixed seed script to properly update totalAdsCreated counter after seeding demo data
+- Fixed Android "New update available" loop by disabling automatic updates in app.json (updates.enabled=false)
 
 ## Push Notifications
 
