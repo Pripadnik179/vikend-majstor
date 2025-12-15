@@ -485,8 +485,6 @@ export default function SearchScreen() {
           data={items}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          numColumns={2}
-          columnWrapperStyle={{ gap: Spacing.md }}
           contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + Spacing.xl, gap: Spacing.md }]}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
