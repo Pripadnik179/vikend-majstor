@@ -8,14 +8,13 @@ import { useQuery } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Card } from '@/components/Card';
 import { SearchBar } from '@/components/SearchBar';
+import { ItemCard } from '@/components/ItemCard';
 import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
 import { CATEGORIES, POWER_SOURCES, ACTIVITIES } from '@shared/schema';
-import { Image } from 'expo-image';
 import { getApiUrl } from '@/lib/query-client';
 
 const isWeb = Platform.OS === 'web';
@@ -210,63 +209,10 @@ export default function SearchScreen() {
   ];
 
   const renderItem = ({ item }: { item: Item }) => (
-    <Pressable
+    <ItemCard
+      item={{ ...item, isPremium: item.isFeatured }}
       onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
-      style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
-    >
-      <Card style={StyleSheet.flatten([styles.itemCard, item.isFeatured && { borderColor: '#F97316', borderWidth: 2 }])}>
-        <View style={styles.itemContent}>
-          <View style={{ position: 'relative' }}>
-            {item.images && item.images.length > 0 ? (
-              <Image
-                source={{ uri: item.images[0] }}
-                style={styles.itemImage}
-                contentFit="cover"
-              />
-            ) : (
-              <View style={[styles.itemImage, styles.placeholderImage, { backgroundColor: theme.backgroundDefault }]}>
-                <Feather name="image" size={24} color={theme.textTertiary} />
-              </View>
-            )}
-            {item.isFeatured ? (
-              <View style={styles.featuredBadge}>
-                <Feather name="star" size={10} color="#FFFFFF" />
-              </View>
-            ) : null}
-          </View>
-          <View style={styles.itemInfo}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.xs }}>
-              <ThemedText type="h4" numberOfLines={1} style={{ flex: 1 }}>{item.title}</ThemedText>
-              {item.isFeatured ? (
-                <View style={[styles.featuredLabel, { backgroundColor: '#F97316' }]}>
-                  <ThemedText type="small" style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '600' }}>
-                    Premium
-                  </ThemedText>
-                </View>
-              ) : null}
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.xs }}>
-              <ThemedText type="small" style={{ color: theme.textSecondary }} numberOfLines={1}>
-                {item.city}{item.district ? `, ${item.district}` : ''}
-              </ThemedText>
-              {(item as any).adType === 'looking_for' ? (
-                <View style={[styles.adTypeBadge, { backgroundColor: theme.primary }]}>
-                  <ThemedText type="small" style={{ color: '#000', fontSize: 9, fontWeight: '600' }}>
-                    Traži se
-                  </ThemedText>
-                </View>
-              ) : null}
-            </View>
-            <View style={styles.priceRow}>
-              <ThemedText type="body" style={{ color: theme.primary, fontWeight: '700' }}>
-                {item.pricePerDay} RSD
-              </ThemedText>
-              <ThemedText type="small" style={{ color: theme.textSecondary }}>/dan</ThemedText>
-            </View>
-          </View>
-        </View>
-      </Card>
-    </Pressable>
+    />
   );
 
   return (
@@ -539,7 +485,9 @@ export default function SearchScreen() {
           data={items}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + Spacing.xl }]}
+          numColumns={2}
+          columnWrapperStyle={{ gap: Spacing.md }}
+          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + Spacing.xl, gap: Spacing.md }]}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -646,58 +594,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.sm,
   },
-  itemCard: {
-    marginBottom: Spacing.md,
-  },
-  itemContent: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  itemImage: {
-    width: 80,
-    height: 80,
-    borderRadius: BorderRadius.sm,
-  },
-  placeholderImage: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  itemInfo: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: 2,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 2,
-    marginTop: Spacing.xs,
-  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 100,
-  },
-  featuredBadge: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#F97316',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  featuredLabel: {
-    paddingHorizontal: Spacing.xs,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.xs,
-  },
-  adTypeBadge: {
-    paddingHorizontal: Spacing.xs,
-    paddingVertical: 1,
-    borderRadius: BorderRadius.xs,
   },
 });

@@ -370,6 +370,22 @@ async function seed() {
     console.log(`Created item: ${itemData.title}`);
   }
   
+  // Update totalAdsCreated counter for each user based on items created
+  console.log("Updating ad counters...");
+  const ownerItemCounts = new Map<number, number>();
+  for (const itemData of demoItems) {
+    const count = ownerItemCounts.get(itemData.ownerIndex) || 0;
+    ownerItemCounts.set(itemData.ownerIndex, count + 1);
+  }
+  
+  for (const [ownerIndex, itemCount] of ownerItemCounts) {
+    const owner = createdUsers[ownerIndex];
+    await db.update(users)
+      .set({ totalAdsCreated: itemCount })
+      .where(eq(users.id, owner.id));
+    console.log(`Updated totalAdsCreated for user ${ownerIndex}: ${itemCount} ads`);
+  }
+  
   console.log("\nSeed completed successfully!");
   console.log(`Created ${demoUsers.length} users`);
   console.log(`Created ${demoItems.length} items`);

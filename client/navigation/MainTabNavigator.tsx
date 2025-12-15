@@ -73,12 +73,12 @@ export default function MainTabNavigator() {
     right: 0,
     height: 64,
     flexDirection: 'row' as const,
-    backgroundColor: isDark ? Colors.dark.cardBackground : Colors.light.cardBackground,
+    backgroundColor: isDark ? Colors.dark.backgroundDefault : Colors.light.backgroundDefault,
     borderBottomWidth: 1,
     borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
     paddingHorizontal: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   } : {};
 
   const mobileTabBarStyle = {
@@ -86,7 +86,7 @@ export default function MainTabNavigator() {
     backgroundColor: Platform.select({
       ios: "transparent",
       android: theme.backgroundRoot,
-      web: isDark ? Colors.dark.cardBackground : Colors.light.cardBackground,
+      web: isDark ? Colors.dark.backgroundDefault : Colors.light.backgroundDefault,
     }),
     borderTopWidth: 0,
     elevation: 0,
