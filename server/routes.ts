@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             new Date(owner.subscriptionEndDate) > now;
           
           let distance: number | null = null;
-          if (userLat && userLng && item.latitude && item.longitude) {
+          if (userLat !== null && userLng !== null && item.latitude && item.longitude) {
             distance = haversineDistance(
               userLat, 
               userLng, 
@@ -248,7 +248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       );
       
-      if (maxDist && userLat && userLng) {
+      if (maxDist !== null && userLat !== null && userLng !== null) {
         itemsWithDistance = itemsWithDistance.filter(item => 
           item.distance !== null && item.distance <= maxDist
         );
