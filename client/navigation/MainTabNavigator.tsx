@@ -93,7 +93,7 @@ export default function MainTabNavigator() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: theme.backgroundRoot }}>
       <BeVisibleModal />
       {isDesktop ? <FloatingAddButton /> : null}
       <Tab.Navigator
