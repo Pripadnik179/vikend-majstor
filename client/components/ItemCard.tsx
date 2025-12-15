@@ -11,7 +11,7 @@ import type { Item } from '@shared/schema';
 const isWeb = Platform.OS === 'web';
 
 interface ItemCardProps {
-  item: Item & { isPremium?: boolean };
+  item: Item & { isPremium?: boolean; distance?: number | null };
   onPress: () => void;
   showExpiration?: boolean;
 }
@@ -80,6 +80,7 @@ export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProp
           <Feather name="map-pin" size={12} color={theme.textTertiary} />
           <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 4 }} numberOfLines={1}>
             {item.city}
+            {item.distance != null ? ` (${item.distance < 1 ? `${Math.round(item.distance * 1000)} m` : `${item.distance.toFixed(1)} km`})` : ''}
           </ThemedText>
         </View>
         <ThemedText type="body" style={{ color: theme.primary, fontWeight: '700', marginTop: Spacing.xs }}>

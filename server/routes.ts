@@ -180,9 +180,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
   app.get("/api/items", async (req, res) => {
     try {
-      const { category, subCategory, toolType, powerSource, city, search, adType, minPrice, maxPrice, period, hasImages, activityTag } = req.query;
+      const { category, subCategory, toolType, powerSource, city, search, adType, minPrice, maxPrice, period, hasImages, activityTag, lat, lng, maxDistance } = req.query;
       
       let createdAfter: Date | undefined;
       if (period === 'today') {
@@ -212,17 +223,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const now = new Date();
-      const itemsWithPremium = await Promise.all(
+      const userLat = lat ? parseFloat(lat as string) : null;
+      const userLng = lng ? parseFloat(lng as string) : null;
+      const maxDist = maxDistance ? parseFloat(maxDistance as string) : null;
+      
+      let itemsWithDistance = await Promise.all(
         items.map(async (item) => {
           const owner = await storage.getUser(item.ownerId);
           const isPremium = owner?.subscriptionType === 'premium' && 
             owner?.subscriptionEndDate && 
             new Date(owner.subscriptionEndDate) > now;
-          return { ...item, isPremium: !!isPremium };
+          
+          let distance: number | null = null;
+          if (userLat && userLng && item.latitude && item.longitude) {
+            distance = haversineDistance(
+              userLat, 
+              userLng, 
+              parseFloat(item.latitude), 
+              parseFloat(item.longitude)
+            );
+          }
+          
+          return { ...item, isPremium: !!isPremium, distance };
         })
       );
       
-      res.json(itemsWithPremium);
+      if (maxDist && userLat && userLng) {
+        itemsWithDistance = itemsWithDistance.filter(item => 
+          item.distance !== null && item.distance <= maxDist
+        );
+        itemsWithDistance.sort((a, b) => (a.distance || 999999) - (b.distance || 999999));
+      }
+      
+      res.json(itemsWithDistance);
     } catch (error) {
       console.error("Error fetching items:", error);
       res.status(500).json({ error: "Greška pri učitavanju stvari" });

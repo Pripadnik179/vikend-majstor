@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Pressable, ActivityIndicator, TextInput, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -6,6 +6,7 @@ import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Card } from '@/components/Card';
@@ -41,6 +42,35 @@ export default function SearchScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [hasImagesOnly, setHasImagesOnly] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState('');
+  const [maxDistance, setMaxDistance] = useState<number | null>(null);
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
+  const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
+
+  useEffect(() => {
+    const fetchLocation = async () => {
+      if (locationPermission?.granted) {
+        try {
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+          setUserLat(location.coords.latitude);
+          setUserLng(location.coords.longitude);
+        } catch (error) {
+          console.error('Error getting location:', error);
+        }
+      }
+    };
+    fetchLocation();
+  }, [locationPermission?.granted]);
+
+  const distanceOptions = [
+    { value: null, label: 'Svi' },
+    { value: 5, label: '5 km' },
+    { value: 10, label: '10 km' },
+    { value: 25, label: '25 km' },
+    { value: 50, label: '50 km' },
+  ];
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -60,6 +90,11 @@ export default function SearchScreen() {
     if (selectedPeriod !== 'all') url.searchParams.append('period', selectedPeriod);
     if (hasImagesOnly) url.searchParams.append('hasImages', 'true');
     if (selectedActivity) url.searchParams.append('activityTag', selectedActivity);
+    if (userLat && userLng) {
+      url.searchParams.append('lat', userLat.toString());
+      url.searchParams.append('lng', userLng.toString());
+    }
+    if (maxDistance) url.searchParams.append('maxDistance', maxDistance.toString());
     return url.toString();
   };
 
@@ -76,6 +111,9 @@ export default function SearchScreen() {
       period: selectedPeriod,
       hasImages: hasImagesOnly,
       activityTag: selectedActivity,
+      lat: userLat,
+      lng: userLng,
+      maxDistance,
     }],
     queryFn: async () => {
       const url = buildApiUrl();
@@ -111,6 +149,7 @@ export default function SearchScreen() {
     setSelectedPeriod('all');
     setHasImagesOnly(false);
     setSelectedActivity('');
+    setMaxDistance(null);
   }, []);
 
   const activeFilterCount = [
@@ -124,6 +163,7 @@ export default function SearchScreen() {
     selectedPeriod !== 'all' ? selectedPeriod : '',
     hasImagesOnly ? 'images' : '',
     selectedActivity,
+    maxDistance !== null ? 'distance' : '',
   ].filter(Boolean).length;
 
   const adTypeOptions = [
@@ -385,6 +425,47 @@ export default function SearchScreen() {
                 </Pressable>
               )}
             />
+          </View>
+
+          <View style={styles.filterRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>Udaljenost</ThemedText>
+              {!locationPermission?.granted ? (
+                <Pressable onPress={requestLocationPermission}>
+                  <ThemedText type="small" style={{ color: theme.primary }}>Omogući lokaciju</ThemedText>
+                </Pressable>
+              ) : null}
+            </View>
+            <View style={styles.chipRow}>
+              {distanceOptions.map((opt) => (
+                <Pressable
+                  key={opt.value === null ? 'all' : opt.value.toString()}
+                  style={[
+                    styles.filterChip,
+                    { 
+                      backgroundColor: maxDistance === opt.value ? theme.primary : theme.backgroundRoot,
+                      borderColor: maxDistance === opt.value ? theme.primary : theme.border,
+                      opacity: (!locationPermission?.granted && opt.value !== null) ? 0.5 : 1,
+                    },
+                  ]}
+                  onPress={() => {
+                    if (opt.value === null || locationPermission?.granted) {
+                      setMaxDistance(opt.value);
+                    } else {
+                      requestLocationPermission();
+                    }
+                  }}
+                  disabled={!locationPermission?.granted && opt.value !== null}
+                >
+                  <ThemedText 
+                    type="small" 
+                    style={{ color: maxDistance === opt.value ? '#000' : theme.text }}
+                  >
+                    {opt.label}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
           </View>
 
           <View style={styles.switchRow}>

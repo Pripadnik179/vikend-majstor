@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, ScrollView } from 'react-native';
+import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, ScrollView, Platform, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { File } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
@@ -55,6 +56,10 @@ export default function AddItemScreen() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [activityTags, setActivityTags] = useState<string[]>([]);
   const [showActivityPicker, setShowActivityPicker] = useState(false);
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
 
   const allCategories = useMemo(() => {
     const cats: { key: string; name: string; subcategories: string[] }[] = [];
@@ -91,6 +96,27 @@ export default function AddItemScreen() {
   }, [isAtLimit]);
 
   useEffect(() => {
+    const fetchLocation = async () => {
+      if (!isEditing && locationPermission?.granted) {
+        setLocationStatus('loading');
+        try {
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+          setLatitude(location.coords.latitude);
+          setLongitude(location.coords.longitude);
+          setLocationStatus('success');
+        } catch (error) {
+          console.error('Error getting location:', error);
+          setLocationStatus('error');
+        }
+      }
+    };
+    
+    fetchLocation();
+  }, [isEditing, locationPermission?.granted]);
+
+  useEffect(() => {
     if (existingItem) {
       setTitle(existingItem.title);
       setDescription(existingItem.description);
@@ -104,6 +130,9 @@ export default function AddItemScreen() {
       setImages(existingItem.images || []);
       setAdType((existingItem as any).adType || 'renting');
       setActivityTags((existingItem as any).activityTags || []);
+      if (existingItem.latitude) setLatitude(parseFloat(existingItem.latitude));
+      if (existingItem.longitude) setLongitude(parseFloat(existingItem.longitude));
+      if (existingItem.latitude && existingItem.longitude) setLocationStatus('success');
     }
   }, [existingItem]);
 
@@ -158,6 +187,8 @@ export default function AddItemScreen() {
         deposit: parseInt(deposit),
         city,
         district: district || null,
+        latitude: latitude?.toString() || null,
+        longitude: longitude?.toString() || null,
         images,
         adType,
         activityTags: activityTags.length > 0 ? activityTags : null,
@@ -541,6 +572,45 @@ export default function AddItemScreen() {
         </View>
       </View>
 
+      <View style={styles.section}>
+        <View style={styles.locationRow}>
+          <Feather name="map-pin" size={18} color={locationStatus === 'success' ? theme.success : theme.textTertiary} />
+          <ThemedText type="body" style={[styles.locationText, { color: locationStatus === 'success' ? theme.success : theme.textTertiary }]}>
+            {locationStatus === 'loading' ? 'Preuzimanje lokacije...' : 
+             locationStatus === 'success' ? 'GPS lokacija sačuvana' :
+             locationStatus === 'error' ? 'Greška pri preuzimanju lokacije' :
+             !locationPermission?.granted ? 'Omogućite lokaciju za bolju pretragu' : 'GPS lokacija nije dostupna'}
+          </ThemedText>
+          {locationStatus === 'loading' ? (
+            <ActivityIndicator size="small" color={theme.primary} style={{ marginLeft: Spacing.sm }} />
+          ) : null}
+        </View>
+        {!locationPermission?.granted && locationPermission?.status !== undefined ? (
+          <Pressable 
+            style={[styles.locationButton, { backgroundColor: theme.primaryLight }]}
+            onPress={async () => {
+              if (locationPermission?.status === 'denied' && !locationPermission?.canAskAgain) {
+                if (Platform.OS !== 'web') {
+                  try {
+                    await Linking.openSettings();
+                  } catch (error) {
+                    Alert.alert('Greška', 'Nije moguće otvoriti podešavanja');
+                  }
+                }
+              } else {
+                await requestLocationPermission();
+              }
+            }}
+          >
+            <ThemedText type="small" style={{ color: theme.primary, fontWeight: '600' }}>
+              {locationPermission?.status === 'denied' && !locationPermission?.canAskAgain 
+                ? 'Otvori podešavanja' 
+                : 'Omogući lokaciju'}
+            </ThemedText>
+          </Pressable>
+        ) : null}
+      </View>
+
       <Button onPress={handleSubmit} disabled={isLoading} style={styles.submitButton}>
         {isLoading ? <ActivityIndicator color="#FFFFFF" /> : (isEditing ? 'Sačuvaj izmene' : 'Dodaj stvar')}
       </Button>
@@ -624,6 +694,20 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: Spacing.lg,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  locationText: {
+    marginLeft: Spacing.sm,
+  },
+  locationButton: {
+    marginTop: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    alignSelf: 'flex-start',
   },
   adTypeRow: {
     flexDirection: 'row',
