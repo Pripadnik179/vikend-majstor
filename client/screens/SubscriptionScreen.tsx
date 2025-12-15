@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import { apiRequest } from '@/lib/query-client';
+import type { RootStackParamList } from '@/navigation/types';
 
 type SubscriptionStatus = {
   subscriptionType: 'none' | 'basic' | 'premium';
@@ -84,8 +85,13 @@ export default function SubscriptionScreen() {
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
   const navigation = useNavigation();
+  const route = useRoute<RouteProp<RootStackParamList, 'Subscription'>>();
   const queryClient = useQueryClient();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const featureSectionY = useRef<number>(0);
+
+  const scrollToFeature = route.params?.scrollToFeature;
 
   const { data: status, isLoading: statusLoading } = useQuery<SubscriptionStatus>({
     queryKey: ['/api/subscription/status'],
@@ -101,7 +107,15 @@ export default function SubscriptionScreen() {
 
   const remainingSlots = status?.remainingEarlyAdopterSlots ?? homeData?.remainingEarlyAdopterSlots ?? 0;
   const isLoading = statusLoading && homeLoading && adStatsLoading;
-  const showSingleFeatureOption = adStats?.isPremium && adStats?.freeFeatureUsed;
+  const showSingleFeatureOption = (adStats?.isPremium && adStats?.freeFeatureUsed) || scrollToFeature;
+
+  useEffect(() => {
+    if (scrollToFeature && !isLoading && featureSectionY.current > 0) {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ y: featureSectionY.current - 100, animated: true });
+      }, 300);
+    }
+  }, [scrollToFeature, isLoading]);
 
   const claimEarlyAdopterMutation = useMutation({
     mutationFn: async () => {
@@ -174,6 +188,7 @@ export default function SubscriptionScreen() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView 
+        ref={scrollViewRef}
         contentContainerStyle={[styles.content, { paddingTop: headerHeight + Spacing.md, paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}
       >
@@ -344,7 +359,12 @@ export default function SubscriptionScreen() {
         })}
 
         {showSingleFeatureOption ? (
-          <Card style={StyleSheet.flatten([styles.singleFeatureCard, { borderColor: theme.warning, borderWidth: 2 }])}>
+          <Card 
+            style={StyleSheet.flatten([styles.singleFeatureCard, { borderColor: theme.warning, borderWidth: 2 }])}
+            onLayout={(event) => {
+              featureSectionY.current = event.nativeEvent.layout.y;
+            }}
+          >
             <View style={styles.singleFeatureHeader}>
               <Feather name="star" size={28} color={theme.warning} />
               <View style={styles.singleFeatureText}>

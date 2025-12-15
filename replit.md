@@ -178,6 +178,11 @@ The app runs with `npm run all:dev` which starts:
 - Fixed white space issue in MainTabNavigator.tsx by correcting color references
 - Fixed seed script to properly update totalAdsCreated counter after seeding demo data
 - Fixed Android "New update available" loop by disabling automatic updates in app.json (updates.enabled=false)
+- Added "Sledeći (99 RSD)" feature for premium users with existing featured ads
+  - MyItemsScreen shows "Sledeći (99 RSD)" button for non-featured items when user already has a featured item
+  - SubscriptionScreen accepts scrollToFeature param and auto-scrolls to purchase section
+  - Card component now supports onLayout prop for position measurement
+- Fixed white space issues in Settings, MyItems, Help, About screens with proper headerStyle and contentStyle
 
 ## Push Notifications
 

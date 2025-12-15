@@ -117,7 +117,7 @@ export default function MyItemsScreen() {
           'Već ste iskoristili besplatno isticanje. Dodatno isticanje košta 99 RSD.',
           [
             { text: 'Otkaži', style: 'cancel' },
-            { text: 'Kupi', onPress: () => navigation.navigate('Subscription') },
+            { text: 'Kupi', onPress: () => navigation.navigate('Subscription', { scrollToFeature: true }) },
           ]
         );
       } else if (error.code === 'CANNOT_REMOVE_FREE') {
