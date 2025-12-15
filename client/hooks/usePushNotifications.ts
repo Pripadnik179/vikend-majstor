@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
-import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { apiRequest } from '@/lib/query-client';
 
-// Dynamic import to avoid Expo Go SDK 53+ console errors
 let Notifications: typeof import('expo-notifications') | null = null;
+
+const isExpoGo = () => {
+  const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+  return !projectId;
+};
 
 export function usePushNotifications() {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
@@ -14,11 +17,7 @@ export function usePushNotifications() {
   const responseListener = useRef<any>(undefined);
 
   useEffect(() => {
-    // Early exit: Check for EAS projectId BEFORE any imports to avoid Expo Go SDK 53+ errors
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
-    
-    // Skip entirely if no projectId (Expo Go) or web platform or not physical device
-    if (!projectId || Platform.OS === 'web' || !Device.isDevice) {
+    if (Platform.OS === 'web' || isExpoGo()) {
       return;
     }
 
@@ -90,7 +89,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
   
   let token: string | null = null;
 
-  if (Platform.OS === 'web' || !Device.isDevice) {
+  if (Platform.OS === 'web' || isExpoGo()) {
     return null;
   }
 

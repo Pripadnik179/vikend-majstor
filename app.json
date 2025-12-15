@@ -11,6 +11,10 @@
     "updates": {
       "enabled": false
     },
+    "assetBundlePatterns": [
+      "**/*",
+      "node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vikendmajstor.app"
