@@ -98,12 +98,22 @@ export default function RootStackNavigator() {
           <Stack.Screen
             name="Settings"
             component={SettingsScreen}
-            options={{ headerTitle: "Podešavanja", headerTransparent: false }}
+            options={{ 
+              headerTitle: "Podešavanja", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
           />
           <Stack.Screen
             name="MyItems"
             component={MyItemsScreen}
-            options={{ headerTitle: "Moje Stvari", headerTransparent: false }}
+            options={{ 
+              headerTitle: "Moje Stvari", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
           />
           <Stack.Screen
             name="Search"
@@ -121,12 +131,22 @@ export default function RootStackNavigator() {
           <Stack.Screen
             name="Help"
             component={HelpScreen}
-            options={{ headerTitle: "Pomoć", headerTransparent: false }}
+            options={{ 
+              headerTitle: "Pomoć", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
           />
           <Stack.Screen
             name="About"
             component={AboutScreen}
-            options={{ headerTitle: "O aplikaciji", headerTransparent: false }}
+            options={{ 
+              headerTitle: "O aplikaciji", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
           />
         </>
       ) : (
