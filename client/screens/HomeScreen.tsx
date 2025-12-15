@@ -63,7 +63,7 @@ export default function HomeScreen() {
   }, [filters]);
 
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+    const filtered = items.filter((item) => {
       const matchesSearch = !search || 
         item.title.toLowerCase().includes(search.toLowerCase()) ||
         item.city.toLowerCase().includes(search.toLowerCase());
@@ -73,6 +73,13 @@ export default function HomeScreen() {
       const matchesDeposit = filters.maxDeposit === null || item.deposit <= filters.maxDeposit;
       const matchesCity = !filters.city || item.city.toLowerCase().includes(filters.city.toLowerCase());
       return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesRating && matchesDeposit && matchesCity;
+    });
+    
+    // Sort featured items first, then by creation date
+    return filtered.sort((a, b) => {
+      if (a.isFeatured && !b.isFeatured) return -1;
+      if (!a.isFeatured && b.isFeatured) return 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }, [items, search, filters]);
 
