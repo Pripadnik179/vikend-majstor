@@ -75,10 +75,17 @@ export default function HomeScreen() {
       return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesRating && matchesDeposit && matchesCity;
     });
     
-    // Sort featured items first, then by creation date
+    // Sort: 1) Featured items first, 2) Premium users' items, 3) by creation date
     return filtered.sort((a, b) => {
-      if (a.isFeatured && !b.isFeatured) return -1;
-      if (!a.isFeatured && b.isFeatured) return 1;
+      const aItem = a as any;
+      const bItem = b as any;
+      // Featured items come first
+      if (aItem.isFeatured && !bItem.isFeatured) return -1;
+      if (!aItem.isFeatured && bItem.isFeatured) return 1;
+      // Then premium users' items
+      if (aItem.isPremium && !bItem.isPremium) return -1;
+      if (!aItem.isPremium && bItem.isPremium) return 1;
+      // Then sort by createdAt descending
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }, [items, search, filters]);
