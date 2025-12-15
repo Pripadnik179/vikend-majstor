@@ -13,7 +13,7 @@ export type RootStackParamList = {
   Settings: undefined;
   MyItems: undefined;
   Search: { category?: string; subcategory?: string; toolType?: string; query?: string };
-  Subscription: undefined;
+  Subscription: { scrollToFeature?: boolean } | undefined;
   Help: undefined;
   About: undefined;
 };

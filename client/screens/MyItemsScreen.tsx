@@ -298,6 +298,19 @@ export default function MyItemsScreen() {
                 Istaknut
               </ThemedText>
             </View>
+          ) : adStats?.featuredItemId ? (
+            <Pressable
+              style={({ pressed }) => [
+                styles.actionButton,
+                { backgroundColor: pressed ? theme.warning + '20' : 'transparent' },
+              ]}
+              onPress={() => navigation.navigate('Subscription', { scrollToFeature: true })}
+            >
+              <Feather name="plus-circle" size={18} color={theme.warning} />
+              <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs }}>
+                Sledeći (99 RSD)
+              </ThemedText>
+            </Pressable>
           ) : (
             <Pressable
               style={({ pressed }) => [
@@ -307,7 +320,7 @@ export default function MyItemsScreen() {
               disabled={featureMutation.isPending}
               onPress={() => {
                 if (adStats?.freeFeatureUsed) {
-                  navigation.navigate('Subscription');
+                  navigation.navigate('Subscription', { scrollToFeature: true });
                 } else {
                   featureMutation.mutate({ itemId: item.id, action: 'feature' });
                 }
