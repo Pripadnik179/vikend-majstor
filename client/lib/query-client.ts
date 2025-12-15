@@ -23,17 +23,18 @@ export function getApiUrl(): string {
     return currentOrigin;
   }
   
-  // For mobile (React Native), use the configured domain
+  // For mobile (React Native), use the configured domain with port 5000
+  // IMPORTANT: Keep the :5000 port so image requests go to Express server, not Expo bundler
   const host = process.env.EXPO_PUBLIC_DOMAIN;
 
   if (!host) {
     throw new Error("EXPO_PUBLIC_DOMAIN is not set");
   }
 
-  // Remove port suffix if present - mobile connects to port 5000 directly via Replit proxy
-  const cleanHost = host.replace(/:5000$/, '');
+  // Ensure host includes port 5000 for direct connection to Express server
+  const hostWithPort = host.includes(':5000') ? host : `${host}:5000`;
   
-  return `https://${cleanHost}`;
+  return `https://${hostWithPort}`;
 }
 
 function getAuthHeaders(): Record<string, string> {
