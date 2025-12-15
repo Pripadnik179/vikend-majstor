@@ -1,6 +1,15 @@
 import { File } from 'expo-file-system';
 import { fetch } from 'expo/fetch';
 import { getApiUrl } from '@/lib/query-client';
+import { getAuthTokenSync } from '@/lib/authToken';
+
+function getAuthHeaders(): Record<string, string> {
+  const token = getAuthTokenSync();
+  if (token) {
+    return { 'Authorization': `Bearer ${token}` };
+  }
+  return {};
+}
 
 export async function uploadFileToStorage(
   file: File,
@@ -11,6 +20,7 @@ export async function uploadFileToStorage(
   const presignedUrlResponse = await fetch(uploadUrlEndpoint, {
     method: 'POST',
     credentials: 'include',
+    headers: getAuthHeaders(),
   });
 
   if (!presignedUrlResponse.ok) {
@@ -52,6 +62,7 @@ export async function finalizeUpload(
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeaders(),
     },
     body: JSON.stringify({ uploadURL }),
     credentials: 'include',
