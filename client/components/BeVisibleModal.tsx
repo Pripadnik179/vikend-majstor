@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Modal, Pressable, Dimensions } from 'react-native';
+import { View, StyleSheet, Modal, Pressable, Dimensions, Platform, Text } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Feather } from '@expo/vector-icons';
+import { useFonts } from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ThemedText } from '@/components/ThemedText';
@@ -18,15 +19,21 @@ export function BeVisibleModal() {
   const { theme, isDark } = useTheme();
   const { user } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  
+  // Check if Feather fonts are loaded
+  const [fontsLoaded] = useFonts({
+    ...Feather.font,
+  });
 
   useEffect(() => {
-    if (user && user.subscriptionType === 'free') {
+    // Only show modal when fonts are loaded and user is on free plan
+    if (user && user.subscriptionType === 'free' && fontsLoaded) {
       const timer = setTimeout(() => {
         setVisible(true);
-      }, 2000);
+      }, 2500);
       return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [user, fontsLoaded]);
 
   const handleUpgrade = () => {
     setVisible(false);
@@ -37,7 +44,8 @@ export function BeVisibleModal() {
     setVisible(false);
   };
 
-  if (!visible) return null;
+  // Don't render if not visible or fonts not loaded
+  if (!visible || !fontsLoaded) return null;
 
   return (
     <Modal

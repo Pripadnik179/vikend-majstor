@@ -11,9 +11,11 @@ import { useWebLayout } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
+import { useHeaderHeight } from '@react-navigation/elements';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
   const { isDesktop, contentPaddingTop, contentPaddingBottom } = useWebLayout();
   const tabBarHeight = isDesktop ? 0 : (Platform.OS === 'web' ? 0 : 80);
   const { theme } = useTheme();
@@ -53,7 +55,8 @@ export default function ProfileScreen() {
     { icon: 'info', label: 'O Aplikaciji', onPress: () => navigation.navigate('About') },
   ];
 
-  const paddingTop = isDesktop ? contentPaddingTop + Spacing.lg : Spacing.lg;
+  // For opaque headers on mobile, content starts below header (no extra padding needed)
+  const paddingTop = isDesktop ? contentPaddingTop + Spacing.lg : Spacing.sm;
   const paddingBottom = isDesktop ? contentPaddingBottom + Spacing.xl : tabBarHeight + Spacing.fabSize + Spacing.xl;
 
   return (
