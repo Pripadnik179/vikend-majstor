@@ -252,7 +252,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         itemsWithDistance = itemsWithDistance.filter(item => 
           item.distance !== null && item.distance <= maxDist
         );
-        itemsWithDistance.sort((a, b) => (a.distance || 999999) - (b.distance || 999999));
+        // Sort by featured first, then by distance
+        itemsWithDistance.sort((a, b) => {
+          // Featured items come first
+          if (a.isFeatured && !b.isFeatured) return -1;
+          if (!a.isFeatured && b.isFeatured) return 1;
+          // Then sort by distance
+          return (a.distance || 999999) - (b.distance || 999999);
+        });
+      } else {
+        // Sort by featured first, then by createdAt (newest first)
+        itemsWithDistance.sort((a, b) => {
+          // Featured items come first
+          if (a.isFeatured && !b.isFeatured) return -1;
+          if (!a.isFeatured && b.isFeatured) return 1;
+          // Then sort by createdAt descending
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
       }
       
       res.json(itemsWithDistance);
