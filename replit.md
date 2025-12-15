@@ -183,6 +183,7 @@ The app runs with `npm run all:dev` which starts:
   - SubscriptionScreen accepts scrollToFeature param and auto-scrolls to purchase section
   - Card component now supports onLayout prop for position measurement
 - Fixed white space issues in Settings, MyItems, Help, About screens with proper headerStyle and contentStyle
+- Fixed premium/featured ads sorting - featured items (isFeatured: true) now appear first in search results, maintaining priority over distance-based and date-based sorting
 
 ## Push Notifications
 
