@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import { StyleSheet, View, ActivityIndicator } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -6,6 +6,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -15,14 +16,26 @@ import RootStackNavigator from "@/navigation/RootStackNavigator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 
+SplashScreen.preventAutoHideAsync();
+
 export default function App() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     ...Feather.font,
     ...Ionicons.font,
     ...MaterialIcons.font,
   });
 
-  if (!fontsLoaded) {
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded || fontError) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  useEffect(() => {
+    onLayoutRootView();
+  }, [onLayoutRootView]);
+
+  if (!fontsLoaded && !fontError) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FFCC00" />
