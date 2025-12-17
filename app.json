@@ -21,7 +21,6 @@
       "bundleIdentifier": "com.vikendmajstor.app"
     },
     "android": {
-      "jsEngine": "jsc",
       "adaptiveIcon": {
         "backgroundColor": "#1A1A1A",
         "foregroundImage": "./assets/images/icon.png"
