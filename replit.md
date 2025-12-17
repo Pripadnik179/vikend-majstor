@@ -192,9 +192,13 @@ The app runs with `npm run all:dev` which starts:
 - Icons appear as blank squares in Expo Go on Android devices
 
 ### Solution Implemented
-- Manually bundled Feather.ttf font to `assets/fonts/Feather.ttf`
-- Updated `client/App.tsx` to load Feather font from local assets instead of `@expo/vector-icons` path
+- Manually bundled all icon fonts to `assets/fonts/`:
+  - Feather.ttf (primary icon set)
+  - Ionicons.ttf
+  - MaterialIcons.ttf
+- Updated `client/App.tsx` to load all fonts from local assets instead of `@expo/vector-icons` path
 - Updated `app.json` assetBundlePatterns to include `assets/fonts/*`
+- Removed node_modules assetBundlePatterns reference to reduce bundle size
 - This workaround immediately fixes Android icon rendering without waiting for development builds
 
 ### EAS Build Configuration
