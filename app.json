@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "vikendmajstor",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "updates": {
       "enabled": false
     },
