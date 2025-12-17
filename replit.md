@@ -185,6 +185,24 @@ The app runs with `npm run all:dev` which starts:
 - Fixed white space issues in Settings, MyItems, Help, About screens with proper headerStyle and contentStyle
 - Fixed premium/featured ads sorting - featured items (isFeatured: true) now appear first in search results, maintaining priority over distance-based and date-based sorting
 
+## Android Icons Workaround (Expo Go SDK 54 Regression)
+
+### Issue
+- Expo Go SDK 54 has a known regression (issue #36793) that prevents @expo/vector-icons from rendering on Android
+- Icons appear as blank squares in Expo Go on Android devices
+
+### Solution Implemented
+- Manually bundled Feather.ttf font to `assets/fonts/Feather.ttf`
+- Updated `client/App.tsx` to load Feather font from local assets instead of `@expo/vector-icons` path
+- Updated `app.json` assetBundlePatterns to include `assets/fonts/*`
+- This workaround immediately fixes Android icon rendering without waiting for development builds
+
+### EAS Build Configuration
+- `eas.json` configured with development, preview, and production profiles
+- Development builds use `expo-dev-client` for full native feature access
+- Build keystore stored in `android/keystores/release.keystore`
+- EAS project ID: `44586ba1-b1d8-4366-85b1-e1d2ea55a62f`
+
 ## Push Notifications
 
 ### Current Status

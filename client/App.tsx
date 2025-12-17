@@ -24,7 +24,7 @@ export default function App() {
     async function prepare() {
       try {
         await Font.loadAsync({
-          Feather: require("@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Feather.ttf"),
+          Feather: require("../assets/fonts/Feather.ttf"),
           Ionicons: require("@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf"),
           MaterialIcons: require("@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf"),
         });
