@@ -1,4 +1,4 @@
 .git
 node_modules
-android/keystores
-credentials.json
+attached_assets
+server/landing
