@@ -1,12 +1,14 @@
-import React, { useEffect, useCallback } from "react";
-import { StyleSheet, View, ActivityIndicator, Platform } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, ActivityIndicator } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
-import { useFonts } from "expo-font";
+import Feather from "@expo/vector-icons/Feather";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
@@ -18,30 +20,30 @@ import { AuthProvider } from "@/contexts/AuthContext";
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  const [fontsLoaded, fontError] = useFonts({
-    Feather: require("@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Feather.ttf"),
-    Ionicons: require("@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf"),
-    MaterialIcons: require("@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf"),
-  });
-
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded || fontError) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
+  const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
-    if (fontError) {
-      console.warn("Font loading error:", fontError);
+    async function prepare() {
+      try {
+        await Promise.all([
+          Feather.loadFont(),
+          Ionicons.loadFont(),
+          MaterialIcons.loadFont(),
+        ]);
+      } catch (e) {
+        console.warn("Font loading error:", e);
+      } finally {
+        setAppIsReady(true);
+        await SplashScreen.hideAsync();
+      }
     }
-    if (fontsLoaded) {
-      console.log(`[${Platform.OS}] Fonts loaded successfully: Feather, Ionicons, MaterialIcons`);
-    }
-  }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) {
+    prepare();
+  }, []);
+
+  if (!appIsReady) {
     return (
-      <View style={styles.loadingContainer} onLayout={onLayoutRootView}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FFCC00" />
       </View>
     );
@@ -52,7 +54,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <SafeAreaProvider>
-            <GestureHandlerRootView style={styles.root} onLayout={onLayoutRootView}>
+            <GestureHandlerRootView style={styles.root}>
               <KeyboardProvider>
                 <NavigationContainer>
                   <RootStackNavigator />
