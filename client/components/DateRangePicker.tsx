@@ -3,7 +3,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 
 interface Booking {
   startDate: string;

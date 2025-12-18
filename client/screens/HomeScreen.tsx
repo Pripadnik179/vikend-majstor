@@ -5,7 +5,7 @@ import { useHeaderHeight } from '@react-navigation/elements';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import { ItemCard } from '@/components/ItemCard';
 import { FilterModal, FilterState } from '@/components/FilterModal';
 import { PromoBanner } from '@/components/PromoBanner';

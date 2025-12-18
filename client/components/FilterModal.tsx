@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Modal, Pressable, ScrollView, TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import { ThemedText } from './ThemedText';
 import { Button } from './Button';
 import { useTheme } from '@/hooks/useTheme';

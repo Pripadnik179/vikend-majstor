@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';

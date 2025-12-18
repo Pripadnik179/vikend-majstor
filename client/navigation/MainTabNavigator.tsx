@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet, Pressable, Platform, useWindowDimensions, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Feather } from "@expo/vector-icons";
+import Feather from "@expo/vector-icons/Feather";
 import { BlurView } from "expo-blur";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
