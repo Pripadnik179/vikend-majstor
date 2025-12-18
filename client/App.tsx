@@ -9,6 +9,7 @@ import * as SplashScreen from "expo-splash-screen";
 import Feather from "@expo/vector-icons/Feather";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
@@ -29,6 +30,7 @@ export default function App() {
           Feather.loadFont(),
           Ionicons.loadFont(),
           MaterialIcons.loadFont(),
+          MaterialCommunityIcons.loadFont(),
         ]);
       } catch (e) {
         console.warn("Font loading error:", e);

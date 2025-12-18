@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet, Pressable, Platform, useWindowDimensions, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { BlurView } from "expo-blur";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -37,7 +37,7 @@ function FloatingAddButton() {
         ]}
         onPress={() => navigation.navigate('AddItem')}
       >
-        <Ionicons name="add" size={20} color="#FFFFFF" />
+        <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
         <Text style={styles.webAddButtonText}>Dodaj oglas</Text>
       </Pressable>
     );
@@ -55,7 +55,7 @@ function FloatingAddButton() {
         ]}
         onPress={() => navigation.navigate('AddItem')}
       >
-        <Ionicons name="add" size={28} color="#FFFFFF" />
+        <MaterialCommunityIcons name="plus" size={28} color="#FFFFFF" />
       </Pressable>
     </View>
   );
@@ -121,7 +121,7 @@ export default function MainTabNavigator() {
           options={{
             title: "Početna",
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="home-outline" size={size} color={color} />
+              <MaterialCommunityIcons name="home-outline" size={size} color={color} />
             ),
           }}
         />
@@ -131,7 +131,7 @@ export default function MainTabNavigator() {
           options={{
             title: "Kategorije",
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="grid-outline" size={size} color={color} />
+              <MaterialCommunityIcons name="view-grid-outline" size={size} color={color} />
             ),
           }}
         />
@@ -141,7 +141,7 @@ export default function MainTabNavigator() {
           options={{
             title: "Rezervacije",
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="calendar-outline" size={size} color={color} />
+              <MaterialCommunityIcons name="calendar-outline" size={size} color={color} />
             ),
           }}
         />
@@ -151,7 +151,7 @@ export default function MainTabNavigator() {
           options={{
             title: "Poruke",
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="chatbubble-outline" size={size} color={color} />
+              <MaterialCommunityIcons name="message-outline" size={size} color={color} />
             ),
           }}
         />
@@ -161,7 +161,7 @@ export default function MainTabNavigator() {
           options={{
             title: "Profil",
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="person-outline" size={size} color={color} />
+              <MaterialCommunityIcons name="account-outline" size={size} color={color} />
             ),
           }}
         />
