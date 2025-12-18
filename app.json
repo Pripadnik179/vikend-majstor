@@ -2,7 +2,6 @@
   "expo": {
     "name": "VikendMajstor",
     "slug": "vikendmajstor",
-    "owner": "pripadnik",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -14,7 +13,7 @@
     },
     "assetBundlePatterns": [
       "**/*",
-      "assets/fonts/*"
+      "node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/*"
     ],
     "ios": {
       "supportsTablet": true,
@@ -34,7 +33,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-dev-client",
       [
         "expo-splash-screen",
         {
@@ -51,11 +49,6 @@
     ],
     "experiments": {
       "reactCompiler": false
-    },
-    "extra": {
-      "eas": {
-        "projectId": "44586ba1-b1d8-4366-85b1-e1d2ea55a62f"
-      }
     }
   }
 }

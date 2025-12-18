@@ -24,9 +24,9 @@ export default function App() {
     async function prepare() {
       try {
         await Font.loadAsync({
-          Feather: require("../assets/fonts/Feather.ttf"),
-          Ionicons: require("../assets/fonts/Ionicons.ttf"),
-          MaterialIcons: require("../assets/fonts/MaterialIcons.ttf"),
+          Feather: require("@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Feather.ttf"),
+          Ionicons: require("@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf"),
+          MaterialIcons: require("@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf"),
         });
       } catch (e) {
         console.warn("Font loading error:", e);
