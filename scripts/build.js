@@ -481,6 +481,26 @@ function updateManifests(manifests, timestamp, baseUrl, assetsByHash) {
 
         asset.url = `${baseUrl}/${timestamp}/_expo/static/js/${assetInfo.relativePath}/${assetInfo.filename}`;
       });
+    } else {
+      manifest.assets = [];
+      for (const [hash, assetInfo] of assetsByHash.entries()) {
+        const ext = assetInfo.filename.split('.').pop().toLowerCase();
+        let contentType = 'application/octet-stream';
+        if (ext === 'ttf' || ext === 'otf') contentType = 'font/ttf';
+        else if (ext === 'png') contentType = 'image/png';
+        else if (ext === 'jpg' || ext === 'jpeg') contentType = 'image/jpeg';
+        else if (ext === 'gif') contentType = 'image/gif';
+        else if (ext === 'webp') contentType = 'image/webp';
+        else if (ext === 'svg') contentType = 'image/svg+xml';
+
+        manifest.assets.push({
+          key: hash,
+          hash: hash,
+          contentType: contentType,
+          url: `${baseUrl}/${timestamp}/_expo/static/js/${assetInfo.relativePath}/${assetInfo.filename}`
+        });
+      }
+      console.log(`Added ${manifest.assets.length} assets to ${platform} manifest`);
     }
 
     fs.writeFileSync(
