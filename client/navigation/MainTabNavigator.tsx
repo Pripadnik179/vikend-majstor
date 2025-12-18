@@ -1,7 +1,6 @@
 import React from "react";
 import { View, StyleSheet, Pressable, Platform, useWindowDimensions, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { BlurView } from "expo-blur";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -14,6 +13,7 @@ import { BeVisibleModal } from "@/components/BeVisibleModal";
 import { useTheme } from "@/hooks/useTheme";
 import { Colors, Spacing, Shadows } from "@/constants/theme";
 import type { MainTabParamList, RootStackParamList } from "./types";
+import { HomeIcon, GridIcon, CalendarIcon, MessageIcon, UserIcon, PlusIcon } from "@/components/icons/TabBarIcons";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -37,7 +37,7 @@ function FloatingAddButton() {
         ]}
         onPress={() => navigation.navigate('AddItem')}
       >
-        <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
+        <PlusIcon size={20} color="#FFFFFF" />
         <Text style={styles.webAddButtonText}>Dodaj oglas</Text>
       </Pressable>
     );
@@ -55,7 +55,7 @@ function FloatingAddButton() {
         ]}
         onPress={() => navigation.navigate('AddItem')}
       >
-        <MaterialCommunityIcons name="plus" size={28} color="#FFFFFF" />
+        <PlusIcon size={28} color="#FFFFFF" />
       </Pressable>
     </View>
   );
@@ -121,7 +121,7 @@ export default function MainTabNavigator() {
           options={{
             title: "Početna",
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="home-outline" size={size} color={color} />
+              <HomeIcon size={size} color={color} />
             ),
           }}
         />
@@ -131,7 +131,7 @@ export default function MainTabNavigator() {
           options={{
             title: "Kategorije",
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="view-grid-outline" size={size} color={color} />
+              <GridIcon size={size} color={color} />
             ),
           }}
         />
@@ -141,7 +141,7 @@ export default function MainTabNavigator() {
           options={{
             title: "Rezervacije",
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="calendar-outline" size={size} color={color} />
+              <CalendarIcon size={size} color={color} />
             ),
           }}
         />
@@ -151,7 +151,7 @@ export default function MainTabNavigator() {
           options={{
             title: "Poruke",
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="message-outline" size={size} color={color} />
+              <MessageIcon size={size} color={color} />
             ),
           }}
         />
@@ -161,7 +161,7 @@ export default function MainTabNavigator() {
           options={{
             title: "Profil",
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="account-outline" size={size} color={color} />
+              <UserIcon size={size} color={color} />
             ),
           }}
         />
