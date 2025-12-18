@@ -45,7 +45,15 @@ function getDeploymentDomain() {
   }
 
   if (process.env.REPLIT_DEV_DOMAIN) {
-    return stripProtocol(process.env.REPLIT_DEV_DOMAIN);
+    // In dev mode, use port 5000 domain format for Express server
+    // Format: xxx--5000.spock.replit.dev
+    const baseDomain = stripProtocol(process.env.REPLIT_DEV_DOMAIN);
+    const parts = baseDomain.split('.');
+    if (parts.length >= 3 && baseDomain.includes('.spock.replit.dev')) {
+      // Convert to port 5000 format: xxx--5000.spock.replit.dev
+      return `${parts[0]}--5000.${parts.slice(1).join('.')}`;
+    }
+    return baseDomain;
   }
 
   if (process.env.EXPO_PUBLIC_DOMAIN) {

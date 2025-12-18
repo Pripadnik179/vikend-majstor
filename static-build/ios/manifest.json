@@ -1,162 +1,162 @@
 {
-  "id": "2a89c8c5-62bb-49b7-afa3-ebc50aa1661a",
-  "createdAt": "2025-12-18T09:49:57.582Z",
+  "id": "4054f919-9e17-45d8-bdbf-c8d7b61e49d0",
+  "createdAt": "2025-12-18T10:02:17.009Z",
   "runtimeVersion": "exposdk:54.0.0",
   "launchAsset": {
-    "key": "bundle-1766051397582-5760",
+    "key": "bundle-1766052137009-8271",
     "contentType": "application/javascript",
-    "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/ios/bundle.js"
+    "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/ios/bundle.js"
   },
   "assets": [
     {
       "key": "c560d7e01660506cdb3be1e07257053e",
       "hash": "c560d7e01660506cdb3be1e07257053e",
       "contentType": "image/png",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@react-navigation/elements/lib/module/assets/back-icon.png"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@react-navigation/elements/lib/module/assets/back-icon.png"
     },
     {
       "key": "0a328cd9c1afd0afe8e3b1ec5165b1b4",
       "hash": "0a328cd9c1afd0afe8e3b1ec5165b1b4",
       "contentType": "image/png",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@react-navigation/elements/lib/module/assets/back-icon-mask.png"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@react-navigation/elements/lib/module/assets/back-icon-mask.png"
     },
     {
       "key": "61378328a719f21f093de82dd89ecfb0",
       "hash": "61378328a719f21f093de82dd89ecfb0",
       "contentType": "image/png",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@react-navigation/elements/lib/module/assets/clear-icon.png"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@react-navigation/elements/lib/module/assets/clear-icon.png"
     },
     {
       "key": "3162e8a244d8f6fbd259e79043e23ce4",
       "hash": "3162e8a244d8f6fbd259e79043e23ce4",
       "contentType": "image/png",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@react-navigation/elements/lib/module/assets/close-icon.png"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@react-navigation/elements/lib/module/assets/close-icon.png"
     },
     {
       "key": "7842eab38ac1ef8af0adf4f8147ed837",
       "hash": "7842eab38ac1ef8af0adf4f8147ed837",
       "contentType": "image/png",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@react-navigation/elements/lib/module/assets/search-icon.png"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@react-navigation/elements/lib/module/assets/search-icon.png"
     },
     {
       "key": "3f78af31cca60105799838a1a7a59fbd",
       "hash": "3f78af31cca60105799838a1a7a59fbd",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/AntDesign.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/AntDesign.ttf"
     },
     {
       "key": "31b5ffea3daddc69dd01a1f3d6cf63c5",
       "hash": "31b5ffea3daddc69dd01a1f3d6cf63c5",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Entypo.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Entypo.ttf"
     },
     {
       "key": "140c53a7643ea949007aa9a282153849",
       "hash": "140c53a7643ea949007aa9a282153849",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/EvilIcons.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/EvilIcons.ttf"
     },
     {
       "key": "ca4b48e04dc1ce10bfbddb262c8b835f",
       "hash": "ca4b48e04dc1ce10bfbddb262c8b835f",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./assets/fonts/Feather.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./assets/fonts/Feather.ttf"
     },
     {
       "key": "b49ae8ab2dbccb02c4d11caaacf09eab",
       "hash": "b49ae8ab2dbccb02c4d11caaacf09eab",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Fontisto.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Fontisto.ttf"
     },
     {
       "key": "b06871f281fee6b241d60582ae9369b9",
       "hash": "b06871f281fee6b241d60582ae9369b9",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome.ttf"
     },
     {
       "key": "1f77739ca9ff2188b539c36f30ffa2be",
       "hash": "1f77739ca9ff2188b539c36f30ffa2be",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"
     },
     {
       "key": "605ed7926cf39a2ad5ec2d1f9d391d3d",
       "hash": "605ed7926cf39a2ad5ec2d1f9d391d3d",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"
     },
     {
       "key": "3b89dd103490708d19a95adcae52210e",
       "hash": "3b89dd103490708d19a95adcae52210e",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"
     },
     {
       "key": "370dd5af19f8364907b6e2c41f45dbbf",
       "hash": "370dd5af19f8364907b6e2c41f45dbbf",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome6_Regular.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome6_Regular.ttf"
     },
     {
       "key": "adec7d6f310bc577f05e8fe06a5daccf",
       "hash": "adec7d6f310bc577f05e8fe06a5daccf",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome6_Solid.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome6_Solid.ttf"
     },
     {
       "key": "56c8d80832e37783f12c05db7c8849e2",
       "hash": "56c8d80832e37783f12c05db7c8849e2",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome6_Brands.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome6_Brands.ttf"
     },
     {
       "key": "e20945d7c929279ef7a6f1db184a4470",
       "hash": "e20945d7c929279ef7a6f1db184a4470",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Foundation.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Foundation.ttf"
     },
     {
       "key": "b4eb097d35f44ed943676fd56f6bdc51",
       "hash": "b4eb097d35f44ed943676fd56f6bdc51",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./assets/fonts/Ionicons.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./assets/fonts/Ionicons.ttf"
     },
     {
       "key": "6e435534bd35da5fef04168860a9b8fa",
       "hash": "6e435534bd35da5fef04168860a9b8fa",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"
     },
     {
       "key": "4e85bc9ebe07e0340c9c4fc2f6c38908",
       "hash": "4e85bc9ebe07e0340c9c4fc2f6c38908",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./assets/fonts/MaterialIcons.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./assets/fonts/MaterialIcons.ttf"
     },
     {
       "key": "871378c6eab492a3e689a9385dc45a12",
       "hash": "871378c6eab492a3e689a9385dc45a12",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Octicons.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Octicons.ttf"
     },
     {
       "key": "d2285965fe34b05465047401b8595dd0",
       "hash": "d2285965fe34b05465047401b8595dd0",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"
     },
     {
       "key": "1681f34aaca71b8dfb70756bca331eb2",
       "hash": "1681f34aaca71b8dfb70756bca331eb2",
       "contentType": "font/ttf",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Zocial.ttf"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Zocial.ttf"
     },
     {
       "key": "663e9989e8ec433bd5c07a8da4b759b6",
       "hash": "663e9989e8ec433bd5c07a8da4b759b6",
       "contentType": "image/png",
-      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/1766051397582-5760/_expo/static/js/./assets/images/icon.png"
+      "url": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/1766052137009-8271/_expo/static/js/./assets/images/icon.png"
     }
   ],
   "metadata": {},
@@ -262,10 +262,10 @@
         "backgroundColor": "#1A1A1A"
       },
       "iconUrl": "https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/assets/./assets/images/icon.png",
-      "hostUri": "9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/ios"
+      "hostUri": "9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/ios"
     },
     "expoGo": {
-      "debuggerHost": "9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev/ios",
+      "debuggerHost": "9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba--5000.spock.replit.dev/ios",
       "developer": {
         "tool": "expo-cli",
         "projectRoot": "/home/runner/workspace"
