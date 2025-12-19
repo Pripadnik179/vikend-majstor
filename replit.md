@@ -236,7 +236,7 @@ Push notifications are implemented but require a development build with EAS conf
   - Search functionality by name or email
   - User detail page for editing (activation, subscription type, duration)
 - VikendMajstor black-yellow theme with dark mode UI
-- Link added to landing page navigation for easy access
+- Access via direct URL only (`/admin`) - hidden from public navigation
 - Test admin account: marko@demo.com (password: demo123)
 
 ### Admin API Endpoints
