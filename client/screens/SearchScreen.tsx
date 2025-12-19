@@ -226,7 +226,7 @@ export default function SearchScreen() {
           value={searchQuery}
           onSearch={handleSearch}
           placeholder="Pretražite alate..."
-          debounceMs={300}
+          manualSubmit={true}
         />
         <Pressable 
           style={[styles.filterButton, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}

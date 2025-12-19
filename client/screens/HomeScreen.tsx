@@ -39,10 +39,20 @@ export default function HomeScreen() {
   const tabBarHeight = isDesktop ? 0 : (Platform.OS === 'web' ? 0 : 80);
   const effectiveNumColumns = Math.max(1, numColumns);
 
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+
+  const handleSearchSubmit = useCallback(() => {
+    setAppliedSearch(searchInput);
+  }, [searchInput]);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchInput('');
+    setAppliedSearch('');
+  }, []);
 
   const { data: items = [], isLoading, refetch } = useQuery<Item[]>({
     queryKey: ['/api/items'],
@@ -64,9 +74,9 @@ export default function HomeScreen() {
 
   const filteredItems = useMemo(() => {
     const filtered = items.filter((item) => {
-      const matchesSearch = !search || 
-        item.title.toLowerCase().includes(search.toLowerCase()) ||
-        item.city.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch = !appliedSearch || 
+        item.title.toLowerCase().includes(appliedSearch.toLowerCase()) ||
+        item.city.toLowerCase().includes(appliedSearch.toLowerCase());
       const matchesMinPrice = filters.minPrice === null || item.pricePerDay >= filters.minPrice;
       const matchesMaxPrice = filters.maxPrice === null || item.pricePerDay <= filters.maxPrice;
       const matchesRating = filters.minRating === null || parseFloat(item.rating || '0') >= filters.minRating;
@@ -88,7 +98,7 @@ export default function HomeScreen() {
       // Then sort by createdAt descending
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-  }, [items, search, filters]);
+  }, [items, appliedSearch, filters]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -111,16 +121,21 @@ export default function HomeScreen() {
       />
       <View style={styles.searchRow}>
         <View style={[styles.searchContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
-          <SearchIcon size={20} color={theme.textTertiary} />
+          <Pressable onPress={handleSearchSubmit} hitSlop={8}>
+            <SearchIcon size={20} color={theme.textTertiary} />
+          </Pressable>
           <TextInput
             style={[styles.searchInput, { color: theme.text }]}
             placeholder="Pretraži stvari..."
             placeholderTextColor={theme.textTertiary}
-            value={search}
-            onChangeText={setSearch}
+            value={searchInput}
+            onChangeText={setSearchInput}
+            onSubmitEditing={handleSearchSubmit}
+            returnKeyType="search"
+            blurOnSubmit={true}
           />
-          {search ? (
-            <Pressable onPress={() => setSearch('')}>
+          {searchInput ? (
+            <Pressable onPress={handleClearSearch} hitSlop={8}>
               <XIcon size={20} color={theme.textTertiary} />
             </Pressable>
           ) : null}
@@ -158,7 +173,7 @@ export default function HomeScreen() {
         Nema dostupnih stvari
       </ThemedText>
       <ThemedText type="body" style={[styles.emptyText, { color: theme.textTertiary }]}>
-        {search 
+        {appliedSearch 
           ? 'Pokušaj sa drugim filterima'
           : 'Budi prvi koji će dodati stvar'}
       </ThemedText>

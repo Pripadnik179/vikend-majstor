@@ -9,13 +9,15 @@ interface SearchBarProps {
   onSearch: (query: string) => void;
   placeholder?: string;
   debounceMs?: number;
+  manualSubmit?: boolean;
 }
 
 function SearchBarComponent({ 
   value = '', 
   onSearch, 
   placeholder = 'Pretražite alate...', 
-  debounceMs = 300 
+  debounceMs = 300,
+  manualSubmit = false
 }: SearchBarProps) {
   const { theme } = useTheme();
   const [inputValue, setInputValue] = useState(value);
@@ -31,6 +33,8 @@ function SearchBarComponent({
   }, [value]);
 
   useEffect(() => {
+    if (manualSubmit) return;
+    
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
@@ -43,11 +47,15 @@ function SearchBarComponent({
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [inputValue, debounceMs]);
+  }, [inputValue, debounceMs, manualSubmit]);
 
   const handleChange = (text: string) => {
     isInternalChange.current = true;
     setInputValue(text);
+  };
+
+  const handleSubmit = () => {
+    onSearch(inputValue);
   };
 
   const handleClear = () => {
@@ -59,7 +67,9 @@ function SearchBarComponent({
 
   return (
     <View style={[styles.searchBar, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
-      <SearchIcon size={20} color={theme.textSecondary} />
+      <Pressable onPress={handleSubmit} hitSlop={8}>
+        <SearchIcon size={20} color={theme.textSecondary} />
+      </Pressable>
       <TextInput
         ref={inputRef}
         style={[styles.searchInput, { color: theme.text }]}
@@ -67,10 +77,11 @@ function SearchBarComponent({
         placeholderTextColor={theme.textTertiary}
         value={inputValue}
         onChangeText={handleChange}
+        onSubmitEditing={handleSubmit}
         maxLength={40}
         autoCorrect={false}
         autoCapitalize="none"
-        blurOnSubmit={false}
+        blurOnSubmit={manualSubmit}
         returnKeyType="search"
         keyboardType="default"
       />
