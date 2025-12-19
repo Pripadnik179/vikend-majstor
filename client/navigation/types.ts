@@ -17,6 +17,8 @@ export type RootStackParamList = {
   Help: undefined;
   About: undefined;
   Legal: { section?: string } | undefined;
+  Admin: undefined;
+  AdminUserDetail: { userId: string };
 };
 
 export type MainTabParamList = {

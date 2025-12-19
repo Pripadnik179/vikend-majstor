@@ -67,6 +67,7 @@ export default function ProfileScreen() {
     { icon: 'settings', label: 'Podešavanja', onPress: () => navigation.navigate('Settings') },
     { icon: 'help-circle', label: 'Pomoć', onPress: () => navigation.navigate('Help') },
     { icon: 'info', label: 'O Aplikaciji', onPress: () => navigation.navigate('About') },
+    ...(user?.isAdmin ? [{ icon: 'shield', label: 'Admin Panel', badge: 'Admin', onPress: () => navigation.navigate('Admin') }] : []),
   ];
 
   // For opaque headers on mobile, content starts below header (no extra padding needed)

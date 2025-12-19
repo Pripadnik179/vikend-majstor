@@ -17,6 +17,8 @@ import SubscriptionScreen from "@/screens/SubscriptionScreen";
 import HelpScreen from "@/screens/HelpScreen";
 import AboutScreen from "@/screens/AboutScreen";
 import LegalScreen from "@/screens/LegalScreen";
+import AdminScreen from "@/screens/AdminScreen";
+import AdminUserDetailScreen from "@/screens/AdminUserDetailScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/hooks/useTheme";
@@ -154,6 +156,26 @@ export default function RootStackNavigator() {
             component={LegalScreen}
             options={{ 
               headerTitle: "Pravne informacije", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
+          />
+          <Stack.Screen
+            name="Admin"
+            component={AdminScreen}
+            options={{ 
+              headerTitle: "Admin Panel", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
+          />
+          <Stack.Screen
+            name="AdminUserDetail"
+            component={AdminUserDetailScreen}
+            options={{ 
+              headerTitle: "Korisnik", 
               headerTransparent: false,
               headerStyle: { backgroundColor: theme.backgroundRoot },
               contentStyle: { backgroundColor: theme.backgroundRoot },

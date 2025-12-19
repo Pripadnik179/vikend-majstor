@@ -1070,7 +1070,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Korisnik nije pronađen" });
       }
       
-      console.log(`[ADMIN] User ${req.user.email} updated user ${updatedUser.email}: isActive=${isActive}, subscriptionType=${subscriptionType}, days=${subscriptionDays}`);
+      console.log(`[ADMIN] User ${req.user?.email} updated user ${updatedUser.email}: isActive=${isActive}, subscriptionType=${subscriptionType}, days=${subscriptionDays}`);
       
       res.json({
         success: true,
