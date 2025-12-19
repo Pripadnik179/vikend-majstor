@@ -553,7 +553,7 @@
     // Auth functions
     async function checkAuth() {
       try {
-        const res = await fetch(`${API_BASE}/api/user`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: 'include' });
         if (res.ok) {
           currentUser = await res.json();
           if (currentUser.isAdmin) {
@@ -566,7 +566,7 @@
     }
 
     async function login(email, password) {
-      const res = await fetch(`${API_BASE}/api/login`, {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -586,7 +586,7 @@
 
     async function logout() {
       try {
-        await fetch(`${API_BASE}/api/logout`, { method: 'POST', credentials: 'include' });
+        await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' });
       } catch (e) {}
       currentUser = null;
       showLogin();
