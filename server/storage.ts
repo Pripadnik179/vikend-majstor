@@ -366,22 +366,53 @@ export class DatabaseStorage implements IStorage {
     return result[0]?.count || 0;
   }
 
+  async checkAndUpdateExpiredSubscription(userId: string): Promise<User | null> {
+    const user = await this.getUser(userId);
+    if (!user) return null;
+
+    const now = new Date();
+    
+    if (user.subscriptionType !== 'free' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) <= now) {
+      const [updatedUser] = await db.update(users)
+        .set({
+          subscriptionType: 'free',
+          subscriptionStatus: 'expired'
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    }
+    
+    return user;
+  }
+
   async getSubscriptionStatus(userId: string): Promise<{
     subscriptionType: string;
     subscriptionStatus: string;
     subscriptionEndDate: Date | null;
+    subscriptionStartDate: Date | null;
     isEarlyAdopter: boolean;
     isPremiumListing: boolean;
     premiumListingEndDate: Date | null;
     canPostItems: boolean;
+    remainingDays: number | null;
   }> {
-    const user = await this.getUser(userId);
+    const user = await this.checkAndUpdateExpiredSubscription(userId);
     if (!user) {
       throw new Error("Korisnik nije pronađen");
     }
 
     const now = new Date();
     let canPostItems = false;
+    let remainingDays: number | null = null;
+
+    if (user.subscriptionEndDate) {
+      const endDate = new Date(user.subscriptionEndDate);
+      if (endDate > now) {
+        const diffTime = endDate.getTime() - now.getTime();
+        remainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      }
+    }
 
     if (user.isEarlyAdopter && user.subscriptionEndDate && new Date(user.subscriptionEndDate) > now) {
       canPostItems = true;
@@ -393,10 +424,12 @@ export class DatabaseStorage implements IStorage {
       subscriptionType: user.subscriptionType,
       subscriptionStatus: user.subscriptionStatus,
       subscriptionEndDate: user.subscriptionEndDate,
+      subscriptionStartDate: user.subscriptionStartDate,
       isEarlyAdopter: user.isEarlyAdopter,
       isPremiumListing: user.isPremiumListing,
       premiumListingEndDate: user.premiumListingEndDate,
-      canPostItems
+      canPostItems,
+      remainingDays
     };
   }
 
