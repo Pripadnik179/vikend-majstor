@@ -218,3 +218,36 @@ Push notifications are implemented but require a development build with EAS conf
 2. The projectId will be automatically configured in app.json
 3. Build a development build: `npx eas build --profile development`
 4. Push notifications will work with the development build
+
+## Security Measures
+
+### Rate Limiting (server/security.ts)
+- **General API**: 100 requests per 15 minutes per IP
+- **Auth endpoints** (login, register, OAuth): 10 requests per 15 minutes per IP
+- **Strict endpoints**: 5 requests per hour per IP (for sensitive operations)
+
+### IP Blocking
+- After 5 failed login attempts, IP is automatically blocked for 15 minutes
+- Login attempts are logged with timestamp, IP, email, and success/failure status
+- Automatic unblock after 15-minute lockout period
+
+### XSS Protection
+- All input is sanitized (HTML entities escaped) except password and email fields
+- Helmet middleware for secure HTTP headers
+- Content Security Policy configured for the application
+
+### Input Validation
+- Email format validation with normalization
+- Password minimum length enforcement (6 characters)
+- Name length validation (2-100 characters)
+- express-validator middleware for robust validation
+
+### Authentication Security
+- Passwords hashed using scrypt with random salt
+- Secure session cookies (httpOnly, secure in production)
+- Token-based auth for mobile with base64-encoded userId:secret
+
+### Logging
+- All login attempts logged: `[AUTH] timestamp | SUCCESS/FAILED | IP | Email`
+- Security events logged: `[SECURITY] IP blocked after X failed attempts`
+- Error logging with full context: method, path, IP, message, stack trace
