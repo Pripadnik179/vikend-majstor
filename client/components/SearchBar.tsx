@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, memo } from 'react';
 import { View, TextInput, Pressable, StyleSheet } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
+import { SearchIcon, XIcon } from '@/components/icons/TabBarIcons';
 import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
 
@@ -59,7 +59,7 @@ function SearchBarComponent({
 
   return (
     <View style={[styles.searchBar, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
-      <Feather name="search" size={20} color={theme.textSecondary} />
+      <SearchIcon size={20} color={theme.textSecondary} />
       <TextInput
         ref={inputRef}
         style={[styles.searchInput, { color: theme.text }]}
@@ -80,7 +80,7 @@ function SearchBarComponent({
         hitSlop={8}
         disabled={!inputValue}
       >
-        <Feather name="x" size={20} color={theme.textSecondary} />
+        <XIcon size={20} color={theme.textSecondary} />
       </Pressable>
     </View>
   );

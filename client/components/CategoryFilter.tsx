@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Pressable } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
+import { DynamicIcon } from '@/components/icons/DynamicIcon';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
@@ -37,7 +37,7 @@ export function CategoryFilter({ categories, selected, onSelect }: CategoryFilte
         ]}
         onPress={() => onSelect(null)}
       >
-        <Feather name="grid" size={16} color={!selected ? '#FFFFFF' : theme.text} />
+        <DynamicIcon name="grid" size={16} color={!selected ? '#FFFFFF' : theme.text} />
         <ThemedText 
           type="small" 
           style={[styles.chipText, { color: !selected ? '#FFFFFF' : theme.text }]}
@@ -61,8 +61,8 @@ export function CategoryFilter({ categories, selected, onSelect }: CategoryFilte
             ]}
             onPress={() => onSelect(isSelected ? null : category.id)}
           >
-            <Feather 
-              name={category.icon as any} 
+            <DynamicIcon 
+              name={category.icon} 
               size={16} 
               color={isSelected ? '#FFFFFF' : theme.text} 
             />

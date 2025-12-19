@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, useWindowDimensions, Platform } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
+import { ImageIcon, StarIcon, MapPinIcon, ClockIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { getApiUrl } from '@/lib/query-client';
@@ -68,12 +68,12 @@ export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProp
           />
         ) : (
           <View style={[styles.image, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary, aspectRatio: 4/3 }]}>
-            <Feather name="image" size={32} color={theme.textTertiary} />
+            <ImageIcon size={32} color={theme.textTertiary} />
           </View>
         )}
         {item.isPremium ? (
           <View style={styles.premiumBadge}>
-            <Feather name="star" size={10} color={Colors.light.accent} />
+            <StarIcon size={10} color={Colors.light.accent} />
             <ThemedText style={styles.premiumText}>PREMIUM</ThemedText>
           </View>
         ) : null}
@@ -83,7 +83,7 @@ export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProp
           {item.title}
         </ThemedText>
         <View style={styles.locationRow}>
-          <Feather name="map-pin" size={12} color={theme.textTertiary} />
+          <MapPinIcon size={12} color={theme.textTertiary} />
           <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 4 }} numberOfLines={1}>
             {item.city}
             {item.distance != null ? ` (${item.distance < 1 ? `${Math.round(item.distance * 1000)} m` : `${item.distance.toFixed(1)} km`})` : ''}
@@ -94,7 +94,7 @@ export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProp
         </ThemedText>
         {daysRemaining !== null ? (
           <View style={[styles.expirationRow, { backgroundColor: daysRemaining <= 7 ? '#FFF3CD' : theme.backgroundSecondary }]}>
-            <Feather name="clock" size={10} color={daysRemaining <= 7 ? '#856404' : theme.textSecondary} />
+            <ClockIcon size={10} color={daysRemaining <= 7 ? '#856404' : theme.textSecondary} />
             <ThemedText type="small" style={{ color: daysRemaining <= 7 ? '#856404' : theme.textSecondary, marginLeft: 4 }}>
               {daysRemaining === 0 ? 'Ističe danas' : `Ističe za ${daysRemaining} dana`}
             </ThemedText>
