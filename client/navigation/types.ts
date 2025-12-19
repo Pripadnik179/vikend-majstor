@@ -16,6 +16,7 @@ export type RootStackParamList = {
   Subscription: { scrollToFeature?: boolean } | undefined;
   Help: undefined;
   About: undefined;
+  Legal: { section?: string } | undefined;
 };
 
 export type MainTabParamList = {

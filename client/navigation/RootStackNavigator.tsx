@@ -16,6 +16,7 @@ import SearchScreen from "@/screens/SearchScreen";
 import SubscriptionScreen from "@/screens/SubscriptionScreen";
 import HelpScreen from "@/screens/HelpScreen";
 import AboutScreen from "@/screens/AboutScreen";
+import LegalScreen from "@/screens/LegalScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/hooks/useTheme";
@@ -143,6 +144,16 @@ export default function RootStackNavigator() {
             component={AboutScreen}
             options={{ 
               headerTitle: "O aplikaciji", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
+          />
+          <Stack.Screen
+            name="Legal"
+            component={LegalScreen}
+            options={{ 
+              headerTitle: "Pravne informacije", 
               headerTransparent: false,
               headerStyle: { backgroundColor: theme.backgroundRoot },
               contentStyle: { backgroundColor: theme.backgroundRoot },
