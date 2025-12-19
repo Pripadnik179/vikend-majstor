@@ -11,6 +11,11 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, sql, count, inArray, gt, lt, isNull } from "drizzle-orm";
+import crypto from "crypto";
+
+function generateId(): string {
+  return crypto.randomUUID();
+}
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -75,12 +80,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
+    const id = generateId();
+    await db.insert(users).values({ ...insertUser, id });
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
   async updateUser(id: string, data: Partial<InsertUser>): Promise<User | undefined> {
-    const [user] = await db.update(users).set(data).where(eq(users.id, id)).returning();
+    await db.update(users).set(data).where(eq(users.id, id));
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
@@ -128,7 +136,7 @@ export class DatabaseStorage implements IStorage {
     if (filters?.search) {
       const searchTerm = `%${filters.search}%`;
       conditions.push(
-        sql`(${items.title} ILIKE ${searchTerm} OR ${items.description} ILIKE ${searchTerm})`
+        sql`(${items.title} LIKE ${searchTerm} OR ${items.description} LIKE ${searchTerm})`
       );
     }
     if (filters?.adType && filters.adType !== 'all') {
@@ -144,13 +152,12 @@ export class DatabaseStorage implements IStorage {
       conditions.push(gt(items.createdAt, filters.createdAfter));
     }
     if (filters?.hasImages) {
-      conditions.push(sql`array_length(${items.images}, 1) > 0`);
+      conditions.push(sql`JSON_LENGTH(${items.images}) > 0`);
     }
     if (filters?.activityTag) {
-      conditions.push(sql`${filters.activityTag} = ANY(${items.activityTags})`);
+      conditions.push(sql`JSON_CONTAINS(${items.activityTags}, JSON_QUOTE(${filters.activityTag}))`);
     }
     
-    // Sort by isFeatured first (premium items at top), then by createdAt
     const result = await db.select().from(items).where(and(...conditions)).orderBy(desc(items.isFeatured), desc(items.createdAt));
     return result;
   }
@@ -196,8 +203,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createItem(insertItem: InsertItem): Promise<Item> {
+    const id = generateId();
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    const [item] = await db.insert(items).values({ ...insertItem, expiresAt }).returning();
+    await db.insert(items).values({ ...insertItem, id, expiresAt });
+    const [item] = await db.select().from(items).where(eq(items.id, id));
     return item;
   }
 
@@ -218,7 +227,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateItem(id: string, data: Partial<InsertItem>): Promise<Item | undefined> {
-    const [item] = await db.update(items).set({ ...data, updatedAt: new Date() }).where(eq(items.id, id)).returning();
+    await db.update(items).set({ ...data, updatedAt: new Date() }).where(eq(items.id, id));
+    const [item] = await db.select().from(items).where(eq(items.id, id));
     return item || undefined;
   }
 
@@ -238,12 +248,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createBooking(insertBooking: InsertBooking): Promise<Booking> {
-    const [booking] = await db.insert(bookings).values(insertBooking).returning();
+    const id = generateId();
+    await db.insert(bookings).values({ ...insertBooking, id });
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
     return booking;
   }
 
   async updateBooking(id: string, data: Partial<InsertBooking>): Promise<Booking | undefined> {
-    const [booking] = await db.update(bookings).set({ ...data, updatedAt: new Date() }).where(eq(bookings.id, id)).returning();
+    await db.update(bookings).set({ ...data, updatedAt: new Date() }).where(eq(bookings.id, id));
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
     return booking || undefined;
   }
 
@@ -282,12 +295,15 @@ export class DatabaseStorage implements IStorage {
       return existing[0];
     }
     
-    const [conversation] = await db.insert(conversations).values({
+    const id = generateId();
+    await db.insert(conversations).values({
+      id,
       user1Id,
       user2Id,
       itemId,
-    }).returning();
+    });
     
+    const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
     return conversation;
   }
 
@@ -298,12 +314,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const [message] = await db.insert(messages).values(insertMessage).returning();
+    const id = generateId();
+    await db.insert(messages).values({ ...insertMessage, id });
     
     await db.update(conversations)
       .set({ lastMessageAt: new Date() })
       .where(eq(conversations.id, insertMessage.conversationId));
     
+    const [message] = await db.select().from(messages).where(eq(messages.id, id));
     return message;
   }
 
@@ -345,7 +363,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createReview(insertReview: InsertReview): Promise<Review> {
-    const [review] = await db.insert(reviews).values(insertReview).returning();
+    const id = generateId();
+    await db.insert(reviews).values({ ...insertReview, id });
+    const [review] = await db.select().from(reviews).where(eq(reviews.id, id));
     
     const itemReviews = await this.getReviewsForItem(insertReview.itemId);
     const avgRating = itemReviews.reduce((sum, r) => sum + r.rating, 0) / itemReviews.length;
@@ -376,13 +396,13 @@ export class DatabaseStorage implements IStorage {
     const now = new Date();
     
     if (user.subscriptionType !== 'free' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) <= now) {
-      const [updatedUser] = await db.update(users)
+      await db.update(users)
         .set({
           subscriptionType: 'free',
           subscriptionStatus: 'expired'
         })
-        .where(eq(users.id, userId))
-        .returning();
+        .where(eq(users.id, userId));
+      const [updatedUser] = await db.select().from(users).where(eq(users.id, userId));
       return updatedUser;
     }
     
@@ -437,7 +457,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async activateEarlyAdopter(userId: string, endDate: Date): Promise<User> {
-    const [updatedUser] = await db.update(users)
+    await db.update(users)
       .set({
         isEarlyAdopter: true,
         subscriptionType: 'premium',
@@ -445,40 +465,42 @@ export class DatabaseStorage implements IStorage {
         subscriptionStartDate: new Date(),
         subscriptionEndDate: endDate
       })
-      .where(eq(users.id, userId))
-      .returning();
+      .where(eq(users.id, userId));
     
+    const [updatedUser] = await db.select().from(users).where(eq(users.id, userId));
     return updatedUser;
   }
 
   async createSubscription(subscription: InsertSubscription): Promise<Subscription> {
-    const [newSubscription] = await db.insert(subscriptions).values(subscription).returning();
+    const id = generateId();
+    await db.insert(subscriptions).values({ ...subscription, id });
+    const [newSubscription] = await db.select().from(subscriptions).where(eq(subscriptions.id, id));
     return newSubscription;
   }
 
   async updateUserSubscription(userId: string, subscriptionType: 'free' | 'basic' | 'premium', endDate: Date): Promise<User> {
-    const [updatedUser] = await db.update(users)
+    await db.update(users)
       .set({
         subscriptionType,
         subscriptionStatus: 'active',
         subscriptionStartDate: new Date(),
         subscriptionEndDate: endDate
       })
-      .where(eq(users.id, userId))
-      .returning();
+      .where(eq(users.id, userId));
     
+    const [updatedUser] = await db.select().from(users).where(eq(users.id, userId));
     return updatedUser;
   }
 
   async activatePremiumListing(userId: string, endDate: Date): Promise<User> {
-    const [updatedUser] = await db.update(users)
+    await db.update(users)
       .set({
         isPremiumListing: true,
         premiumListingEndDate: endDate
       })
-      .where(eq(users.id, userId))
-      .returning();
+      .where(eq(users.id, userId));
     
+    const [updatedUser] = await db.select().from(users).where(eq(users.id, userId));
     return updatedUser;
   }
 
@@ -519,6 +541,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createVerificationToken(userId: string, type: string = 'email'): Promise<VerificationToken> {
+    const id = generateId();
     const token = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     
@@ -526,13 +549,15 @@ export class DatabaseStorage implements IStorage {
       and(eq(verificationTokens.userId, userId), eq(verificationTokens.type, type))
     );
     
-    const [verificationToken] = await db.insert(verificationTokens).values({
+    await db.insert(verificationTokens).values({
+      id,
       userId,
       token,
       type,
       expiresAt,
-    }).returning();
+    });
     
+    const [verificationToken] = await db.select().from(verificationTokens).where(eq(verificationTokens.id, id));
     return verificationToken;
   }
 
@@ -546,10 +571,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async verifyUserEmail(userId: string): Promise<User | undefined> {
-    const [user] = await db.update(users)
+    await db.update(users)
       .set({ emailVerified: true })
-      .where(eq(users.id, userId))
-      .returning();
+      .where(eq(users.id, userId));
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
     return user || undefined;
   }
 
@@ -565,7 +590,7 @@ export class DatabaseStorage implements IStorage {
     if (filters?.search) {
       const searchTerm = `%${filters.search}%`;
       conditions.push(
-        sql`(${users.name} ILIKE ${searchTerm} OR ${users.email} ILIKE ${searchTerm})`
+        sql`(${users.name} LIKE ${searchTerm} OR ${users.email} LIKE ${searchTerm})`
       );
     }
     
@@ -604,7 +629,8 @@ export class DatabaseStorage implements IStorage {
       return await this.getUser(id);
     }
     
-    const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
+    await db.update(users).set(updateData).where(eq(users.id, id));
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 

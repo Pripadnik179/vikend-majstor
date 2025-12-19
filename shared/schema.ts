@@ -1,47 +1,42 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, decimal, boolean, pgEnum } from "drizzle-orm/pg-core";
+import { mysqlTable, text, varchar, int, timestamp, decimal, boolean, mysqlEnum, json } from "drizzle-orm/mysql-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const userRoleEnum = pgEnum("user_role", ["owner", "renter"]);
-export const bookingStatusEnum = pgEnum("booking_status", ["pending", "confirmed", "active", "completed", "cancelled"]);
-export const subscriptionTypeEnum = pgEnum("subscription_type", ["free", "basic", "premium"]);
-export const subscriptionStatusEnum = pgEnum("subscription_status", ["active", "expired", "cancelled"]);
-
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: text("email").notNull().unique(),
+export const users = mysqlTable("users", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
   password: text("password").notNull(),
-  name: text("name").notNull(),
-  phone: text("phone"),
-  city: text("city"),
-  district: text("district"),
+  name: varchar("name", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 50 }),
+  city: varchar("city", { length: 100 }),
+  district: varchar("district", { length: 100 }),
   avatarUrl: text("avatar_url"),
-  role: userRoleEnum("role").default("renter").notNull(),
+  role: mysqlEnum("role", ["owner", "renter"]).default("renter").notNull(),
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
-  totalRatings: integer("total_ratings").default(0),
+  totalRatings: int("total_ratings").default(0),
   emailVerified: boolean("email_verified").default(false).notNull(),
-  subscriptionType: subscriptionTypeEnum("subscription_type").default("free").notNull(),
-  subscriptionStatus: subscriptionStatusEnum("subscription_status").default("active").notNull(),
+  subscriptionType: mysqlEnum("subscription_type", ["free", "basic", "premium"]).default("free").notNull(),
+  subscriptionStatus: mysqlEnum("subscription_status", ["active", "expired", "cancelled"]).default("active").notNull(),
   subscriptionStartDate: timestamp("subscription_start_date"),
   subscriptionEndDate: timestamp("subscription_end_date"),
   isEarlyAdopter: boolean("is_early_adopter").default(false).notNull(),
   isPremiumListing: boolean("is_premium_listing").default(false).notNull(),
   premiumListingEndDate: timestamp("premium_listing_end_date"),
   freeFeatureUsed: boolean("free_feature_used").default(false).notNull(),
-  stripeCustomerId: text("stripe_customer_id"),
-  totalAdsCreated: integer("total_ads_created").default(0).notNull(),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+  totalAdsCreated: int("total_ads_created").default(0).notNull(),
   pushToken: text("push_token"),
   isAdmin: boolean("is_admin").default(false).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const verificationTokens = pgTable("verification_tokens", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  token: text("token").notNull().unique(),
-  type: text("type").notNull().default("email"),
+export const verificationTokens = mysqlTable("verification_tokens", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  type: varchar("type", { length: 50 }).notNull().default("email"),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -63,16 +58,16 @@ export const usersRelations = relations(users, ({ many }) => ({
   subscriptions: many(subscriptions),
 }));
 
-export const subscriptions = pgTable("subscriptions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  type: subscriptionTypeEnum("type").notNull(),
-  status: subscriptionStatusEnum("status").default("active").notNull(),
-  priceRsd: integer("price_rsd").notNull(),
+export const subscriptions = mysqlTable("subscriptions", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 36 }).notNull().references(() => users.id),
+  type: mysqlEnum("type", ["free", "basic", "premium"]).notNull(),
+  status: mysqlEnum("status", ["active", "expired", "cancelled"]).default("active").notNull(),
+  priceRsd: int("price_rsd").notNull(),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
-  stripePaymentIntentId: text("stripe_payment_intent_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
+  stripePaymentIntentId: varchar("stripe_payment_intent_id", { length: 255 }),
+  stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -83,32 +78,32 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   }),
 }));
 
-export const items = pgTable("items", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  ownerId: varchar("owner_id").notNull().references(() => users.id),
-  title: text("title").notNull(),
+export const items = mysqlTable("items", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  ownerId: varchar("owner_id", { length: 36 }).notNull().references(() => users.id),
+  title: varchar("title", { length: 255 }).notNull(),
   description: text("description").notNull(),
-  category: text("category").notNull(),
-  subCategory: text("sub_category"),
-  toolType: text("tool_type"),
-  toolSubType: text("tool_sub_type"),
-  brand: text("brand"),
-  powerSource: text("power_source"),
-  powerWatts: integer("power_watts"),
-  pricePerDay: integer("price_per_day").notNull(),
-  deposit: integer("deposit").notNull(),
-  city: text("city").notNull(),
-  district: text("district"),
+  category: varchar("category", { length: 100 }).notNull(),
+  subCategory: varchar("sub_category", { length: 100 }),
+  toolType: varchar("tool_type", { length: 100 }),
+  toolSubType: varchar("tool_sub_type", { length: 100 }),
+  brand: varchar("brand", { length: 100 }),
+  powerSource: varchar("power_source", { length: 100 }),
+  powerWatts: int("power_watts"),
+  pricePerDay: int("price_per_day").notNull(),
+  deposit: int("deposit").notNull(),
+  city: varchar("city", { length: 100 }).notNull(),
+  district: varchar("district", { length: 100 }),
   latitude: decimal("latitude", { precision: 10, scale: 7 }),
   longitude: decimal("longitude", { precision: 10, scale: 7 }),
-  images: text("images").array().notNull().default(sql`ARRAY[]::text[]`),
-  adType: text("ad_type").notNull().default("renting"),
+  images: json("images").$type<string[]>().default([]),
+  adType: varchar("ad_type", { length: 50 }).notNull().default("renting"),
   isAvailable: boolean("is_available").default(true).notNull(),
   isFeatured: boolean("is_featured").default(false).notNull(),
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
-  totalRatings: integer("total_ratings").default(0),
+  totalRatings: int("total_ratings").default(0),
   expiresAt: timestamp("expires_at"),
-  activityTags: text("activity_tags").array(),
+  activityTags: json("activity_tags").$type<string[]>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -122,19 +117,19 @@ export const itemsRelations = relations(items, ({ one, many }) => ({
   reviews: many(reviews),
 }));
 
-export const bookings = pgTable("bookings", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  itemId: varchar("item_id").notNull().references(() => items.id),
-  renterId: varchar("renter_id").notNull().references(() => users.id),
-  ownerId: varchar("owner_id").notNull().references(() => users.id),
+export const bookings = mysqlTable("bookings", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  itemId: varchar("item_id", { length: 36 }).notNull().references(() => items.id),
+  renterId: varchar("renter_id", { length: 36 }).notNull().references(() => users.id),
+  ownerId: varchar("owner_id", { length: 36 }).notNull().references(() => users.id),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
-  totalDays: integer("total_days").notNull(),
-  totalPrice: integer("total_price").notNull(),
-  deposit: integer("deposit").notNull(),
-  status: bookingStatusEnum("status").default("pending").notNull(),
-  paymentMethod: text("payment_method").default("cash"),
-  stripePaymentId: text("stripe_payment_id"),
+  totalDays: int("total_days").notNull(),
+  totalPrice: int("total_price").notNull(),
+  deposit: int("deposit").notNull(),
+  status: mysqlEnum("status", ["pending", "confirmed", "active", "completed", "cancelled"]).default("pending").notNull(),
+  paymentMethod: varchar("payment_method", { length: 50 }).default("cash"),
+  stripePaymentId: varchar("stripe_payment_id", { length: 255 }),
   pickupConfirmed: boolean("pickup_confirmed").default(false),
   returnConfirmed: boolean("return_confirmed").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -158,11 +153,11 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
   }),
 }));
 
-export const conversations = pgTable("conversations", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  user1Id: varchar("user1_id").notNull().references(() => users.id),
-  user2Id: varchar("user2_id").notNull().references(() => users.id),
-  itemId: varchar("item_id").references(() => items.id),
+export const conversations = mysqlTable("conversations", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  user1Id: varchar("user1_id", { length: 36 }).notNull().references(() => users.id),
+  user2Id: varchar("user2_id", { length: 36 }).notNull().references(() => users.id),
+  itemId: varchar("item_id", { length: 36 }).references(() => items.id),
   lastMessageAt: timestamp("last_message_at").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -183,11 +178,11 @@ export const conversationsRelations = relations(conversations, ({ one, many }) =
   messages: many(messages),
 }));
 
-export const messages = pgTable("messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  conversationId: varchar("conversation_id").notNull().references(() => conversations.id),
-  senderId: varchar("sender_id").notNull().references(() => users.id),
-  receiverId: varchar("receiver_id").notNull().references(() => users.id),
+export const messages = mysqlTable("messages", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  conversationId: varchar("conversation_id", { length: 36 }).notNull().references(() => conversations.id),
+  senderId: varchar("sender_id", { length: 36 }).notNull().references(() => users.id),
+  receiverId: varchar("receiver_id", { length: 36 }).notNull().references(() => users.id),
   content: text("content").notNull(),
   isRead: boolean("is_read").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -210,13 +205,13 @@ export const messagesRelations = relations(messages, ({ one }) => ({
   }),
 }));
 
-export const reviews = pgTable("reviews", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  bookingId: varchar("booking_id").notNull().references(() => bookings.id),
-  itemId: varchar("item_id").notNull().references(() => items.id),
-  reviewerId: varchar("reviewer_id").notNull().references(() => users.id),
-  revieweeId: varchar("reviewee_id").notNull().references(() => users.id),
-  rating: integer("rating").notNull(),
+export const reviews = mysqlTable("reviews", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  bookingId: varchar("booking_id", { length: 36 }).notNull().references(() => bookings.id),
+  itemId: varchar("item_id", { length: 36 }).notNull().references(() => items.id),
+  reviewerId: varchar("reviewer_id", { length: 36 }).notNull().references(() => users.id),
+  revieweeId: varchar("reviewee_id", { length: 36 }).notNull().references(() => users.id),
+  rating: int("rating").notNull(),
   comment: text("comment"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
