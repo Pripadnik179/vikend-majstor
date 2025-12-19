@@ -1,10 +1,11 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { View, FlatList, StyleSheet, TextInput, Pressable, RefreshControl, ActivityIndicator, Platform, useWindowDimensions } from 'react-native';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { View, FlatList, StyleSheet, TextInput, Pressable, RefreshControl, ActivityIndicator, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
+import * as Location from 'expo-location';
 import { SearchIcon, XIcon, SlidersIcon, BoxIcon } from '@/components/icons/TabBarIcons';
 import { ItemCard } from '@/components/ItemCard';
 import { FilterModal, FilterState } from '@/components/FilterModal';
@@ -15,6 +16,19 @@ import { useWebLayout } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
+
+const isWeb = Platform.OS === 'web';
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 interface HomeData {
   premiumItems: Item[];
@@ -27,6 +41,7 @@ const DEFAULT_FILTERS: FilterState = {
   minRating: null,
   maxDeposit: null,
   city: '',
+  maxDistance: null,
 };
 
 export default function HomeScreen() {
@@ -44,6 +59,34 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
+  const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
+
+  useEffect(() => {
+    if (isWeb || !locationPermission?.granted) return;
+    
+    const fetchLocation = async () => {
+      try {
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        setUserLat(location.coords.latitude);
+        setUserLng(location.coords.longitude);
+      } catch (error) {
+        console.error('Error getting location:', error);
+      }
+    };
+    fetchLocation();
+  }, [locationPermission?.granted]);
+
+  useEffect(() => {
+    if (isWeb || !requestLocationPermission) return;
+    
+    if (filters.maxDistance !== null && locationPermission && !locationPermission.granted) {
+      requestLocationPermission();
+    }
+  }, [filters.maxDistance, locationPermission, requestLocationPermission]);
 
   const handleSearchSubmit = useCallback(() => {
     setAppliedSearch(searchInput);
@@ -69,6 +112,7 @@ export default function HomeScreen() {
     if (filters.minRating !== null) count++;
     if (filters.maxDeposit !== null) count++;
     if (filters.city) count++;
+    if (filters.maxDistance !== null) count++;
     return count;
   }, [filters]);
 
@@ -82,7 +126,20 @@ export default function HomeScreen() {
       const matchesRating = filters.minRating === null || parseFloat(item.rating || '0') >= filters.minRating;
       const matchesDeposit = filters.maxDeposit === null || item.deposit <= filters.maxDeposit;
       const matchesCity = !filters.city || item.city.toLowerCase().includes(filters.city.toLowerCase());
-      return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesRating && matchesDeposit && matchesCity;
+      
+      let matchesDistance = true;
+      if (filters.maxDistance !== null && userLat !== null && userLng !== null) {
+        const itemLat = item.latitude ? parseFloat(item.latitude) : null;
+        const itemLng = item.longitude ? parseFloat(item.longitude) : null;
+        if (itemLat !== null && itemLng !== null) {
+          const distance = calculateDistance(userLat, userLng, itemLat, itemLng);
+          matchesDistance = distance <= filters.maxDistance;
+        } else {
+          matchesDistance = false;
+        }
+      }
+      
+      return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesRating && matchesDeposit && matchesCity && matchesDistance;
     });
     
     // Sort: 1) Featured items first, 2) Premium users' items, 3) by creation date
@@ -98,7 +155,7 @@ export default function HomeScreen() {
       // Then sort by createdAt descending
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-  }, [items, appliedSearch, filters]);
+  }, [items, appliedSearch, filters, userLat, userLng]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

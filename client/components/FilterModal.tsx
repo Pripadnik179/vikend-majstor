@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Modal, Pressable, ScrollView, TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { XIcon, StarIcon } from '@/components/icons/TabBarIcons';
+import { XIcon, StarIcon, MapPinIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from './ThemedText';
 import { Button } from './Button';
 import { useTheme } from '@/hooks/useTheme';
-import { Colors, Spacing, BorderRadius } from '@/constants/theme';
+import { Spacing, BorderRadius } from '@/constants/theme';
 
 export interface FilterState {
   minPrice: number | null;
@@ -13,6 +13,7 @@ export interface FilterState {
   minRating: number | null;
   maxDeposit: number | null;
   city: string;
+  maxDistance: number | null;
 }
 
 interface FilterModalProps {
@@ -27,6 +28,18 @@ const RATING_OPTIONS = [
   { label: '4+', value: 4 },
   { label: '3+', value: 3 },
   { label: '2+', value: 2 },
+];
+
+const DISTANCE_OPTIONS = [
+  { label: 'Sve', value: null },
+  { label: '1 km', value: 1 },
+  { label: '2 km', value: 2 },
+  { label: '5 km', value: 5 },
+  { label: '10 km', value: 10 },
+  { label: '15 km', value: 15 },
+  { label: '20 km', value: 20 },
+  { label: '50 km', value: 50 },
+  { label: '100 km', value: 100 },
 ];
 
 export function FilterModal({ visible, onClose, filters, onApply }: FilterModalProps) {
@@ -47,6 +60,7 @@ export function FilterModal({ visible, onClose, filters, onApply }: FilterModalP
       minRating: null,
       maxDeposit: null,
       city: '',
+      maxDistance: null,
     };
     setLocalFilters(resetFilters);
   };
@@ -90,7 +104,7 @@ export function FilterModal({ visible, onClose, filters, onApply }: FilterModalP
             <ThemedText type="h4" style={styles.sectionTitle}>Cena (RSD/dan)</ThemedText>
             <View style={styles.row}>
               <View style={styles.halfInput}>
-                <ThemedText type="caption" style={[styles.label, { color: theme.textSecondary }]}>
+                <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
                   Minimum
                 </ThemedText>
                 <TextInput
@@ -103,7 +117,7 @@ export function FilterModal({ visible, onClose, filters, onApply }: FilterModalP
                 />
               </View>
               <View style={styles.halfInput}>
-                <ThemedText type="caption" style={[styles.label, { color: theme.textSecondary }]}>
+                <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
                   Maksimum
                 </ThemedText>
                 <TextInput
@@ -140,10 +154,10 @@ export function FilterModal({ visible, onClose, filters, onApply }: FilterModalP
                     styles.ratingButton,
                     {
                       backgroundColor: localFilters.minRating === option.value 
-                        ? Colors.primary 
+                        ? theme.primary 
                         : theme.backgroundDefault,
                       borderColor: localFilters.minRating === option.value 
-                        ? Colors.primary 
+                        ? theme.primary 
                         : theme.border,
                     },
                   ]}
@@ -153,7 +167,7 @@ export function FilterModal({ visible, onClose, filters, onApply }: FilterModalP
                     <View style={styles.ratingContent}>
                       <StarIcon 
                         size={16} 
-                        color={localFilters.minRating === option.value ? '#FFFFFF' : Colors.accent} 
+                        color={localFilters.minRating === option.value ? '#FFFFFF' : theme.accent} 
                       />
                       <ThemedText
                         type="body"
@@ -190,6 +204,47 @@ export function FilterModal({ visible, onClose, filters, onApply }: FilterModalP
               onChangeText={(text) => updateFilter('city', text)}
               autoCapitalize="words"
             />
+          </View>
+
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <MapPinIcon size={20} color={theme.primary} />
+              <ThemedText type="h4" style={[styles.sectionTitle, { marginLeft: Spacing.sm, marginBottom: 0 }]}>
+                Udaljenost od mene
+              </ThemedText>
+            </View>
+            <ThemedText type="small" style={[styles.distanceHint, { color: theme.textSecondary }]}>
+              Potrebna je GPS lokacija za ovaj filter
+            </ThemedText>
+            <View style={styles.distanceRow}>
+              {DISTANCE_OPTIONS.map((option) => (
+                <Pressable
+                  key={option.label}
+                  style={[
+                    styles.distanceButton,
+                    {
+                      backgroundColor: localFilters.maxDistance === option.value 
+                        ? theme.primary 
+                        : theme.backgroundDefault,
+                      borderColor: localFilters.maxDistance === option.value 
+                        ? theme.primary 
+                        : theme.border,
+                    },
+                  ]}
+                  onPress={() => updateFilter('maxDistance', option.value)}
+                >
+                  <ThemedText
+                    type="small"
+                    style={{
+                      color: localFilters.maxDistance === option.value ? '#FFFFFF' : theme.text,
+                      fontWeight: localFilters.maxDistance === option.value ? '600' : '400',
+                    }}
+                  >
+                    {option.label}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
           </View>
         </ScrollView>
 
@@ -261,6 +316,25 @@ const styles = StyleSheet.create({
   ratingContent: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  distanceHint: {
+    marginBottom: Spacing.md,
+  },
+  distanceRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  distanceButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
   },
   footer: {
     paddingHorizontal: Spacing.lg,
