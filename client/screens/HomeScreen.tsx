@@ -113,58 +113,14 @@ export default function HomeScreen() {
     />
   );
 
-  const renderHeader = () => (
+  const listHeader = useMemo(() => (
     <View style={styles.header}>
       <PromoBanner
         premiumItems={homeData?.premiumItems || []}
         earlyAdopterSlotsRemaining={homeData?.remainingEarlyAdopterSlots || 0}
       />
-      <View style={styles.searchRow}>
-        <View style={[styles.searchContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
-          <Pressable onPress={handleSearchSubmit} hitSlop={8}>
-            <SearchIcon size={20} color={theme.textTertiary} />
-          </Pressable>
-          <TextInput
-            style={[styles.searchInput, { color: theme.text }]}
-            placeholder="Pretraži stvari..."
-            placeholderTextColor={theme.textTertiary}
-            value={searchInput}
-            onChangeText={setSearchInput}
-            onSubmitEditing={handleSearchSubmit}
-            returnKeyType="search"
-            blurOnSubmit={true}
-          />
-          {searchInput ? (
-            <Pressable onPress={handleClearSearch} hitSlop={8}>
-              <XIcon size={20} color={theme.textTertiary} />
-            </Pressable>
-          ) : null}
-        </View>
-        <Pressable
-          style={[
-            styles.filterButton,
-            {
-              backgroundColor: activeFilterCount > 0 ? theme.primary : theme.backgroundDefault,
-              borderColor: activeFilterCount > 0 ? theme.primary : theme.border,
-            },
-          ]}
-          onPress={() => setShowFilters(true)}
-        >
-          <SlidersIcon 
-            size={20} 
-            color={activeFilterCount > 0 ? '#FFFFFF' : theme.text} 
-          />
-          {activeFilterCount > 0 ? (
-            <View style={[styles.filterBadge, { backgroundColor: theme.accent }]}>
-              <ThemedText type="small" style={styles.filterBadgeText}>
-                {activeFilterCount}
-              </ThemedText>
-            </View>
-          ) : null}
-        </Pressable>
-      </View>
     </View>
-  );
+  ), [homeData?.premiumItems, homeData?.remainingEarlyAdopterSlots]);
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
@@ -199,12 +155,55 @@ export default function HomeScreen() {
   const horizontalPadding = isDesktop ? Math.max(24, (width - 1400) / 2) : Spacing.lg;
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: theme.backgroundRoot }}>
+      <View style={[styles.searchRowFixed, { paddingTop, paddingHorizontal: horizontalPadding }]}>
+        <View style={[styles.searchContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+          <Pressable onPress={handleSearchSubmit} hitSlop={8}>
+            <SearchIcon size={20} color={theme.textTertiary} />
+          </Pressable>
+          <TextInput
+            style={[styles.searchInput, { color: theme.text }]}
+            placeholder="Pretraži stvari..."
+            placeholderTextColor={theme.textTertiary}
+            value={searchInput}
+            onChangeText={setSearchInput}
+            onSubmitEditing={handleSearchSubmit}
+            returnKeyType="search"
+            blurOnSubmit={false}
+          />
+          {searchInput ? (
+            <Pressable onPress={handleClearSearch} hitSlop={8}>
+              <XIcon size={20} color={theme.textTertiary} />
+            </Pressable>
+          ) : null}
+        </View>
+        <Pressable
+          style={[
+            styles.filterButton,
+            {
+              backgroundColor: activeFilterCount > 0 ? theme.primary : theme.backgroundDefault,
+              borderColor: activeFilterCount > 0 ? theme.primary : theme.border,
+            },
+          ]}
+          onPress={() => setShowFilters(true)}
+        >
+          <SlidersIcon 
+            size={20} 
+            color={activeFilterCount > 0 ? '#FFFFFF' : theme.text} 
+          />
+          {activeFilterCount > 0 ? (
+            <View style={[styles.filterBadge, { backgroundColor: theme.accent }]}>
+              <ThemedText type="small" style={styles.filterBadgeText}>
+                {activeFilterCount}
+              </ThemedText>
+            </View>
+          ) : null}
+        </Pressable>
+      </View>
       <FlatList
         key={`list-${effectiveNumColumns}`}
-        style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
+        style={{ flex: 1 }}
         contentContainerStyle={{
-          paddingTop,
           paddingBottom,
           paddingHorizontal: horizontalPadding,
           flexGrow: 1,
@@ -215,7 +214,7 @@ export default function HomeScreen() {
         keyExtractor={(item) => item.id}
         numColumns={effectiveNumColumns}
         columnWrapperStyle={effectiveNumColumns > 1 ? styles.row : undefined}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={listHeader}
         ListEmptyComponent={renderEmpty}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
@@ -229,18 +228,18 @@ export default function HomeScreen() {
         filters={filters}
         onApply={setFilters}
       />
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
   },
-  searchRow: {
+  searchRowFixed: {
     flexDirection: 'row',
     gap: Spacing.sm,
-    marginBottom: Spacing.md,
+    paddingBottom: Spacing.md,
   },
   searchContainer: {
     flex: 1,
