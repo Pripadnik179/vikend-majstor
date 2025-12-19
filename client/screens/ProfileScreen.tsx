@@ -3,7 +3,8 @@ import { View, StyleSheet, Pressable, Alert, ScrollView, Platform } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StarIcon, ChevronRightIcon, LogOutIcon } from '@/components/icons/TabBarIcons';
+import { useQuery } from '@tanstack/react-query';
+import { StarIcon, ChevronRightIcon, LogOutIcon, ClockIcon } from '@/components/icons/TabBarIcons';
 import { DynamicIcon } from '@/components/icons/DynamicIcon';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
@@ -14,6 +15,13 @@ import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import { useHeaderHeight } from '@react-navigation/elements';
 
+type SubscriptionStatus = {
+  subscriptionType: string;
+  isEarlyAdopter: boolean;
+  remainingDays: number | null;
+  subscriptionEndDate: string | null;
+};
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
@@ -22,6 +30,11 @@ export default function ProfileScreen() {
   const { theme } = useTheme();
   const { user, logout } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const { data: subscriptionStatus } = useQuery<SubscriptionStatus>({
+    queryKey: ['/api/subscription/status'],
+    enabled: !!user,
+  });
 
   const handleLogout = () => {
     if (Platform.OS === 'web') {
@@ -96,6 +109,41 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Card>
+
+      {subscriptionStatus?.remainingDays !== null && subscriptionStatus?.remainingDays !== undefined && subscriptionStatus.remainingDays > 0 && (
+        <Pressable 
+          onPress={() => navigation.navigate('Subscription')}
+          style={({ pressed }) => [
+            styles.premiumBanner,
+            { 
+              backgroundColor: theme.primary + '15',
+              borderColor: theme.primary,
+              opacity: pressed ? 0.8 : 1,
+            }
+          ]}
+        >
+          <View style={styles.premiumBannerContent}>
+            <View style={[styles.premiumBadge, { backgroundColor: theme.primary }]}>
+              <StarIcon size={14} color="#FFFFFF" />
+              <ThemedText type="small" style={{ color: '#FFFFFF', fontWeight: '700' }}>
+                {subscriptionStatus.isEarlyAdopter ? 'RANI KORISNIK' : 'PREMIUM'}
+              </ThemedText>
+            </View>
+            <View style={styles.premiumCountdown}>
+              <ClockIcon size={18} color={theme.primary} />
+              <ThemedText type="body" style={{ fontWeight: '600' }}>
+                Imate jos {subscriptionStatus.remainingDays} {subscriptionStatus.remainingDays === 1 ? 'dan' : 'dana'} Premium pretplate
+              </ThemedText>
+            </View>
+            {subscriptionStatus.subscriptionEndDate && (
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                Istice: {new Date(subscriptionStatus.subscriptionEndDate).toLocaleDateString('sr-Latn-RS')}
+              </ThemedText>
+            )}
+          </View>
+          <ChevronRightIcon size={20} color={theme.primary} />
+        </Pressable>
+      )}
 
       <View style={styles.menuSection}>
         {menuItems.map((item, index) => (
@@ -207,6 +255,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
     borderRadius: BorderRadius.xs,
+  },
+  premiumBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.lg,
+    borderWidth: 2,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+  },
+  premiumBannerContent: {
+    flex: 1,
+    gap: Spacing.xs,
+  },
+  premiumBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.xs,
+    alignSelf: 'flex-start',
+  },
+  premiumCountdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.xs,
   },
   logoutButton: {
     flexDirection: 'row',
