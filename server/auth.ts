@@ -5,6 +5,7 @@ import { promisify } from "util";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { storage } from "./storage";
 import { sendVerificationEmail } from "./email";
+import { logLoginAttempt, validateLogin, validateRegistration, handleValidationErrors } from "./security";
 import type { User } from "@shared/schema";
 
 const APPLE_JWKS_URL = new URL('https://appleid.apple.com/auth/keys');
@@ -158,13 +159,9 @@ export function setupAuth(app: Express) {
     next();
   });
 
-  app.post("/api/auth/register", async (req, res) => {
+  app.post("/api/auth/register", validateRegistration, handleValidationErrors, async (req: Request, res: Response) => {
     try {
       const { email, password, name, role } = req.body;
-
-      if (!email || !password || !name) {
-        return res.status(400).json({ error: "Sva polja su obavezna" });
-      }
 
       const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
@@ -255,24 +252,23 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
+  app.post("/api/auth/login", validateLogin, handleValidationErrors, async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
 
-      if (!email || !password) {
-        return res.status(400).json({ error: "Email i lozinka su obavezni" });
-      }
-
       const user = await storage.getUserByEmail(email);
       if (!user) {
+        logLoginAttempt(req, false, email);
         return res.status(401).json({ error: "Pogrešan email ili lozinka" });
       }
 
       const isValid = await comparePasswords(password, user.password);
       if (!isValid) {
+        logLoginAttempt(req, false, email);
         return res.status(401).json({ error: "Pogrešan email ili lozinka" });
       }
 
+      logLoginAttempt(req, true, email);
       req.session.userId = user.id;
       
       const { password: _, ...userWithoutPassword } = user;
