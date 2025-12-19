@@ -32,6 +32,8 @@ export const users = pgTable("users", {
   stripeCustomerId: text("stripe_customer_id"),
   totalAdsCreated: integer("total_ads_created").default(0).notNull(),
   pushToken: text("push_token"),
+  isAdmin: boolean("is_admin").default(false).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -954,6 +954,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin middleware
+  const isAdmin = async (req: any, res: any, next: any) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "Niste prijavljeni" });
+    }
+    const user = await storage.getUser(req.session.userId);
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ error: "Nemate administratorska prava" });
+    }
+    req.user = user;
+    next();
+  };
+
+  // Admin Routes
+  app.get("/api/admin/stats", isAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getUserStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Greška pri učitavanju statistike" });
+    }
+  });
+
+  app.get("/api/admin/users", isAdmin, async (req, res) => {
+    try {
+      const { search, isActive, subscriptionType } = req.query;
+      const filters: any = {};
+      
+      if (search) filters.search = search as string;
+      if (isActive !== undefined) filters.isActive = isActive === 'true';
+      if (subscriptionType) filters.subscriptionType = subscriptionType as string;
+      
+      const users = await storage.getAllUsers(filters);
+      
+      const safeUsers = users.map(user => ({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+        city: user.city,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        isActive: user.isActive,
+        isAdmin: user.isAdmin,
+        emailVerified: user.emailVerified,
+        subscriptionType: user.subscriptionType,
+        subscriptionStatus: user.subscriptionStatus,
+        subscriptionStartDate: user.subscriptionStartDate,
+        subscriptionEndDate: user.subscriptionEndDate,
+        isEarlyAdopter: user.isEarlyAdopter,
+        totalAdsCreated: user.totalAdsCreated,
+        createdAt: user.createdAt
+      }));
+      
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Greška pri učitavanju korisnika" });
+    }
+  });
+
+  app.get("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.params.id);
+      if (!user) {
+        return res.status(404).json({ error: "Korisnik nije pronađen" });
+      }
+      
+      const safeUser = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+        city: user.city,
+        district: user.district,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        rating: user.rating,
+        totalRatings: user.totalRatings,
+        isActive: user.isActive,
+        isAdmin: user.isAdmin,
+        emailVerified: user.emailVerified,
+        subscriptionType: user.subscriptionType,
+        subscriptionStatus: user.subscriptionStatus,
+        subscriptionStartDate: user.subscriptionStartDate,
+        subscriptionEndDate: user.subscriptionEndDate,
+        isEarlyAdopter: user.isEarlyAdopter,
+        isPremiumListing: user.isPremiumListing,
+        premiumListingEndDate: user.premiumListingEndDate,
+        totalAdsCreated: user.totalAdsCreated,
+        createdAt: user.createdAt
+      };
+      
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: "Greška pri učitavanju korisnika" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const { isActive, isAdmin: makeAdmin, subscriptionType, subscriptionDays } = req.body;
+      
+      const updatedUser = await storage.updateUserAdmin(req.params.id, {
+        isActive,
+        isAdmin: makeAdmin,
+        subscriptionType,
+        subscriptionDays: subscriptionDays ? parseInt(subscriptionDays) : undefined
+      });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: "Korisnik nije pronađen" });
+      }
+      
+      console.log(`[ADMIN] User ${req.user.email} updated user ${updatedUser.email}: isActive=${isActive}, subscriptionType=${subscriptionType}, days=${subscriptionDays}`);
+      
+      res.json({
+        success: true,
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          name: updatedUser.name,
+          isActive: updatedUser.isActive,
+          isAdmin: updatedUser.isAdmin,
+          subscriptionType: updatedUser.subscriptionType,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          subscriptionStartDate: updatedUser.subscriptionStartDate,
+          subscriptionEndDate: updatedUser.subscriptionEndDate
+        }
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ error: "Greška pri ažuriranju korisnika" });
+    }
+  });
+
+  app.get("/api/admin/check", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.session.userId!);
+      res.json({ isAdmin: user?.isAdmin || false });
+    } catch (error) {
+      res.status(500).json({ error: "Greška pri proveri admin statusa" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

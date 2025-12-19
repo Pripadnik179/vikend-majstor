@@ -19,6 +19,9 @@ export interface IStorage {
   updateUser(id: string, data: Partial<InsertUser>): Promise<User | undefined>;
   incrementUserAdsCreated(userId: string): Promise<void>;
   
+  getAllUsers(filters?: { search?: string; isActive?: boolean; subscriptionType?: string }): Promise<User[]>;
+  updateUserAdmin(id: string, data: { isActive?: boolean; isAdmin?: boolean; subscriptionType?: 'free' | 'basic' | 'premium'; subscriptionDays?: number }): Promise<User | undefined>;
+  
   getItems(filters?: { 
     category?: string; 
     subCategory?: string;
@@ -548,6 +551,81 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user || undefined;
+  }
+
+  async getAllUsers(filters?: { search?: string; isActive?: boolean; subscriptionType?: string }): Promise<User[]> {
+    const conditions: any[] = [];
+    
+    if (filters?.isActive !== undefined) {
+      conditions.push(eq(users.isActive, filters.isActive));
+    }
+    if (filters?.subscriptionType) {
+      conditions.push(eq(users.subscriptionType, filters.subscriptionType as any));
+    }
+    if (filters?.search) {
+      const searchTerm = `%${filters.search}%`;
+      conditions.push(
+        sql`(${users.name} ILIKE ${searchTerm} OR ${users.email} ILIKE ${searchTerm})`
+      );
+    }
+    
+    if (conditions.length > 0) {
+      return await db.select().from(users).where(and(...conditions)).orderBy(desc(users.createdAt));
+    }
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async updateUserAdmin(id: string, data: { isActive?: boolean; isAdmin?: boolean; subscriptionType?: 'free' | 'basic' | 'premium'; subscriptionDays?: number }): Promise<User | undefined> {
+    const updateData: any = {};
+    
+    if (data.isActive !== undefined) {
+      updateData.isActive = data.isActive;
+    }
+    if (data.isAdmin !== undefined) {
+      updateData.isAdmin = data.isAdmin;
+    }
+    if (data.subscriptionType !== undefined) {
+      updateData.subscriptionType = data.subscriptionType;
+      updateData.subscriptionStatus = data.subscriptionType === 'free' ? 'expired' : 'active';
+      
+      if (data.subscriptionType !== 'free' && data.subscriptionDays) {
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + data.subscriptionDays);
+        updateData.subscriptionStartDate = startDate;
+        updateData.subscriptionEndDate = endDate;
+      } else if (data.subscriptionType === 'free') {
+        updateData.subscriptionStartDate = null;
+        updateData.subscriptionEndDate = null;
+      }
+    }
+    
+    if (Object.keys(updateData).length === 0) {
+      return await this.getUser(id);
+    }
+    
+    const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
+    return user || undefined;
+  }
+
+  async getUserStats(): Promise<{ totalUsers: number; activeUsers: number; premiumUsers: number; earlyAdopters: number }> {
+    const now = new Date();
+    const [total] = await db.select({ count: count() }).from(users);
+    const [active] = await db.select({ count: count() }).from(users).where(eq(users.isActive, true));
+    const [premium] = await db.select({ count: count() }).from(users).where(
+      and(
+        eq(users.subscriptionType, 'premium'),
+        gt(users.subscriptionEndDate, now)
+      )
+    );
+    const [earlyAdopters] = await db.select({ count: count() }).from(users).where(eq(users.isEarlyAdopter, true));
+    
+    return {
+      totalUsers: total?.count || 0,
+      activeUsers: active?.count || 0,
+      premiumUsers: premium?.count || 0,
+      earlyAdopters: earlyAdopters?.count || 0
+    };
   }
 }
 
