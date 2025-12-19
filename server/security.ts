@@ -10,7 +10,11 @@ function getClientIp(req: Request): string {
   if (typeof forwarded === 'string') {
     return forwarded.split(',')[0].trim();
   }
-  return req.ip || req.socket.remoteAddress || 'unknown';
+  let ip = req.ip || req.socket.remoteAddress || 'unknown';
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.substring(7);
+  }
+  return ip;
 }
 
 export function logLoginAttempt(req: Request, success: boolean, email: string) {
@@ -59,7 +63,7 @@ export const generalLimiter = rateLimit({
   message: { error: "Previse zahteva. Pokusajte ponovo za 15 minuta." },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: getClientIp,
+  validate: { xForwardedForHeader: false },
 });
 
 export const authLimiter = rateLimit({
@@ -68,8 +72,8 @@ export const authLimiter = rateLimit({
   message: { error: "Previse pokusaja prijave. Pokusajte ponovo za 15 minuta." },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: getClientIp,
   skipSuccessfulRequests: true,
+  validate: { xForwardedForHeader: false },
 });
 
 export const strictLimiter = rateLimit({
@@ -78,7 +82,7 @@ export const strictLimiter = rateLimit({
   message: { error: "Previse zahteva. Pokusajte ponovo za sat vremena." },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: getClientIp,
+  validate: { xForwardedForHeader: false },
 });
 
 export function sanitizeInput(input: string): string {
@@ -136,6 +140,23 @@ export const loginBlockCheck = (req: Request, res: Response, next: NextFunction)
   }
   next();
 };
+
+export function logError(context: string, error: Error | unknown, req?: Request) {
+  const timestamp = new Date().toISOString();
+  const ip = req ? getClientIp(req) : 'N/A';
+  const path = req?.path || 'N/A';
+  const method = req?.method || 'N/A';
+  
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorStack = error instanceof Error ? error.stack : undefined;
+  
+  console.error(`[ERROR] ${timestamp} | ${context}`);
+  console.error(`  Method: ${method} | Path: ${path} | IP: ${ip}`);
+  console.error(`  Message: ${errorMessage}`);
+  if (errorStack) {
+    console.error(`  Stack: ${errorStack}`);
+  }
+}
 
 export function setupSecurity(app: Express) {
   app.use(helmet({
