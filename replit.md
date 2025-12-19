@@ -184,8 +184,10 @@ The app runs with `npm run all:dev` which starts:
   - Card component now supports onLayout prop for position measurement
 - Fixed white space issues in Settings, MyItems, Help, About screens with proper headerStyle and contentStyle
 - Fixed premium/featured ads sorting - featured items (isFeatured: true) now appear first in search results, maintaining priority over distance-based and date-based sorting
-- Replaced font-based icons with custom SVG icons (react-native-svg) to fix Android Expo Go icon rendering issues with New Architecture
-  - Custom SVG components in client/components/icons/TabBarIcons.tsx: HomeIcon, GridIcon, CalendarIcon, MessageIcon, UserIcon, PlusIcon
+- Replaced ALL font-based icons (@expo/vector-icons/Feather) with custom SVG icons (react-native-svg) to fix Android Expo Go icon rendering issues with New Architecture
+  - Custom SVG components in client/components/icons/TabBarIcons.tsx with 45+ icons
+  - DynamicIcon component in client/components/icons/DynamicIcon.tsx for dynamic icon name mapping
+  - Complete migration across all screens and components - no @expo/vector-icons dependencies remain in client codebase
   - Removed font loading from App.tsx for simpler startup
 
 ## Push Notifications

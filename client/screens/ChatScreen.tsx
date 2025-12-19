@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
+import { MessageIcon, SendIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -99,7 +99,7 @@ export default function ChatScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Feather name="message-circle" size={48} color={theme.textTertiary} />
+      <MessageIcon size={48} color={theme.textTertiary} />
       <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
         Započnite razgovor
       </ThemedText>
@@ -163,7 +163,7 @@ export default function ChatScreen() {
           {sendMutation.isPending ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <Feather name="send" size={20} color={message.trim() ? '#FFFFFF' : theme.textTertiary} />
+            <SendIcon size={20} color={message.trim() ? '#FFFFFF' : theme.textTertiary} />
           )}
         </Pressable>
       </View>

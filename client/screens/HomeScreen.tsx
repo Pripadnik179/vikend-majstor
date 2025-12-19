@@ -5,7 +5,7 @@ import { useHeaderHeight } from '@react-navigation/elements';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
+import { SearchIcon, XIcon, SlidersIcon, BoxIcon } from '@/components/icons/TabBarIcons';
 import { ItemCard } from '@/components/ItemCard';
 import { FilterModal, FilterState } from '@/components/FilterModal';
 import { PromoBanner } from '@/components/PromoBanner';
@@ -111,7 +111,7 @@ export default function HomeScreen() {
       />
       <View style={styles.searchRow}>
         <View style={[styles.searchContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
-          <Feather name="search" size={20} color={theme.textTertiary} />
+          <SearchIcon size={20} color={theme.textTertiary} />
           <TextInput
             style={[styles.searchInput, { color: theme.text }]}
             placeholder="Pretraži stvari..."
@@ -121,7 +121,7 @@ export default function HomeScreen() {
           />
           {search ? (
             <Pressable onPress={() => setSearch('')}>
-              <Feather name="x" size={20} color={theme.textTertiary} />
+              <XIcon size={20} color={theme.textTertiary} />
             </Pressable>
           ) : null}
         </View>
@@ -135,8 +135,7 @@ export default function HomeScreen() {
           ]}
           onPress={() => setShowFilters(true)}
         >
-          <Feather 
-            name="sliders" 
+          <SlidersIcon 
             size={20} 
             color={activeFilterCount > 0 ? '#FFFFFF' : theme.text} 
           />
@@ -154,7 +153,7 @@ export default function HomeScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Feather name="package" size={64} color={theme.textTertiary} />
+      <BoxIcon size={64} color={theme.textTertiary} />
       <ThemedText type="h4" style={[styles.emptyTitle, { color: theme.textSecondary }]}>
         Nema dostupnih stvari
       </ThemedText>

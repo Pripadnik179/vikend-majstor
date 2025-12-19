@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Modal, Pressable, Dimensions, Platform, Text } from 'react-native';
 import { BlurView } from 'expo-blur';
-import Feather from '@expo/vector-icons/Feather';
-import { useFonts } from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ThemedText } from '@/components/ThemedText';
@@ -11,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
+import { XIcon, StarIcon, CheckCircleIcon } from '@/components/icons/TabBarIcons';
 
 const { width } = Dimensions.get('window');
 
@@ -20,20 +19,14 @@ export function BeVisibleModal() {
   const { user } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   
-  // Check if Feather fonts are loaded
-  const [fontsLoaded] = useFonts({
-    ...Feather.font,
-  });
-
   useEffect(() => {
-    // Only show modal when fonts are loaded and user is on free plan
-    if (user && user.subscriptionType === 'free' && fontsLoaded) {
+    if (user && user.subscriptionType === 'free') {
       const timer = setTimeout(() => {
         setVisible(true);
       }, 2500);
       return () => clearTimeout(timer);
     }
-  }, [user, fontsLoaded]);
+  }, [user]);
 
   const handleUpgrade = () => {
     setVisible(false);
@@ -44,8 +37,7 @@ export function BeVisibleModal() {
     setVisible(false);
   };
 
-  // Don't render if not visible or fonts not loaded
-  if (!visible || !fontsLoaded) return null;
+  if (!visible) return null;
 
   return (
     <Modal
@@ -58,12 +50,12 @@ export function BeVisibleModal() {
         <BlurView intensity={30} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
         <View style={[styles.content, { backgroundColor: theme.backgroundDefault }]}>
           <Pressable style={styles.closeButton} onPress={handleClose}>
-            <Feather name="x" size={24} color={theme.textSecondary} />
+            <XIcon size={24} color={theme.textSecondary} />
           </Pressable>
           
           <View style={styles.iconContainer}>
             <View style={[styles.iconCircle, { backgroundColor: Colors.light.primary }]}>
-              <Feather name="star" size={40} color={Colors.light.accent} />
+              <StarIcon size={40} color={Colors.light.accent} />
             </View>
           </View>
 
@@ -75,15 +67,15 @@ export function BeVisibleModal() {
 
           <View style={styles.benefitsList}>
             <View style={styles.benefitItem}>
-              <Feather name="check-circle" size={20} color={Colors.light.primary} />
+              <CheckCircleIcon size={20} color={Colors.light.primary} />
               <ThemedText style={styles.benefitText}>Neogranicen broj oglasa</ThemedText>
             </View>
             <View style={styles.benefitItem}>
-              <Feather name="check-circle" size={20} color={Colors.light.primary} />
+              <CheckCircleIcon size={20} color={Colors.light.primary} />
               <ThemedText style={styles.benefitText}>Istaknut oglas na vrhu pretrage</ThemedText>
             </View>
             <View style={styles.benefitItem}>
-              <Feather name="check-circle" size={20} color={Colors.light.primary} />
+              <CheckCircleIcon size={20} color={Colors.light.primary} />
               <ThemedText style={styles.benefitText}>Premium znacka na oglasima</ThemedText>
             </View>
           </View>

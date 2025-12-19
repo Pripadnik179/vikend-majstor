@@ -3,7 +3,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
-import Feather from '@expo/vector-icons/Feather';
+import { ChevronLeftIcon, ChevronRightIcon, ArrowRightIcon } from '@/components/icons/TabBarIcons';
 
 interface Booking {
   startDate: string;
@@ -169,13 +169,13 @@ export function DateRangePicker({
           style={[styles.navButton, !canGoBack && { opacity: 0.3 }]}
           disabled={!canGoBack}
         >
-          <Feather name="chevron-left" size={24} color={theme.primary} />
+          <ChevronLeftIcon size={24} color={theme.primary} />
         </Pressable>
         <ThemedText type="h4">
           {MONTH_NAMES[displayMonth.getMonth()]} {displayMonth.getFullYear()}
         </ThemedText>
         <Pressable onPress={goToNextMonth} style={styles.navButton}>
-          <Feather name="chevron-right" size={24} color={theme.primary} />
+          <ChevronRightIcon size={24} color={theme.primary} />
         </Pressable>
       </View>
 
@@ -248,7 +248,7 @@ export function DateRangePicker({
             {startDate ? formatDateShort(startDate) : 'Izaberi'}
           </ThemedText>
         </View>
-        <Feather name="arrow-right" size={20} color={theme.textTertiary} />
+        <ArrowRightIcon size={20} color={theme.textTertiary} />
         <View style={[styles.selectionBox, { borderColor: endDate ? theme.primary : theme.border }]}>
           <ThemedText type="caption" style={{ color: theme.textSecondary }}>Kraj</ThemedText>
           <ThemedText type="body" style={{ fontWeight: '600' }}>

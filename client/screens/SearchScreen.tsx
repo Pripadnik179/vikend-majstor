@@ -5,7 +5,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
+import { SlidersIcon, XCircleIcon, SearchIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { SearchBar } from '@/components/SearchBar';
@@ -228,7 +228,7 @@ export default function SearchScreen() {
           style={[styles.filterButton, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}
           onPress={() => setShowFilters(!showFilters)}
         >
-          <Feather name="sliders" size={20} color={theme.primary} />
+          <SlidersIcon size={20} color={theme.primary} />
           {activeFilterCount > 0 ? (
             <View style={[styles.filterBadge, { backgroundColor: theme.primary }]}>
               <ThemedText type="small" style={{ color: '#FFFFFF', fontSize: 10 }}>
@@ -458,7 +458,7 @@ export default function SearchScreen() {
 
           {activeFilterCount > 0 ? (
             <Pressable style={styles.clearButton} onPress={clearFilters}>
-              <Feather name="x-circle" size={16} color={theme.primary} />
+              <XCircleIcon size={16} color={theme.primary} />
               <ThemedText type="small" style={{ color: theme.primary }}>Očisti filtere</ThemedText>
             </Pressable>
           ) : null}
@@ -491,7 +491,7 @@ export default function SearchScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Feather name="search" size={48} color={theme.textTertiary} />
+              <SearchIcon size={48} color={theme.textTertiary} />
               <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
                 Nema rezultata za ovu pretragu
               </ThemedText>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Pressable, Platform, useWindowDimensions } from "react-native";
-import Feather from "@expo/vector-icons/Feather";
+import { ToolIcon, PlusIcon } from "@/components/icons/TabBarIcons";
+import { DynamicIcon } from "@/components/icons/DynamicIcon";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import HomeStackNavigator from "@/navigation/HomeStackNavigator";
@@ -16,7 +17,7 @@ import type { MainTabParamList, RootStackParamList } from "./types";
 type NavItem = {
   key: keyof MainTabParamList;
   label: string;
-  icon: keyof typeof Feather.glyphMap;
+  icon: string;
 };
 
 const NAV_ITEMS: NavItem[] = [
@@ -45,7 +46,7 @@ function WebHeader({
       <View style={styles.headerContent}>
         <View style={styles.logoContainer}>
           <View style={[styles.logoIcon, { backgroundColor: theme.primary }]}>
-            <Feather name="tool" size={20} color={Colors.light.accent} />
+            <ToolIcon size={20} color={Colors.light.accent} />
           </View>
           <Text style={[styles.logoText, { color: theme.text }]}>VikendMajstor</Text>
         </View>
@@ -63,7 +64,7 @@ function WebHeader({
                 ]}
                 onPress={() => onTabPress(item.key)}
               >
-                <Feather 
+                <DynamicIcon 
                   name={item.icon} 
                   size={18} 
                   color={isActive ? theme.primary : theme.textSecondary} 
@@ -91,7 +92,7 @@ function WebHeader({
           ]}
           onPress={onAddPress}
         >
-          <Feather name="plus" size={20} color={Colors.light.accent} />
+          <PlusIcon size={20} color={Colors.light.accent} />
           {!isCompact && (
             <Text style={[styles.addButtonText, { color: Colors.light.accent }]}>
               Dodaj Oglas

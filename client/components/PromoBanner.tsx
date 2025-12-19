@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Dimensions, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Feather from '@expo/vector-icons/Feather';
+import { GiftIcon, ArrowRightIcon, StarIcon, BoxIcon } from '@/components/icons/TabBarIcons';
 import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
@@ -59,7 +59,7 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
           >
             <View style={styles.earlyAdopterContent}>
               <View style={[styles.earlyAdopterIcon, { backgroundColor: 'rgba(0,0,0,0.15)' }]}>
-                <Feather name="gift" size={32} color="#1A1A1A" />
+                <GiftIcon size={32} color="#1A1A1A" />
               </View>
               <View style={styles.earlyAdopterText}>
                 <ThemedText type="h4" style={[styles.bannerTitle, { color: '#1A1A1A' }]}>
@@ -72,7 +72,7 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
                   <Text style={[styles.bannerCtaText, { color: '#1A1A1A' }]}>
                     Saznaj vise
                   </Text>
-                  <Feather name="arrow-right" size={14} color="#1A1A1A" />
+                  <ArrowRightIcon size={14} color="#1A1A1A" />
                 </View>
               </View>
             </View>
@@ -86,7 +86,7 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
             onPress={() => handlePremiumItemPress(item.id)}
           >
             <View style={[styles.premiumBadge, { backgroundColor: theme.accent }]}>
-              <Feather name="star" size={12} color="#FFFFFF" />
+              <StarIcon size={12} color="#FFFFFF" />
               <Text style={styles.premiumBadgeText}>
                 Premium
               </Text>
@@ -99,7 +99,7 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
               />
             ) : (
               <View style={[styles.premiumImage, styles.premiumPlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
-                <Feather name="package" size={40} color={theme.textTertiary} />
+                <BoxIcon size={40} color={theme.textTertiary} />
               </View>
             )}
             <View style={styles.premiumInfo}>

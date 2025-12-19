@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Feather from '@expo/vector-icons/Feather';
+import { ChevronUpIcon, ChevronDownIcon, MailIcon, InfoIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
@@ -69,11 +69,11 @@ export default function HelpScreen() {
             onPress={() => toggleExpand(index)}
           >
             <ThemedText type="body" style={styles.question}>{item.question}</ThemedText>
-            <Feather 
-              name={expandedIndex === index ? 'chevron-up' : 'chevron-down'} 
-              size={20} 
-              color={theme.textSecondary} 
-            />
+            {expandedIndex === index ? (
+              <ChevronUpIcon size={20} color={theme.textSecondary} />
+            ) : (
+              <ChevronDownIcon size={20} color={theme.textSecondary} />
+            )}
           </Pressable>
           {expandedIndex === index ? (
             <View style={[styles.answerContainer, { borderTopColor: theme.border }]}>
@@ -92,7 +92,7 @@ export default function HelpScreen() {
       <Card style={styles.contactCard}>
         <View style={styles.contactItem}>
           <View style={[styles.iconContainer, { backgroundColor: theme.primary + '20' }]}>
-            <Feather name="mail" size={24} color={theme.primary} />
+            <MailIcon size={24} color={theme.primary} />
           </View>
           <View style={styles.contactInfo}>
             <ThemedText type="body" style={{ fontWeight: '600' }}>Email podrška</ThemedText>
@@ -113,7 +113,7 @@ export default function HelpScreen() {
 
       <Card style={styles.tipCard}>
         <View style={styles.tipHeader}>
-          <Feather name="info" size={20} color={theme.primary} />
+          <InfoIcon size={20} color={theme.primary} />
           <ThemedText type="body" style={{ fontWeight: '600', marginLeft: Spacing.sm }}>
             Savet
           </ThemedText>

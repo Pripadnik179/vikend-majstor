@@ -5,8 +5,8 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
+import { ImageIcon, MapPinIcon, StarIcon, MessageIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
@@ -103,7 +103,7 @@ export default function ItemDetailScreen() {
             ))
           ) : (
             <View style={[styles.image, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary }]}>
-              <Feather name="image" size={48} color={theme.textTertiary} />
+              <ImageIcon size={48} color={theme.textTertiary} />
             </View>
           )}
         </ScrollView>
@@ -123,7 +123,7 @@ export default function ItemDetailScreen() {
           </View>
 
           <View style={styles.locationRow}>
-            <Feather name="map-pin" size={16} color={theme.textSecondary} />
+            <MapPinIcon size={16} color={theme.textSecondary} />
             <ThemedText type="body" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
               {item.city}{item.district ? `, ${item.district}` : ''}
             </ThemedText>
@@ -139,13 +139,13 @@ export default function ItemDetailScreen() {
               <View style={styles.ownerInfo}>
                 <ThemedText type="body" style={{ fontWeight: '600' }}>{item.owner.name}</ThemedText>
                 <View style={styles.ratingRow}>
-                  <Feather name="star" size={14} color={theme.warning} />
+                  <StarIcon size={14} color={theme.warning} />
                   <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 4 }}>
                     {item.owner.rating ? Number(item.owner.rating).toFixed(1) : '-'} ({item.owner.totalRatings || 0})
                   </ThemedText>
                 </View>
               </View>
-              <Feather name="message-circle" size={22} color={theme.primary} />
+              <MessageIcon size={22} color={theme.primary} />
             </Card>
           )}
 
@@ -184,9 +184,8 @@ export default function ItemDetailScreen() {
                     </ThemedText>
                     <View style={styles.ratingRow}>
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <Feather
+                        <StarIcon
                           key={star}
-                          name="star"
                           size={14}
                           color={star <= review.rating ? theme.warning : theme.border}
                         />

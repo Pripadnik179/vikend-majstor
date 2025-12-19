@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Feather from '@expo/vector-icons/Feather';
+import { MailIcon, AppleIcon } from '@/components/icons/TabBarIcons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/Button';
@@ -158,7 +158,7 @@ export default function AuthScreen() {
           ) : (
             <>
               <View style={styles.googleIcon}>
-                <Feather name="mail" size={20} color="#EA4335" />
+                <MailIcon size={20} color="#EA4335" />
               </View>
               <ThemedText type="body" style={styles.googleButtonText}>
                 {isLogin ? 'Prijavi se sa Google-om' : 'Registruj se sa Google-om'}
@@ -177,7 +177,7 @@ export default function AuthScreen() {
               <ActivityIndicator color={isDark ? '#000000' : '#FFFFFF'} size="small" />
             ) : (
               <>
-                <Feather name="command" size={20} color={isDark ? '#000000' : '#FFFFFF'} style={styles.appleIcon} />
+                <AppleIcon size={20} color={isDark ? '#000000' : '#FFFFFF'} />
                 <ThemedText type="body" style={[styles.appleButtonText, { color: isDark ? '#000000' : '#FFFFFF' }]}>
                   {isLogin ? 'Prijavi se sa Apple-om' : 'Registruj se sa Apple-om'}
                 </ThemedText>

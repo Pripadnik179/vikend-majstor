@@ -5,9 +5,10 @@ import {
   StarIcon, MapPinIcon, PhoneIcon, SettingsIcon, LogOutIcon, GiftIcon,
   HelpCircleIcon, InfoIcon, EditIcon, TrashIcon, ClockIcon, CameraIcon,
   UploadCloudIcon, AlertCircleIcon, AlertTriangleIcon, EyeIcon, EyeOffIcon,
-  SendIcon, ArrowLeftIcon, SlidersIcon, FilterIcon, CheckIcon, TrendingUpIcon,
-  AwardIcon, MailIcon, ToolIcon, ImageIcon, RefreshCwIcon, MinusIcon,
-  ExternalLinkIcon, TagIcon, DollarSignIcon, ShieldIcon, BoxIcon, ZapIcon
+  SendIcon, ArrowLeftIcon, ArrowRightIcon, SlidersIcon, FilterIcon, CheckIcon,
+  CheckCircleIcon, XCircleIcon, TrendingUpIcon, AwardIcon, MailIcon, ToolIcon,
+  ImageIcon, RefreshCwIcon, MinusIcon, ExternalLinkIcon, TagIcon, DollarSignIcon,
+  ShieldIcon, BoxIcon, ZapIcon
 } from "./TabBarIcons";
 
 interface DynamicIconProps {
@@ -53,9 +54,12 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; color?: strin
   "eye-off": EyeOffIcon,
   send: SendIcon,
   "arrow-left": ArrowLeftIcon,
+  "arrow-right": ArrowRightIcon,
   sliders: SlidersIcon,
   filter: FilterIcon,
   check: CheckIcon,
+  "check-circle": CheckCircleIcon,
+  "x-circle": XCircleIcon,
   "trending-up": TrendingUpIcon,
   award: AwardIcon,
   mail: MailIcon,

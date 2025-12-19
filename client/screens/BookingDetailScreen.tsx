@@ -5,7 +5,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
+import { MessageIcon, ArrowRightIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
@@ -197,7 +197,7 @@ export default function BookingDetailScreen() {
           </ThemedText>
           <ThemedText type="body" style={{ fontWeight: '600' }}>{otherUser?.name}</ThemedText>
         </View>
-        <Feather name="message-circle" size={22} color={theme.primary} />
+        <MessageIcon size={22} color={theme.primary} />
       </Card>
 
       <View style={styles.section}>
@@ -210,7 +210,7 @@ export default function BookingDetailScreen() {
                 {formatDate(booking.startDate)}
               </ThemedText>
             </View>
-            <Feather name="arrow-right" size={20} color={theme.textTertiary} />
+            <ArrowRightIcon size={20} color={theme.textTertiary} />
             <View style={styles.dateColumn}>
               <ThemedText type="small" style={{ color: theme.textSecondary }}>Do</ThemedText>
               <ThemedText type="body" style={{ fontWeight: '600' }}>

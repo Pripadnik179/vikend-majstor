@@ -6,7 +6,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
+import { XIcon, CameraIcon, ChevronDownIcon, CheckIcon, BoxIcon, MapPinIcon } from '@/components/icons/TabBarIcons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { File } from 'expo-file-system';
@@ -285,7 +285,7 @@ export default function AddItemScreen() {
                 style={[styles.removeImageButton, { backgroundColor: theme.error }]}
                 onPress={() => removeImage(index)}
               >
-                <Feather name="x" size={16} color="#FFFFFF" />
+                <XIcon size={16} color="#FFFFFF" />
               </Pressable>
             </View>
           ))}
@@ -299,7 +299,7 @@ export default function AddItemScreen() {
                 <ActivityIndicator color={theme.primary} />
               ) : (
                 <>
-                  <Feather name="camera" size={24} color={theme.textTertiary} />
+                  <CameraIcon size={24} color={theme.textTertiary} />
                   <ThemedText type="small" style={{ color: theme.textTertiary, marginTop: Spacing.xs }}>
                     Dodaj
                   </ThemedText>
@@ -346,7 +346,7 @@ export default function AddItemScreen() {
           <ThemedText type="body" style={{ color: category ? theme.text : theme.textTertiary }}>
             {category || 'Izaberi kategoriju'}
           </ThemedText>
-          <Feather name="chevron-down" size={20} color={theme.textTertiary} />
+          <ChevronDownIcon size={20} color={theme.textTertiary} />
         </Pressable>
         {showCategoryPicker ? (
           <ScrollView style={[styles.categoryList, { backgroundColor: theme.backgroundDefault, borderColor: theme.border, maxHeight: 250 }]}>
@@ -382,7 +382,7 @@ export default function AddItemScreen() {
             <ThemedText type="body" style={{ color: subCategory ? theme.text : theme.textTertiary }}>
               {subCategory || 'Izaberi podkategoriju'}
             </ThemedText>
-            <Feather name="chevron-down" size={20} color={theme.textTertiary} />
+            <ChevronDownIcon size={20} color={theme.textTertiary} />
           </Pressable>
           {showSubCategoryPicker ? (
             <ScrollView style={[styles.categoryList, { backgroundColor: theme.backgroundDefault, borderColor: theme.border, maxHeight: 200 }]}>
@@ -428,7 +428,7 @@ export default function AddItemScreen() {
           <ThemedText type="body" style={{ color: powerSource ? theme.text : theme.textTertiary }}>
             {powerSource || 'Izaberi napajanje'}
           </ThemedText>
-          <Feather name="chevron-down" size={20} color={theme.textTertiary} />
+          <ChevronDownIcon size={20} color={theme.textTertiary} />
         </Pressable>
         {showPowerSourcePicker ? (
           <View style={[styles.categoryList, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
@@ -473,7 +473,7 @@ export default function AddItemScreen() {
           <ThemedText type="body" style={{ color: activityTags.length > 0 ? theme.text : theme.textTertiary, flex: 1 }}>
             {activityTags.length > 0 ? `${activityTags.length} izabrano` : 'Izaberi delatnosti'}
           </ThemedText>
-          <Feather name="chevron-down" size={20} color={theme.textTertiary} />
+          <ChevronDownIcon size={20} color={theme.textTertiary} />
         </Pressable>
         {activityTags.length > 0 ? (
           <View style={styles.tagsContainer}>
@@ -484,7 +484,9 @@ export default function AddItemScreen() {
                 onPress={() => setActivityTags(activityTags.filter(t => t !== tag))}
               >
                 <ThemedText type="small" style={{ color: '#000' }}>{tag}</ThemedText>
-                <Feather name="x" size={14} color="#000" style={{ marginLeft: 4 }} />
+                <View style={{ marginLeft: 4 }}>
+                  <XIcon size={14} color="#000" />
+                </View>
               </Pressable>
             ))}
           </View>
@@ -508,12 +510,13 @@ export default function AddItemScreen() {
                     }
                   }}
                 >
-                  <Feather 
-                    name={isSelected ? "check-square" : "square"} 
-                    size={18} 
-                    color={isSelected ? theme.primary : theme.textTertiary} 
-                    style={{ marginRight: Spacing.sm }}
-                  />
+                  <View style={{ marginRight: Spacing.sm }}>
+                    {isSelected ? (
+                      <CheckIcon size={18} color={theme.primary} />
+                    ) : (
+                      <BoxIcon size={18} color={theme.textTertiary} />
+                    )}
+                  </View>
                   <ThemedText type="body" style={{ color: isSelected ? theme.primary : theme.text }}>
                     {activity}
                   </ThemedText>
@@ -574,7 +577,7 @@ export default function AddItemScreen() {
 
       <View style={styles.section}>
         <View style={styles.locationRow}>
-          <Feather name="map-pin" size={18} color={locationStatus === 'success' ? theme.success : theme.textTertiary} />
+          <MapPinIcon size={18} color={locationStatus === 'success' ? theme.success : theme.textTertiary} />
           <ThemedText type="body" style={[styles.locationText, { color: locationStatus === 'success' ? theme.success : theme.textTertiary }]}>
             {locationStatus === 'loading' ? 'Preuzimanje lokacije...' : 
              locationStatus === 'success' ? 'GPS lokacija sačuvana' :

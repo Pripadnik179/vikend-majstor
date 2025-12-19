@@ -3,7 +3,8 @@ import { View, StyleSheet, Pressable, Alert, ScrollView, Platform } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Feather from '@expo/vector-icons/Feather';
+import { StarIcon, ChevronRightIcon, LogOutIcon } from '@/components/icons/TabBarIcons';
+import { DynamicIcon } from '@/components/icons/DynamicIcon';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
@@ -86,7 +87,7 @@ export default function ProfileScreen() {
           <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
           <View style={styles.stat}>
             <View style={styles.ratingContainer}>
-              <Feather name="star" size={16} color={theme.warning} />
+              <StarIcon size={16} color={theme.warning} />
               <ThemedText type="h4" style={{ marginLeft: 4 }}>
                 {user?.rating ? Number(user.rating).toFixed(1) : '-'}
               </ThemedText>
@@ -111,7 +112,7 @@ export default function ProfileScreen() {
             onPress={item.onPress}
           >
             <View style={styles.menuItemLeft}>
-              <Feather name={item.icon as any} size={22} color={item.icon === 'star' ? theme.warning : theme.text} />
+              <DynamicIcon name={item.icon} size={22} color={item.icon === 'star' ? theme.warning : theme.text} />
               <ThemedText type="body" style={styles.menuItemLabel}>{item.label}</ThemedText>
               {item.badge ? (
                 <View style={[styles.subscriptionBadge, { backgroundColor: theme.primary + '20' }]}>
@@ -121,7 +122,7 @@ export default function ProfileScreen() {
                 </View>
               ) : null}
             </View>
-            <Feather name="chevron-right" size={22} color={theme.textTertiary} />
+            <ChevronRightIcon size={22} color={theme.textTertiary} />
           </Pressable>
         ))}
       </View>
@@ -136,7 +137,7 @@ export default function ProfileScreen() {
         ]}
         onPress={handleLogout}
       >
-        <Feather name="log-out" size={22} color={theme.error} />
+        <LogOutIcon size={22} color={theme.error} />
         <ThemedText type="body" style={[styles.logoutText, { color: theme.error }]}>
           Odjavi se
         </ThemedText>

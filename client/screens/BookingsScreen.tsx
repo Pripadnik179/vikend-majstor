@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
+import { CalendarIcon } from '@/components/icons/TabBarIcons';
 import { BookingCard } from '@/components/BookingCard';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
@@ -45,7 +45,7 @@ export default function BookingsScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Feather name="calendar" size={64} color={theme.textTertiary} />
+      <CalendarIcon size={64} color={theme.textTertiary} />
       <ThemedText type="h4" style={[styles.emptyTitle, { color: theme.textSecondary }]}>
         Nema rezervacija
       </ThemedText>

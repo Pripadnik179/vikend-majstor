@@ -5,7 +5,8 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
+import { DollarSignIcon, CheckCircleIcon } from '@/components/icons/TabBarIcons';
+import { DynamicIcon } from '@/components/icons/DynamicIcon';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
@@ -215,8 +216,7 @@ export default function BookingFlowScreen() {
           ]}
           onPress={() => setPaymentMethod('cash')}
         >
-          <Feather 
-            name="dollar-sign" 
+          <DollarSignIcon 
             size={22} 
             color={paymentMethod === 'cash' ? theme.primary : theme.text} 
           />
@@ -225,7 +225,7 @@ export default function BookingFlowScreen() {
             <ThemedText type="small" style={{ color: theme.textSecondary }}>Gotovina ili dogovor</ThemedText>
           </View>
           {paymentMethod === 'cash' && (
-            <Feather name="check-circle" size={22} color={theme.primary} />
+            <CheckCircleIcon size={22} color={theme.primary} />
           )}
         </Pressable>
 
@@ -240,8 +240,8 @@ export default function BookingFlowScreen() {
           ]}
           disabled
         >
-          <Feather 
-            name="credit-card" 
+          <DynamicIcon 
+            name="dollar-sign" 
             size={22} 
             color={theme.textTertiary} 
           />

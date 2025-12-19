@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Modal, Pressable, ScrollView, TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Feather from '@expo/vector-icons/Feather';
+import { XIcon, StarIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from './ThemedText';
 import { Button } from './Button';
 import { useTheme } from '@/hooks/useTheme';
@@ -74,7 +74,7 @@ export function FilterModal({ visible, onClose, filters, onApply }: FilterModalP
       <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
           <Pressable onPress={onClose} style={styles.closeButton}>
-            <Feather name="x" size={24} color={theme.text} />
+            <XIcon size={24} color={theme.text} />
           </Pressable>
           <ThemedText type="h4" style={styles.title}>Filteri</ThemedText>
           <Pressable onPress={handleReset}>
@@ -151,8 +151,7 @@ export function FilterModal({ visible, onClose, filters, onApply }: FilterModalP
                 >
                   {option.value ? (
                     <View style={styles.ratingContent}>
-                      <Feather 
-                        name="star" 
+                      <StarIcon 
                         size={16} 
                         color={localFilters.minRating === option.value ? '#FFFFFF' : Colors.accent} 
                       />

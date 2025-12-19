@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Modal, Pressable, Dimensions } from 'react-native';
 import { BlurView } from 'expo-blur';
-import Feather from '@expo/vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
+import { XIcon, AlertCircleIcon } from '@/components/icons/TabBarIcons';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/Button';
@@ -38,12 +38,12 @@ export function UpgradeLimitModal({ visible, onClose, itemCount }: UpgradeLimitM
         <BlurView intensity={30} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
         <View style={[styles.content, { backgroundColor: theme.backgroundDefault }]}>
           <Pressable style={styles.closeButton} onPress={onClose}>
-            <Feather name="x" size={24} color={theme.textSecondary} />
+            <XIcon size={24} color={theme.textSecondary} />
           </Pressable>
           
           <View style={styles.iconContainer}>
             <View style={[styles.iconCircle, { backgroundColor: '#FEE2E2' }]}>
-              <Feather name="alert-circle" size={40} color="#EF4444" />
+              <AlertCircleIcon size={40} color="#EF4444" />
             </View>
           </View>
 

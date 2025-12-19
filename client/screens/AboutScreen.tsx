@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Feather from '@expo/vector-icons/Feather';
+import { ToolIcon } from '@/components/icons/TabBarIcons';
+import { DynamicIcon } from '@/components/icons/DynamicIcon';
 import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
@@ -42,7 +43,7 @@ export default function AboutScreen() {
     >
       <Card style={styles.headerCard}>
         <View style={[styles.logoContainer, { backgroundColor: theme.primary }]}>
-          <Feather name="tool" size={48} color="#000" />
+          <ToolIcon size={48} color="#000" />
         </View>
         <ThemedText type="h2" style={styles.appName}>VikendMajstor</ThemedText>
         <ThemedText type="body" style={{ color: theme.textSecondary, textAlign: 'center' }}>
@@ -77,7 +78,7 @@ export default function AboutScreen() {
           ]}
         >
           <View style={styles.linkItemLeft}>
-            <Feather name={item.icon as any} size={20} color={theme.primary} />
+            <DynamicIcon name={item.icon} size={20} color={theme.primary} />
             <View style={{ marginLeft: Spacing.md }}>
               <ThemedText type="body">{item.label}</ThemedText>
               <ThemedText type="small" style={{ color: theme.textSecondary }}>{item.subtitle}</ThemedText>

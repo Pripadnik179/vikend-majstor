@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TextInput, Alert, ActivityIndicator, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
-import { Pressable } from 'react-native';
+import { StarIcon } from '@/components/icons/TabBarIcons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
@@ -94,11 +93,9 @@ export default function ReviewScreen() {
                 { transform: [{ scale: pressed ? 0.9 : 1 }] },
               ]}
             >
-              <Feather
-                name="star"
+              <StarIcon
                 size={40}
                 color={star <= rating ? theme.warning : theme.border}
-                style={star <= rating ? { fill: theme.warning } : undefined}
               />
             </Pressable>
           ))}

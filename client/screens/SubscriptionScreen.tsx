@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
+import { StarIcon, GiftIcon, CheckIcon, XIcon, CheckCircleIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Card } from '@/components/Card';
@@ -196,7 +196,7 @@ export default function SubscriptionScreen() {
           <Card style={StyleSheet.flatten([styles.statusCard, { borderColor: theme.accent }])}>
             <View style={styles.statusHeader}>
               <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-                <Feather name="star" size={14} color="#FFFFFF" />
+                <StarIcon size={14} color="#FFFFFF" />
                 <ThemedText type="small" style={{ color: '#FFFFFF', fontWeight: '600' }}>
                   RANI KORISNIK
                 </ThemedText>
@@ -216,7 +216,7 @@ export default function SubscriptionScreen() {
         {remainingSlots > 0 && !status?.isEarlyAdopter && (
           <Card style={StyleSheet.flatten([styles.earlyAdopterCard, { borderColor: theme.accent, borderWidth: 2 }])}>
             <View style={styles.earlyAdopterContent}>
-              <Feather name="gift" size={32} color={theme.accent} />
+              <GiftIcon size={32} color={theme.accent} />
               <View style={styles.earlyAdopterText}>
                 <ThemedText type="h3">Program ranih korisnika</ThemedText>
                 <ThemedText type="body" style={{ color: theme.textSecondary }}>
@@ -268,7 +268,7 @@ export default function SubscriptionScreen() {
           <View style={styles.features}>
             {FREE_PLAN.features.map((feature, index) => (
               <View key={index} style={styles.featureRow}>
-                <Feather name="check" size={18} color={theme.success} />
+                <CheckIcon size={18} color={theme.success} />
                 <ThemedText type="body">{feature}</ThemedText>
               </View>
             ))}
@@ -280,7 +280,7 @@ export default function SubscriptionScreen() {
             </ThemedText>
             {FREE_PLAN.limitations.map((limitation, index) => (
               <View key={index} style={styles.featureRow}>
-                <Feather name="x" size={18} color={theme.error} />
+                <XIcon size={18} color={theme.error} />
                 <ThemedText type="body" style={{ color: theme.textSecondary }}>{limitation}</ThemedText>
               </View>
             ))}
@@ -307,7 +307,7 @@ export default function SubscriptionScreen() {
             )}
             {status?.subscriptionType === plan.id && (
               <View style={[styles.activeBadge, { backgroundColor: theme.success }]}>
-                <Feather name="check-circle" size={12} color="#FFFFFF" />
+                <CheckCircleIcon size={12} color="#FFFFFF" />
                 <ThemedText type="small" style={{ color: '#FFFFFF', fontWeight: '600' }}>
                   AKTIVNO
                 </ThemedText>
@@ -323,7 +323,7 @@ export default function SubscriptionScreen() {
             <View style={styles.features}>
               {plan.features.map((feature, index) => (
                 <View key={index} style={styles.featureRow}>
-                  <Feather name="check" size={18} color={theme.success} />
+                  <CheckIcon size={18} color={theme.success} />
                   <ThemedText type="body">{feature}</ThemedText>
                 </View>
               ))}
@@ -366,7 +366,7 @@ export default function SubscriptionScreen() {
             }}
           >
             <View style={styles.singleFeatureHeader}>
-              <Feather name="star" size={28} color={theme.warning} />
+              <StarIcon size={28} color={theme.warning} />
               <View style={styles.singleFeatureText}>
                 <ThemedText type="h3">Kupi istaknuti oglas</ThemedText>
                 <ThemedText type="body" style={{ color: theme.textSecondary }}>
@@ -380,15 +380,15 @@ export default function SubscriptionScreen() {
             </View>
             <View style={styles.singleFeatureDetails}>
               <View style={styles.featureRow}>
-                <Feather name="check" size={16} color={theme.success} />
+                <CheckIcon size={16} color={theme.success} />
                 <ThemedText type="small">Oglas se prikazuje na vrhu pretrage</ThemedText>
               </View>
               <View style={styles.featureRow}>
-                <Feather name="check" size={16} color={theme.success} />
+                <CheckIcon size={16} color={theme.success} />
                 <ThemedText type="small">Premium značka na oglasu</ThemedText>
               </View>
               <View style={styles.featureRow}>
-                <Feather name="check" size={16} color={theme.success} />
+                <CheckIcon size={16} color={theme.success} />
                 <ThemedText type="small">Važi dok je oglas aktivan</ThemedText>
               </View>
             </View>

@@ -4,8 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
+import { ZapIcon, StarIcon, ImageIcon, ClockIcon, EditIcon, PlusIcon, AwardIcon, TrashIcon, BoxIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
@@ -200,7 +200,7 @@ export default function MyItemsScreen() {
           style={[styles.upgradeButton, { backgroundColor: theme.accent }]}
           onPress={() => navigation.navigate('Subscription')}
         >
-          <Feather name="zap" size={16} color="#FFFFFF" />
+          <ZapIcon size={16} color="#FFFFFF" />
           <ThemedText style={{ color: '#FFFFFF', marginLeft: Spacing.sm, fontWeight: '600' }}>
             Nadogradi na Standard ili Premium
           </ThemedText>
@@ -208,7 +208,7 @@ export default function MyItemsScreen() {
       )}
       {adStats?.isPremium && adStats?.featuredItemId && (
         <View style={[styles.featuredInfo, { backgroundColor: theme.warning + '20' }]}>
-          <Feather name="star" size={14} color={theme.warning} />
+          <StarIcon size={14} color={theme.warning} />
           <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs }}>
             Imate 1 istaknuti oglas na vrhu liste
           </ThemedText>
@@ -229,7 +229,7 @@ export default function MyItemsScreen() {
       >
         {isFeatured && (
           <View style={[styles.featuredBadge, { backgroundColor: theme.warning }]}>
-            <Feather name="star" size={12} color="#FFFFFF" />
+            <StarIcon size={12} color="#FFFFFF" />
             <ThemedText style={{ color: '#FFFFFF', fontSize: 10, marginLeft: 4, fontWeight: '600' }}>
               ISTAKNUTO
             </ThemedText>
@@ -244,7 +244,7 @@ export default function MyItemsScreen() {
             />
           ) : (
             <View style={[styles.itemImage, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary }]}>
-              <Feather name="image" size={24} color={theme.textTertiary} />
+              <ImageIcon size={24} color={theme.textTertiary} />
             </View>
           )}
           <View style={styles.itemInfo}>
@@ -269,7 +269,7 @@ export default function MyItemsScreen() {
             </View>
             {daysRemaining !== null ? (
               <View style={[styles.expirationRow, { backgroundColor: isExpiringSoon ? '#FFF3CD' : theme.backgroundSecondary }]}>
-                <Feather name="clock" size={12} color={isExpiringSoon ? '#856404' : theme.textSecondary} />
+                <ClockIcon size={12} color={isExpiringSoon ? '#856404' : theme.textSecondary} />
                 <ThemedText type="small" style={{ color: isExpiringSoon ? '#856404' : theme.textSecondary, marginLeft: Spacing.xs }}>
                   {daysRemaining === 0 ? 'Ističe danas' : `Ističe za ${daysRemaining} dana`}
                 </ThemedText>
@@ -285,7 +285,7 @@ export default function MyItemsScreen() {
           ]}
           onPress={() => navigation.navigate('EditItem', { itemId: item.id })}
         >
-          <Feather name="edit-2" size={18} color={theme.primary} />
+          <EditIcon size={18} color={theme.primary} />
           <ThemedText type="small" style={{ color: theme.primary, marginLeft: Spacing.xs }}>
             Izmeni
           </ThemedText>
@@ -293,7 +293,7 @@ export default function MyItemsScreen() {
         {adStats?.isPremium ? (
           isFeatured ? (
             <View style={[styles.actionButton, { backgroundColor: theme.warning + '20' }]}>
-              <Feather name="star" size={18} color={theme.warning} />
+              <StarIcon size={18} color={theme.warning} />
               <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs, fontWeight: '600' }}>
                 Istaknut
               </ThemedText>
@@ -306,7 +306,7 @@ export default function MyItemsScreen() {
               ]}
               onPress={() => navigation.navigate('Subscription', { scrollToFeature: true })}
             >
-              <Feather name="plus-circle" size={18} color={theme.warning} />
+              <PlusIcon size={18} color={theme.warning} />
               <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs }}>
                 Sledeći (99 RSD)
               </ThemedText>
@@ -326,7 +326,7 @@ export default function MyItemsScreen() {
                 }
               }}
             >
-              <Feather name="award" size={18} color={theme.warning} />
+              <AwardIcon size={18} color={theme.warning} />
               <ThemedText type="small" style={{ color: theme.warning, marginLeft: Spacing.xs }}>
                 {featureMutation.isPending ? 'Učitavam...' : (
                   adStats?.freeFeatureUsed ? 'Istakni (99 RSD)' : 'Istakni (besplatno)'
@@ -342,7 +342,7 @@ export default function MyItemsScreen() {
           ]}
           onPress={() => handleDelete(item)}
         >
-          <Feather name="trash-2" size={18} color={theme.error} />
+          <TrashIcon size={18} color={theme.error} />
           <ThemedText type="small" style={{ color: theme.error, marginLeft: Spacing.xs }}>
             Obriši
           </ThemedText>
@@ -354,7 +354,7 @@ export default function MyItemsScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Feather name="package" size={64} color={theme.textTertiary} />
+      <BoxIcon size={64} color={theme.textTertiary} />
       <ThemedText type="h4" style={[styles.emptyTitle, { color: theme.textSecondary }]}>
         Nemate dodatih stvari
       </ThemedText>
@@ -365,7 +365,7 @@ export default function MyItemsScreen() {
         style={[styles.addButton, { backgroundColor: theme.primary }]}
         onPress={() => navigation.navigate('AddItem')}
       >
-        <Feather name="plus" size={20} color="#FFFFFF" />
+        <PlusIcon size={20} color="#FFFFFF" />
         <ThemedText style={{ color: '#FFFFFF', marginLeft: Spacing.sm, fontWeight: '600' }}>
           Dodaj stvar
         </ThemedText>

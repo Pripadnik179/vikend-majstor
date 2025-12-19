@@ -3,7 +3,8 @@ import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Feather from '@expo/vector-icons/Feather';
+import { ChevronUpIcon, ChevronDownIcon, ChevronRightIcon, BoxIcon, ToolIcon } from '@/components/icons/TabBarIcons';
+import { DynamicIcon } from '@/components/icons/DynamicIcon';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Card } from '@/components/Card';
@@ -15,7 +16,7 @@ import { CATEGORIES } from '@shared/schema';
 
 type TabType = 'project' | 'toolType';
 
-const CATEGORY_ICONS: Record<string, keyof typeof Feather.glyphMap> = {
+const CATEGORY_ICONS: Record<string, string> = {
   gradjevinarstvo: 'home',
   basta: 'sun',
   renoviranje: 'tool',
@@ -75,7 +76,7 @@ export default function CategoriesScreen() {
           ]}
           onPress={() => setActiveTab('project')}
         >
-          <Feather 
+          <DynamicIcon 
             name="briefcase" 
             size={16} 
             color={activeTab === 'project' ? '#FFFFFF' : theme.primary} 
@@ -99,8 +100,7 @@ export default function CategoriesScreen() {
           ]}
           onPress={() => setActiveTab('toolType')}
         >
-          <Feather 
-            name="tool" 
+          <ToolIcon 
             size={16} 
             color={activeTab === 'toolType' ? '#FFFFFF' : theme.primary} 
           />
@@ -138,7 +138,7 @@ export default function CategoriesScreen() {
                 ]}
               >
                 <View style={[styles.iconContainer, { backgroundColor: theme.primaryLight }]}>
-                  <Feather name={iconName} size={24} color={theme.primary} />
+                  <DynamicIcon name={iconName} size={24} color={theme.primary} />
                 </View>
                 <View style={styles.categoryInfo}>
                   <ThemedText type="h4">{category.name}</ThemedText>
@@ -146,11 +146,11 @@ export default function CategoriesScreen() {
                     {category.subcategories.length} podkategorija
                   </ThemedText>
                 </View>
-                <Feather 
-                  name={isExpanded ? 'chevron-up' : 'chevron-down'} 
-                  size={22} 
-                  color={theme.textSecondary} 
-                />
+                {isExpanded ? (
+                  <ChevronUpIcon size={22} color={theme.textSecondary} />
+                ) : (
+                  <ChevronDownIcon size={22} color={theme.textSecondary} />
+                )}
               </Pressable>
 
               {isExpanded && (
@@ -166,7 +166,7 @@ export default function CategoriesScreen() {
                       onPress={() => handleSubcategoryPress(category.name, sub)}
                     >
                       <ThemedText type="body">{sub}</ThemedText>
-                      <Feather name="chevron-right" size={18} color={theme.textTertiary} />
+                      <ChevronRightIcon size={18} color={theme.textTertiary} />
                     </Pressable>
                   ))}
                   <Pressable

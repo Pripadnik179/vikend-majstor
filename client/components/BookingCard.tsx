@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
+import { ImageIcon, CalendarIcon, UserIcon } from '@/components/icons/TabBarIcons';
 import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
@@ -49,7 +49,7 @@ export function BookingCard({ booking, viewType, onPress }: BookingCardProps) {
           />
         ) : (
           <View style={[styles.image, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary }]}>
-            <Feather name="image" size={24} color={theme.textTertiary} />
+            <ImageIcon size={24} color={theme.textTertiary} />
           </View>
         )}
         <View style={styles.info}>
@@ -57,13 +57,13 @@ export function BookingCard({ booking, viewType, onPress }: BookingCardProps) {
             {booking.item?.title || 'Stvar'}
           </ThemedText>
           <View style={styles.dateRow}>
-            <Feather name="calendar" size={14} color={theme.textTertiary} />
+            <CalendarIcon size={14} color={theme.textTertiary} />
             <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 4 }}>
               {formatDateRange(booking.startDate, booking.endDate)}
             </ThemedText>
           </View>
           <View style={styles.userRow}>
-            <Feather name="user" size={14} color={theme.textTertiary} />
+            <UserIcon size={14} color={theme.textTertiary} />
             <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 4 }}>
               {viewType === 'renter' ? 'Vlasnik:' : 'Iznajmljivač:'} {otherUser?.name || 'Korisnik'}
             </ThemedText>
