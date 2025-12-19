@@ -219,6 +219,34 @@ Push notifications are implemented but require a development build with EAS conf
 3. Build a development build: `npx eas build --profile development`
 4. Push notifications will work with the development build
 
+## Admin Panel
+
+### Access Control
+- Only users with `isAdmin=true` can access admin routes
+- Admin panel accessible from Profile screen menu (only visible to admin users)
+- All admin API routes protected by `requireAdmin` middleware
+
+### Admin API Endpoints
+- `GET /api/admin/stats` - Dashboard statistics (total users, active, premium, early adopters)
+- `GET /api/admin/users` - List all users with optional filters (status, subscription, search)
+- `GET /api/admin/users/:id` - Get user details
+- `PATCH /api/admin/users/:id` - Update user (isActive, subscriptionType, subscriptionDays)
+
+### Admin Capabilities
+- View all users with filters (all/active/inactive/premium)
+- Search users by name or email
+- Activate/deactivate user accounts
+- Manually assign subscription type (free/basic/premium)
+- Set custom subscription duration (7, 30, 90, 365 days)
+- View system-wide statistics
+
+### Admin Screens
+- `AdminScreen.tsx` - User list, filters, search bar, statistics dashboard
+- `AdminUserDetailScreen.tsx` - Individual user management
+
+### Logging
+- All admin actions logged: `[ADMIN] User {email} updated user {email}: isActive={value}, subscriptionType={value}, days={value}`
+
 ## Security Measures
 
 ### Rate Limiting (server/security.ts)
