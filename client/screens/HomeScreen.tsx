@@ -205,6 +205,8 @@ export default function HomeScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
         }
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       />
       <FilterModal
         visible={showFilters}
