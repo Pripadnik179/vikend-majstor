@@ -493,7 +493,7 @@ export default function SearchScreen() {
           columnWrapperStyle={{ gap: Spacing.md }}
           contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + Spacing.xl, gap: Spacing.md }]}
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
