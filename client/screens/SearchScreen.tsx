@@ -95,10 +95,14 @@ export default function SearchScreen() {
 
   const distanceOptions = [
     { value: null, label: 'Svi' },
+    { value: 1, label: '1 km' },
+    { value: 2, label: '2 km' },
     { value: 5, label: '5 km' },
     { value: 10, label: '10 km' },
-    { value: 25, label: '25 km' },
+    { value: 15, label: '15 km' },
+    { value: 20, label: '20 km' },
     { value: 50, label: '50 km' },
+    { value: 100, label: '100 km' },
   ];
 
   const handleSearch = useCallback((query: string) => {
@@ -489,6 +493,8 @@ export default function SearchScreen() {
           columnWrapperStyle={{ gap: Spacing.md }}
           contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + Spacing.xl, gap: Spacing.md }]}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <SearchIcon size={48} color={theme.textTertiary} />
