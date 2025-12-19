@@ -158,6 +158,11 @@ The app runs with `npm run all:dev` which starts:
   - Navigates to Subscription screen on upgrade button click
 
 ## Recent Changes (December 2024)
+- Added Legal screen (Pravne informacije) with Privacy Policy and Terms of Use
+- Updated About screen with ecological message encouraging sustainable sharing
+- Added navigation from About screen to Legal screen for privacy/terms
+- Privacy Policy covers data usage, third-party sharing, location data, and GDPR compliance
+- Terms of Use includes user responsibilities, liability disclaimer, premium subscription info, and account suspension rules
 - Added "Budi vidljiv" promotional popup for free users on app startup
 - Added immediate upgrade modal when free user reaches 5 ad limit in AddItemScreen
 - Added Apple Sign-In support for iOS users
