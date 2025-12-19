@@ -226,6 +226,19 @@ Push notifications are implemented but require a development build with EAS conf
 - Admin panel accessible from Profile screen menu (only visible to admin users)
 - All admin API routes protected by `requireAdmin` middleware
 
+### Web Admin Panel (server/admin/index.html)
+- Standalone HTML/CSS/JS admin panel served at `/admin` route
+- No separate build process required - served directly by Express
+- Features:
+  - Login page with authentication via existing API
+  - Dashboard with statistics (total users, active, premium, early adopters)
+  - User management table with filters (all/active/inactive/premium)
+  - Search functionality by name or email
+  - User detail page for editing (activation, subscription type, duration)
+- VikendMajstor black-yellow theme with dark mode UI
+- Link added to landing page navigation for easy access
+- Test admin account: marko@demo.com (password: demo123)
+
 ### Admin API Endpoints
 - `GET /api/admin/stats` - Dashboard statistics (total users, active, premium, early adopters)
 - `GET /api/admin/users` - List all users with optional filters (status, subscription, search)
@@ -240,9 +253,10 @@ Push notifications are implemented but require a development build with EAS conf
 - Set custom subscription duration (7, 30, 90, 365 days)
 - View system-wide statistics
 
-### Admin Screens
+### Mobile Admin Screens
 - `AdminScreen.tsx` - User list, filters, search bar, statistics dashboard
 - `AdminUserDetailScreen.tsx` - Individual user management
+- Accessible from Profile screen menu (only visible to admin users)
 
 ### Logging
 - All admin actions logged: `[ADMIN] User {email} updated user {email}: isActive={value}, subscriptionType={value}, days={value}`
