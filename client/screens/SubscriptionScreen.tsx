@@ -19,8 +19,10 @@ type SubscriptionStatus = {
   remainingEarlyAdopterSlots: number;
   canBecomeEarlyAdopter: boolean;
   subscriptionEndDate: string | null;
+  subscriptionStartDate: string | null;
   isPremiumListing: boolean;
   freeFeatureUsed?: boolean;
+  remainingDays: number | null;
 };
 
 type AdStats = {
@@ -192,24 +194,48 @@ export default function SubscriptionScreen() {
         contentContainerStyle={[styles.content, { paddingTop: headerHeight + Spacing.md, paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}
       >
-        {status?.isEarlyAdopter && (
+        {status?.isEarlyAdopter && status.remainingDays !== null && status.remainingDays > 0 && (
           <Card style={StyleSheet.flatten([styles.statusCard, { borderColor: theme.accent }])}>
             <View style={styles.statusHeader}>
               <View style={[styles.badge, { backgroundColor: theme.accent }]}>
                 <StarIcon size={14} color="#FFFFFF" />
                 <ThemedText type="small" style={{ color: '#FFFFFF', fontWeight: '600' }}>
-                  RANI KORISNIK
+                  RANI KORISNIK - PREMIUM
+                </ThemedText>
+              </View>
+            </View>
+            <View style={styles.countdownContainer}>
+              <ThemedText type="h1" style={{ color: theme.primary }}>
+                {status.remainingDays}
+              </ThemedText>
+              <ThemedText type="body" style={{ color: theme.textSecondary, marginLeft: Spacing.sm }}>
+                {status.remainingDays === 1 ? 'dan' : status.remainingDays < 5 ? 'dana' : 'dana'} preostalo
+              </ThemedText>
+            </View>
+            <ThemedText type="body">
+              Vi ste jedan od prvih 100 korisnika! Uživate u besplatnom Premium pristupu.
+            </ThemedText>
+            {status.subscriptionEndDate && (
+              <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: Spacing.xs }}>
+                Ističe: {new Date(status.subscriptionEndDate).toLocaleDateString('sr-Latn-RS')}
+              </ThemedText>
+            )}
+          </Card>
+        )}
+
+        {status?.isEarlyAdopter && (status.remainingDays === null || status.remainingDays <= 0) && (
+          <Card style={StyleSheet.flatten([styles.statusCard, { borderColor: theme.error }])}>
+            <View style={styles.statusHeader}>
+              <View style={[styles.badge, { backgroundColor: theme.error }]}>
+                <XIcon size={14} color="#FFFFFF" />
+                <ThemedText type="small" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                  PRETPLATA ISTEKLA
                 </ThemedText>
               </View>
             </View>
             <ThemedText type="body">
-              Vi ste jedan od prvih 100 korisnika! Uživate u besplatnom premium pristupu.
+              Vaš besplatni Premium period kao ranog korisnika je istekao. Pretplatite se da nastavite sa premium funkcijama.
             </ThemedText>
-            {status.subscriptionEndDate && (
-              <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: Spacing.xs }}>
-                Važi do: {new Date(status.subscriptionEndDate).toLocaleDateString('sr-Latn-RS')}
-              </ThemedText>
-            )}
           </Card>
         )}
 
@@ -434,6 +460,11 @@ const styles = StyleSheet.create({
   },
   statusHeader: {
     marginBottom: Spacing.sm,
+  },
+  countdownContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginVertical: Spacing.sm,
   },
   badge: {
     flexDirection: 'row',
