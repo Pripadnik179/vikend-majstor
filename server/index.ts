@@ -190,12 +190,30 @@ function configureExpoAndLanding(app: express.Application) {
     "templates",
     "landing-page.html",
   );
+  const adminPanelPath = path.resolve(
+    process.cwd(),
+    "server",
+    "admin",
+    "index.html",
+  );
   const landingPageTemplate = fs.readFileSync(templatePath, "utf-8");
   const appName = getAppName();
   
   const hasCustomLanding = fs.existsSync(customLandingPath);
+  const hasAdminPanel = fs.existsSync(adminPanelPath);
 
   log("Serving static Expo files with dynamic manifest routing");
+  
+  // Serve admin panel at /admin
+  if (hasAdminPanel) {
+    app.get("/admin", (_req: Request, res: Response) => {
+      res.sendFile(adminPanelPath);
+    });
+    app.get("/admin/*", (_req: Request, res: Response) => {
+      res.sendFile(adminPanelPath);
+    });
+    log("Admin panel available at /admin");
+  }
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith("/api")) {
