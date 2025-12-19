@@ -7,6 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { objectStorageClient } from "./objectStorage";
 import { setObjectAclPolicy } from "./objectAcl";
+import { getCityCoordinates } from "../shared/cityCoordinates";
 
 const scryptAsync = promisify(scrypt);
 
@@ -344,6 +345,7 @@ async function seed() {
   
   for (const itemData of demoItems) {
     const owner = createdUsers[itemData.ownerIndex];
+    const cityCoords = getCityCoordinates(owner.city);
     
     await db.insert(items).values({
       ownerId: owner.id,
@@ -359,6 +361,8 @@ async function seed() {
       deposit: itemData.deposit,
       city: owner.city,
       district: owner.district,
+      latitude: cityCoords?.latitude.toString() || null,
+      longitude: cityCoords?.longitude.toString() || null,
       images: itemData.images,
       rating: itemData.rating,
       totalRatings: itemData.totalRatings,

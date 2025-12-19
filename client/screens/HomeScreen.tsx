@@ -16,19 +16,9 @@ import { useWebLayout } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
+import { calculateDistance } from '@shared/cityCoordinates';
 
 const isWeb = Platform.OS === 'web';
-
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
 
 interface HomeData {
   premiumItems: Item[];
@@ -179,19 +169,29 @@ export default function HomeScreen() {
     </View>
   ), [homeData?.premiumItems, homeData?.remainingEarlyAdopterSlots]);
 
-  const renderEmpty = () => (
-    <View style={styles.emptyContainer}>
-      <BoxIcon size={64} color={theme.textTertiary} />
-      <ThemedText type="h4" style={[styles.emptyTitle, { color: theme.textSecondary }]}>
-        Nema dostupnih stvari
-      </ThemedText>
-      <ThemedText type="body" style={[styles.emptyText, { color: theme.textTertiary }]}>
-        {appliedSearch 
-          ? 'Pokušaj sa drugim filterima'
-          : 'Budi prvi koji će dodati stvar'}
-      </ThemedText>
-    </View>
-  );
+  const renderEmpty = () => {
+    let emptyMessage = 'Budi prvi koji će dodati stvar';
+    
+    if (filters.maxDistance !== null && userLat === null) {
+      emptyMessage = 'Uključi GPS lokaciju za pretragu po udaljenosti';
+    } else if (filters.maxDistance !== null) {
+      emptyMessage = `Nema rezultata u krugu od ${filters.maxDistance} km. Probaj veću udaljenost.`;
+    } else if (appliedSearch || activeFilterCount > 0) {
+      emptyMessage = 'Pokušaj sa drugim filterima ili pretragom';
+    }
+    
+    return (
+      <View style={styles.emptyContainer}>
+        <BoxIcon size={64} color={theme.textTertiary} />
+        <ThemedText type="h4" style={[styles.emptyTitle, { color: theme.textSecondary }]}>
+          Nema dostupnih stvari
+        </ThemedText>
+        <ThemedText type="body" style={[styles.emptyText, { color: theme.textTertiary }]}>
+          {emptyMessage}
+        </ThemedText>
+      </View>
+    );
+  };
 
   if (isLoading && !refreshing) {
     return (

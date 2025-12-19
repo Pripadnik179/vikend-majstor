@@ -23,6 +23,7 @@ import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
 import { CATEGORIES as SCHEMA_CATEGORIES, POWER_SOURCES, ACTIVITIES } from '@shared/schema';
+import { getCityCoordinates } from '@shared/cityCoordinates';
 
 const FREE_ITEM_LIMIT = 5;
 
@@ -177,6 +178,18 @@ export default function AddItemScreen() {
 
     setIsLoading(true);
     try {
+      // Use GPS coordinates if available, otherwise fallback to city coordinates
+      let finalLatitude = latitude?.toString() || null;
+      let finalLongitude = longitude?.toString() || null;
+      
+      if (!finalLatitude || !finalLongitude) {
+        const cityCoords = getCityCoordinates(city);
+        if (cityCoords) {
+          finalLatitude = cityCoords.latitude.toString();
+          finalLongitude = cityCoords.longitude.toString();
+        }
+      }
+      
       const data = {
         title,
         description,
@@ -187,8 +200,8 @@ export default function AddItemScreen() {
         deposit: parseInt(deposit),
         city,
         district: district || null,
-        latitude: latitude?.toString() || null,
-        longitude: longitude?.toString() || null,
+        latitude: finalLatitude,
+        longitude: finalLongitude,
         images,
         adType,
         activityTags: activityTags.length > 0 ? activityTags : null,
