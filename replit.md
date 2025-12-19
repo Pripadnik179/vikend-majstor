@@ -75,8 +75,16 @@ The app supports multiple authentication methods:
 - Create/edit/delete items
 - Up to 4 photos per item with Object Storage
 - Category and location-based organization
-- Advanced filtering (price range, rating, deposit)
+- Advanced filtering (price range, rating, deposit, distance)
 - Activity tags (activityTags) - items can be tagged for activities like Renoviranje, Gradnja, Bašta, etc.
+
+### Distance-Based Filtering
+- Filter items by distance from user's GPS location
+- Uses Haversine formula for accurate distance calculation
+- 9 distance options: Sve, 1km, 2km, 5km, 10km, 20km, 50km, 100km
+- City coordinates fallback: If GPS unavailable, uses predefined coordinates for 30+ Serbian cities
+- Items without coordinates are excluded when distance filter is active
+- Shared cityCoordinates.ts module provides getCityCoordinates() and calculateDistance() functions
 
 ### Booking System
 - Date-based booking requests
