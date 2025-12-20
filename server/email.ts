@@ -10,8 +10,23 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Use VERIFICATION_BASE_URL for email links - defaults to vikendmajstor.rs in production
+// For Replit development, set this to your Replit deployment URL
+const getBaseUrl = () => {
+  if (process.env.VERIFICATION_BASE_URL) {
+    return process.env.VERIFICATION_BASE_URL;
+  }
+  // In development on Replit, use the dev domain if available
+  if (process.env.NODE_ENV === 'development' && process.env.REPLIT_DEV_DOMAIN) {
+    return `https://${process.env.REPLIT_DEV_DOMAIN}:5000`;
+  }
+  // Default to main domain for production
+  return 'https://vikendmajstor.rs';
+};
+
 export async function sendVerificationEmail(to: string, verificationToken: string, userName: string): Promise<boolean> {
-  const verificationUrl = `https://api.vikendmajstor.rs/verify?token=${verificationToken}`;
+  const baseUrl = getBaseUrl();
+  const verificationUrl = `${baseUrl}/verify?token=${verificationToken}`;
   
   const mailOptions = {
     from: `"VikendMajstor" <${process.env.SMTP_USER}>`,
@@ -104,7 +119,8 @@ export async function sendVerificationEmail(to: string, verificationToken: strin
 }
 
 export async function sendPasswordResetEmail(to: string, resetToken: string, userName: string): Promise<boolean> {
-  const resetUrl = `https://api.vikendmajstor.rs/reset-password?token=${resetToken}`;
+  const baseUrl = getBaseUrl();
+  const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
   
   const mailOptions = {
     from: `"VikendMajstor" <${process.env.SMTP_USER}>`,
