@@ -735,9 +735,17 @@
             
             <div class="section">
               <div class="section-title">Status naloga</div>
-              <div class="toggle-group">
+              <div class="toggle-group" id="status-options">
                 <button class="toggle-btn ${user.isActive ? 'active-yes' : ''}" data-active="true">✓ Aktivan</button>
                 <button class="toggle-btn ${!user.isActive ? 'active-no' : ''}" data-active="false">✗ Neaktivan</button>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">Admin privilegije</div>
+              <div class="toggle-group" id="admin-options">
+                <button class="toggle-btn admin-btn ${user.isAdmin ? 'active-yes' : ''}" data-admin="true">✓ Administrator</button>
+                <button class="toggle-btn admin-btn ${!user.isAdmin ? 'active-no' : ''}" data-admin="false">✗ Obican korisnik</button>
               </div>
             </div>
             
@@ -772,10 +780,17 @@
         `;
         
         // Event listeners
-        document.querySelectorAll('.toggle-btn').forEach(btn => {
+        document.querySelectorAll('#status-options .toggle-btn').forEach(btn => {
           btn.onclick = () => {
-            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-yes', 'active-no'));
+            document.querySelectorAll('#status-options .toggle-btn').forEach(b => b.classList.remove('active-yes', 'active-no'));
             btn.classList.add(btn.dataset.active === 'true' ? 'active-yes' : 'active-no');
+          };
+        });
+        
+        document.querySelectorAll('#admin-options .toggle-btn').forEach(btn => {
+          btn.onclick = () => {
+            document.querySelectorAll('#admin-options .toggle-btn').forEach(b => b.classList.remove('active-yes', 'active-no'));
+            btn.classList.add(btn.dataset.admin === 'true' ? 'active-yes' : 'active-no');
           };
         });
         
@@ -807,7 +822,8 @@
       errorEl.classList.add('hidden');
       successEl.classList.add('hidden');
       
-      const isActive = document.querySelector('.toggle-btn.active-yes') !== null;
+      const isActive = document.querySelector('#status-options .toggle-btn.active-yes') !== null;
+      const isAdmin = document.querySelector('#admin-options .toggle-btn.active-yes') !== null;
       const subscriptionType = document.querySelector('#subscription-options .option-btn.active')?.dataset.sub || 'free';
       const subscriptionDays = parseInt(document.querySelector('#duration-options .option-btn.active')?.dataset.days || '30');
       
@@ -820,7 +836,7 @@
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ isActive, subscriptionType, subscriptionDays })
+          body: JSON.stringify({ isActive, isAdmin, subscriptionType, subscriptionDays })
         });
         
         if (!res.ok) {
