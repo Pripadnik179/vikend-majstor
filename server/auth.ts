@@ -268,6 +268,18 @@ export function setupAuth(app: Express) {
         return res.status(401).json({ error: "Pogrešan email ili lozinka" });
       }
 
+      if (!user.emailVerified) {
+        return res.status(403).json({ 
+          error: "Morate potvrditi email adresu pre prijave", 
+          code: "EMAIL_NOT_VERIFIED",
+          email: user.email 
+        });
+      }
+
+      if (!user.isActive) {
+        return res.status(403).json({ error: "Vaš nalog je deaktiviran" });
+      }
+
       logLoginAttempt(req, true, email);
       req.session.userId = user.id;
       

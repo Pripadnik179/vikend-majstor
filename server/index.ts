@@ -215,6 +215,15 @@ function configureExpoAndLanding(app: express.Application) {
     log("Admin panel available at /admin");
   }
 
+  // Redirect /verify to /api/auth/verify-email (for email verification links)
+  app.get("/verify", (req: Request, res: Response) => {
+    const token = req.query.token;
+    if (token) {
+      return res.redirect(`/api/auth/verify-email?token=${token}`);
+    }
+    res.redirect("/");
+  });
+
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith("/api")) {
       return next();
