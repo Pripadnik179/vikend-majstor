@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendVerificationEmail(to: string, verificationToken: string, userName: string): Promise<boolean> {
-  const verificationUrl = `https://vikendmajstor.rs/verify?token=${verificationToken}`;
+  const verificationUrl = `https://api.vikendmajstor.rs/verify?token=${verificationToken}`;
   
   const mailOptions = {
     from: `"VikendMajstor" <${process.env.SMTP_USER}>`,
@@ -104,7 +104,7 @@ export async function sendVerificationEmail(to: string, verificationToken: strin
 }
 
 export async function sendPasswordResetEmail(to: string, resetToken: string, userName: string): Promise<boolean> {
-  const resetUrl = `https://vikendmajstor.rs/reset-password?token=${resetToken}`;
+  const resetUrl = `https://api.vikendmajstor.rs/reset-password?token=${resetToken}`;
   
   const mailOptions = {
     from: `"VikendMajstor" <${process.env.SMTP_USER}>`,
