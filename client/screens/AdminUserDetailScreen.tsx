@@ -57,6 +57,7 @@ export default function AdminUserDetailScreen() {
   const { userId } = route.params;
 
   const [isActive, setIsActive] = useState(true);
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState('free');
   const [selectedDuration, setSelectedDuration] = useState(30);
   const [hasChanges, setHasChanges] = useState(false);
@@ -75,6 +76,7 @@ export default function AdminUserDetailScreen() {
   useEffect(() => {
     if (user) {
       setIsActive(user.isActive);
+      setIsAdminUser(user.isAdmin);
       setSelectedSubscription(user.subscriptionType);
     }
   }, [user]);
@@ -101,6 +103,10 @@ export default function AdminUserDetailScreen() {
       data.isActive = isActive;
     }
     
+    if (isAdminUser !== user?.isAdmin) {
+      data.isAdmin = isAdminUser;
+    }
+    
     if (selectedSubscription !== user?.subscriptionType) {
       data.subscriptionType = selectedSubscription;
       if (selectedSubscription !== 'free') {
@@ -118,6 +124,11 @@ export default function AdminUserDetailScreen() {
 
   const handleToggleActive = (value: boolean) => {
     setIsActive(value);
+    setHasChanges(true);
+  };
+
+  const handleToggleAdmin = (value: boolean) => {
+    setIsAdminUser(value);
     setHasChanges(true);
   };
 
@@ -227,6 +238,25 @@ export default function AdminUserDetailScreen() {
             value={isActive}
             onValueChange={handleToggleActive}
             trackColor={{ false: '#767577', true: theme.primary }}
+            thumbColor="#FFFFFF"
+          />
+        </View>
+        
+        <View style={styles.switchRow}>
+          <View style={styles.switchLabel}>
+            {isAdminUser ? (
+              <CheckCircleIcon size={20} color="#FF5722" />
+            ) : (
+              <XCircleIcon size={20} color="#808080" />
+            )}
+            <ThemedText type="body" style={{ marginLeft: Spacing.sm }}>
+              {isAdminUser ? 'Administrator' : 'Običan korisnik'}
+            </ThemedText>
+          </View>
+          <Switch
+            value={isAdminUser}
+            onValueChange={handleToggleAdmin}
+            trackColor={{ false: '#767577', true: '#FF5722' }}
             thumbColor="#FFFFFF"
           />
         </View>
