@@ -440,3 +440,20 @@ export function isAuthenticated(
   }
   next();
 }
+
+export function isVerifiedUser(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  if (!req.user) {
+    return res.status(401).json({ error: "Morate biti prijavljeni" });
+  }
+  if (!req.user.emailVerified) {
+    return res.status(403).json({ 
+      error: "Molimo vas da prvo potvrdite svoju email adresu kako biste nastavili.",
+      code: "EMAIL_NOT_VERIFIED"
+    });
+  }
+  next();
+}

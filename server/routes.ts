@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "node:http";
-import { setupAuth, isAuthenticated } from "./auth";
+import { setupAuth, isAuthenticated, isVerifiedUser } from "./auth";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { 
@@ -319,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/items", isAuthenticated, async (req, res) => {
+  app.post("/api/items", isAuthenticated, isVerifiedUser, async (req, res) => {
     try {
       const freshUser = await storage.getUser(req.user!.id);
       if (!freshUser) {
@@ -357,7 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/items/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/items/:id", isAuthenticated, isVerifiedUser, async (req, res) => {
     try {
       const forceDelete = req.query.force === 'true';
       
@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/items/:id/feature", isAuthenticated, async (req, res) => {
+  app.post("/api/items/:id/feature", isAuthenticated, isVerifiedUser, async (req, res) => {
     try {
       const { action, paid } = req.body;
       
@@ -477,7 +477,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/items/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/items/:id", isAuthenticated, isVerifiedUser, async (req, res) => {
     try {
       const item = await storage.getItem(req.params.id);
       if (!item) {
@@ -561,7 +561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/bookings", isAuthenticated, async (req, res) => {
+  app.post("/api/bookings", isAuthenticated, isVerifiedUser, async (req, res) => {
     try {
       const item = await storage.getItem(req.body.itemId);
       if (!item) {
@@ -674,7 +674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/conversations", isAuthenticated, async (req, res) => {
+  app.post("/api/conversations", isAuthenticated, isVerifiedUser, async (req, res) => {
     try {
       const { userId, itemId } = req.body;
       
@@ -716,7 +716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/conversations/:id/messages", isAuthenticated, async (req, res) => {
+  app.post("/api/conversations/:id/messages", isAuthenticated, isVerifiedUser, async (req, res) => {
     try {
       const conversation = await storage.getConversation(req.params.id);
       if (!conversation) {
@@ -764,7 +764,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/reviews", isAuthenticated, async (req, res) => {
+  app.post("/api/reviews", isAuthenticated, isVerifiedUser, async (req, res) => {
     try {
       const booking = await storage.getBooking(req.body.bookingId);
       if (!booking) {
