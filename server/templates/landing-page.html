@@ -1,213 +1,857 @@
-<!doctype html>
-<html>
-  <head>
-    <title>APP_NAME_PLACEHOLDER</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        max-width: 500px;
-        margin: 50px auto;
-        padding: 20px;
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VikendMajstor - Platforma za iznajmljivanje alata</title>
+  <meta name="description" content="VikendMajstor je platforma za iznajmljivanje alata. Pronađite alat koji vam treba ili zaradite iznajmljivanjem svog alata.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <meta property="og:title" content="VikendMajstor - Platforma za iznajmljivanje alata">
+  <meta property="og:description" content="Pronađite alat koji vam treba ili zaradite iznajmljivanjem svog alata.">
+  <meta property="og:image" content="/favicon.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary: #FFCC00;
+      --primary-dark: #E6B800;
+      --dark: #1A1A1A;
+      --dark-secondary: #2A2A2A;
+      --text: #333333;
+      --text-secondary: #666666;
+      --text-light: #999999;
+      --background: #FFFFFF;
+      --background-secondary: #F5F5F5;
+      --success: #22C55E;
+      --border: #E5E5E5;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--background);
+    }
+    
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* Navigation */
+    .nav {
+      background: var(--dark);
+      padding: 16px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+    
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .nav-logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+    }
+    
+    .nav-logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    
+    .nav-links a {
+      color: #FFFFFF;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+    
+    .nav-cta {
+      background: var(--primary);
+      color: var(--dark);
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    
+    .nav-cta:hover {
+      background: var(--primary-dark);
+    }
+    
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: #FFFFFF;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, var(--dark) 0%, var(--dark-secondary) 100%);
+      padding: 140px 0 80px;
+      text-align: center;
+    }
+    
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 20px;
+    }
+    
+    .hero h1 span {
+      color: var(--primary);
+    }
+    
+    .hero p {
+      font-size: 20px;
+      color: #CCCCCC;
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+    
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: var(--dark);
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: #FFFFFF;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      border: 2px solid #FFFFFF;
+      transition: all 0.2s;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    /* QR Code Section */
+    .qr-section {
+      padding: 60px 0;
+      background: var(--background-secondary);
+      text-align: center;
+    }
+    
+    .qr-section h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    
+    .qr-code-container {
+      width: 200px;
+      height: 200px;
+      margin: 20px auto;
+      background: #FFFFFF;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .store-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .store-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--dark);
+      color: #FFFFFF;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    
+    .store-btn:hover {
+      opacity: 0.9;
+    }
+    
+    .store-btn img {
+      width: 20px;
+      height: 20px;
+    }
+    
+    /* About Section */
+    .about {
+      padding: 80px 0;
+    }
+    
+    .section-title {
+      text-align: center;
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .section-subtitle {
+      text-align: center;
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 48px;
+    }
+    
+    .about-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    
+    .about-text p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+    
+    .eco-card {
+      background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+      border-radius: 16px;
+      padding: 32px;
+      border-left: 4px solid var(--success);
+    }
+    
+    .eco-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      color: var(--success);
+      margin-bottom: 16px;
+    }
+    
+    .eco-card ul {
+      list-style: none;
+    }
+    
+    .eco-card li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    
+    .eco-card li::before {
+      content: "✓";
+      color: var(--success);
+      font-weight: bold;
+    }
+    
+    /* How it Works */
+    .how-it-works {
+      padding: 80px 0;
+      background: var(--background-secondary);
+    }
+    
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+    
+    .step {
+      text-align: center;
+      padding: 32px;
+      background: #FFFFFF;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    
+    .step-number {
+      width: 60px;
+      height: 60px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--dark);
+      margin: 0 auto 20px;
+    }
+    
+    .step h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    
+    .step p {
+      color: var(--text-secondary);
+    }
+    
+    /* FAQ Section */
+    .faq {
+      padding: 80px 0;
+    }
+    
+    .faq-grid {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    
+    .faq-question {
+      padding: 20px 24px;
+      background: #FFFFFF;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    
+    .faq-question:hover {
+      background: var(--background-secondary);
+    }
+    
+    .faq-arrow {
+      transition: transform 0.3s;
+    }
+    
+    .faq-item.active .faq-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .faq-answer {
+      padding: 0 24px;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s;
+      background: var(--background-secondary);
+    }
+    
+    .faq-item.active .faq-answer {
+      padding: 20px 24px;
+      max-height: 200px;
+    }
+    
+    .faq-answer p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    
+    /* Contact Section */
+    .contact {
+      padding: 80px 0;
+      background: var(--dark);
+      color: #FFFFFF;
+    }
+    
+    .contact .section-title {
+      color: #FFFFFF;
+    }
+    
+    .contact .section-subtitle {
+      color: #CCCCCC;
+    }
+    
+    .contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    
+    .contact-item {
+      text-align: center;
+      padding: 32px;
+      background: var(--dark-secondary);
+      border-radius: 16px;
+      min-width: 280px;
+    }
+    
+    .contact-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 24px;
+    }
+    
+    .contact-item h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    
+    .contact-item a {
+      color: var(--primary);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .contact-item a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Footer */
+    .footer {
+      background: var(--dark);
+      padding: 48px 0 24px;
+      border-top: 1px solid #333;
+    }
+    
+    .footer-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+    
+    .footer-brand h3 {
+      color: var(--primary);
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    
+    .footer-brand p {
+      color: #999;
+      line-height: 1.7;
+    }
+    
+    .footer-links h4 {
+      color: #FFFFFF;
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .footer-links ul {
+      list-style: none;
+    }
+    
+    .footer-links li {
+      margin-bottom: 12px;
+    }
+    
+    .footer-links a {
+      color: #999;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+    
+    .footer-bottom {
+      text-align: center;
+      padding-top: 24px;
+      border-top: 1px solid #333;
+      color: #666;
+    }
+    
+    /* Mobile Styles */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      
+      .mobile-menu-btn {
+        display: block;
+      }
+      
+      .hero h1 {
+        font-size: 32px;
+      }
+      
+      .hero p {
+        font-size: 16px;
+      }
+      
+      .about-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .steps {
+        grid-template-columns: 1fr;
+      }
+      
+      .footer-content {
+        grid-template-columns: 1fr;
         text-align: center;
       }
-      .loading {
-        display: none;
-        font-size: 18px;
-        color: #666;
-        margin: 60px 0;
-      }
-      .spinner {
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #333;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
-      }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-      .content {
-        display: block;
-      }
-      .qr-code {
-        width: 250px;
-        height: 250px;
-        margin: 30px auto;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 15px;
-
-        canvas {
-          width: 100%;
-          height: 100%;
-        }
-      }
-      .platform-links {
-        margin: 30px 0;
-      }
-      .platform-link {
-        display: block;
-        padding: 14px 24px;
-        margin: 12px auto;
-        max-width: 300px;
-        font-size: 16px;
-        border: 1px solid #000;
-        border-radius: 8px;
-        text-decoration: none;
-        color: #000;
-        background: white;
-        min-height: 40px;
-        box-sizing: border-box;
-      }
-      .platform-link:hover {
-        background: #f5f5f5;
-      }
-      .download-links {
-        margin-top: 40px;
-        padding-top: 30px;
-        border-top: 1px solid #ddd;
-      }
-      .install-button {
-        display: inline-flex;
+      
+      .contact-info {
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        padding: 12px 16px;
-        margin: 0 6px;
-        font-size: 14px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        text-decoration: none;
-        color: #333;
-        background: white;
-        min-height: 40px;
-        box-sizing: border-box;
       }
-      .install-button:hover {
-        background: #f5f5f5;
-      }
-      .store-icon {
-        width: 16px;
-        height: 16px;
-        margin-right: 6px;
-        border-radius: 0px;
-      }
-      .app-store-icon {
-        border-radius: 4px;
-      }
-      .install-text {
-        color: #999;
-        font-size: 14px;
-        margin-bottom: 10px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <div>Opening in Expo Go...</div>
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container nav-container">
+      <a href="#" class="nav-logo">
+        <img src="/favicon.png" alt="VikendMajstor">
+        <span class="nav-logo-text">VikendMajstor</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#app">Alati</a></li>
+        <li><a href="#o-nama">O nama</a></li>
+        <li><a href="#kako-radi">Kako radi</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#kontakt">Kontakt</a></li>
+      </ul>
+      <a href="#app" class="nav-cta">Otvori aplikaciju</a>
+      <button class="mobile-menu-btn">&#9776;</button>
     </div>
+  </nav>
 
-    <div class="content" id="content">
-      <div class="qr-code" id="qr-code"></div>
-
-      <div class="platform-links">
-        <a href="exps://EXPS_URL_PLACEHOLDER" class="platform-link">Open APP_NAME_PLACEHOLDER in Expo Go</a>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>Iznajmi alat od <span>komsije</span></h1>
+      <p>VikendMajstor je platforma za iznajmljivanje alata. Pronadji alat koji ti treba ili zaradi iznajmljivanjem svog alata.</p>
+      <div class="hero-buttons">
+        <a href="#app" class="btn-primary">Pregledaj alate</a>
+        <a href="#kako-radi" class="btn-secondary">Kako funkcionise</a>
       </div>
+    </div>
+  </section>
 
-      <div class="download-links">
-        <div class="install-text">Install Expo Go to Run</div>
-        <div>
-          <a
-            href="https://apps.apple.com/app/id982107779"
-            class="install-button"
-            target="_blank"
-            ><img
-              src="https://apps.apple.com/assets/images/favicon/favicon-apps-48-fad34e0d87e86dcf72ded1faff4ba9d0.png"
-              class="app-store-icon store-icon"
-              alt=""
-            />App Store</a
-          >
-          <a
-            href="https://play.google.com/store/apps/details?id=host.exp.exponent"
-            class="install-button"
-            target="_blank"
-            ><img
-              src="https://www.gstatic.com/android/market_images/web/favicon_v3.ico"
-              class="store-icon"
-              alt=""
-            />Google Play</a
-          >
+  <!-- QR Code / App Section -->
+  <section class="qr-section" id="app">
+    <div class="container">
+      <h2>Skeniraj QR kod da otvoris aplikaciju</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 20px;">Koristi Expo Go aplikaciju na svom telefonu</p>
+      <div class="qr-code-container" id="qr-code"></div>
+      <div class="store-buttons">
+        <a href="https://apps.apple.com/app/id982107779" class="store-btn" target="_blank">
+          <img src="https://apps.apple.com/assets/images/favicon/favicon-apps-48-fad34e0d87e86dcf72ded1faff4ba9d0.png" alt="App Store">
+          App Store
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=host.exp.exponent" class="store-btn" target="_blank">
+          <img src="https://www.gstatic.com/android/market_images/web/favicon_v3.ico" alt="Google Play">
+          Google Play
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about" id="o-nama">
+    <div class="container">
+      <h2 class="section-title">O nama</h2>
+      <p class="section-subtitle">Povezujemo ljude koji imaju alate sa onima kojima su potrebni</p>
+      
+      <div class="about-content">
+        <div class="about-text">
+          <p>
+            VikendMajstor je platforma za iznajmljivanje alata. Nas cilj je da korisnicima omogucimo lak pristup potrebnim alatima bez kupovine, da podstaknemo deljenje resursa i doprinesemo zastiti zivotne sredine kroz odgovorno koriscenje i ponovnu upotrebu.
+          </p>
+          <p>
+            Umesto da kupujete alat koji cete koristiti jednom ili dvaput godisnje, iznajmite ga od komsije po povoljnoj ceni. Tako stedite novac, prostor u garazi, a i pomažete planeti.
+          </p>
+        </div>
+        
+        <div class="eco-card">
+          <h3>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+            Ekoloska poruka
+          </h3>
+          <ul>
+            <li>Manje kupovine = manje proizvodnje = manje otpada</li>
+            <li>Deljenje resursa = racionalno koriscenje energije i materijala</li>
+            <li>Zajednica koja razmenjuje = zajednica koja stedi i cuva planetu</li>
+            <li>Produzavamo zivotni vek alata kroz zajednicko koriscenje</li>
+          </ul>
         </div>
       </div>
     </div>
+  </section>
 
-    <script src="https://unpkg.com/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
-    <script>
-      (function () {
-        const ua = navigator.userAgent;
-        const loadingEl = document.getElementById("loading");
-        const contentEl = document.getElementById("content");
+  <!-- How it Works -->
+  <section class="how-it-works" id="kako-radi">
+    <div class="container">
+      <h2 class="section-title">Kako funkcionise</h2>
+      <p class="section-subtitle">Tri jednostavna koraka do alata koji vam treba</p>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Pronadji alat</h3>
+          <p>Pretrazite oglase u vasoj okolini i pronadjite alat koji vam treba po povoljnoj ceni.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Rezervisi</h3>
+          <p>Posaljite zahtev za rezervaciju, izaberite datume i sacekajte potvrdu od vlasnika.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Preuzmi i koristi</h3>
+          <p>Dogovorite se o preuzimanju, koristite alat i vratite ga u dogovorenom roku.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        const isAndroid = /Android/i.test(ua);
+  <!-- FAQ Section -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <h2 class="section-title">Cesta pitanja</h2>
+      <p class="section-subtitle">Odgovori na najcesde postavljana pitanja</p>
+      
+      <div class="faq-grid">
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako da dodam oglas?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Kliknite na "+" dugme u donjem meniju da biste dodali novi oglas. Popunite naslov, opis, kategoriju, cenu po danu i dodajte fotografije. Besplatni korisnici mogu dodati do 5 oglasa.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako funkcionise rezervacija?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Pronadjite stvar koju zelite da iznajmite, izaberite datume i posaljite zahtev za rezervaciju. Vlasnik ce primiti obavestenje i moze da prihvati ili odbije zahtev. Nakon potvrde, dogovorite se o preuzimanju.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako se vrsi placanje?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Placanje se vrsi direktno izmedju korisnika prilikom preuzimanja stvari. VikendMajstor trenutno ne procesira placanja kroz aplikaciju. Depozit se vraca nakon vracanja stvari u dobrom stanju.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Da li je moj novac siguran?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Preporucujemo da uvek trazite depozit kao garanciju. Fotografisite stvar pre i posle iznajmljivanja. U slucaju problema, kontaktirajte nasu podrsku.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako da postanem Premium korisnik?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Idjite na Profil > Pretplata i izaberite Premium plan. Premium korisnici imaju neogranicen broj oglasa, istaknute oglase na vrhu pretrage i premium znacku.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Sta ako imam problem sa rezervacijom?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Koristite chat funkciju da komunicirate direktno sa drugom stranom. Ako ne mozete da resite problem, kontaktirajte nasu podrsku na podrska@vikendmajstor.rs</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        const isIOS =
-          /iPhone|iPad|iPod/i.test(ua) ||
-          (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  <!-- Contact Section -->
+  <section class="contact" id="kontakt">
+    <div class="container">
+      <h2 class="section-title">Kontaktirajte nas</h2>
+      <p class="section-subtitle">Imate pitanja? Rado cemo vam pomoci.</p>
+      
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">&#9993;</div>
+          <h3>Email podrska</h3>
+          <p style="color: #999; margin-bottom: 8px;">Odgovaramo u roku od 24 sata</p>
+          <a href="mailto:podrska@vikendmajstor.rs">podrska@vikendmajstor.rs</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        const deepLink = "exps://EXPS_URL_PLACEHOLDER";
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <h3>VikendMajstor</h3>
+          <p>Platforma za iznajmljivanje alata i opreme. Povezujemo komsije i stedimo planetu kroz deljenje resursa.</p>
+        </div>
+        
+        <div class="footer-links">
+          <h4>Navigacija</h4>
+          <ul>
+            <li><a href="#app">Alati</a></li>
+            <li><a href="#o-nama">O nama</a></li>
+            <li><a href="#kako-radi">Kako radi</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-links">
+          <h4>Pravne informacije</h4>
+          <ul>
+            <li><a href="/uslovi-koriscenja">Uslovi koriscenja</a></li>
+            <li><a href="/politika-privatnosti">Politika privatnosti</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-links">
+          <h4>Kontakt</h4>
+          <ul>
+            <li><a href="mailto:podrska@vikendmajstor.rs">podrska@vikendmajstor.rs</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 VikendMajstor. Sva prava zadrzana.</p>
+      </div>
+    </div>
+  </footer>
 
-        const qrCode = new QRCodeStyling({
-          width: 500,
-          height: 500,
-          data: deepLink,
-          image: "assets/images/icon.png",
-          dotsOptions: {
-            color: "#000000",
-            type: "rounded",
-          },
-          backgroundOptions: {
-            color: "#ffffff",
-          },
-          imageOptions: {
-            crossOrigin: "anonymous",
-            margin: 8,
-            imageSize: 0.4,
-            borderRadius: 8,
-          },
-          cornersSquareOptions: {
-            type: "extra-rounded",
-          },
-          cornersDotOptions: {
-            type: "dot",
-          },
-          qrOptions: {
-            errorCorrectionLevel: "H",
-          },
-        });
-
-        qrCode.append(document.getElementById("qr-code"));
-
-        if (isAndroid || isIOS) {
-          loadingEl.style.display = "block";
-          contentEl.style.display = "none";
-
-          window.location.href = deepLink;
-
-          setTimeout(function () {
-            loadingEl.style.display = "none";
-            contentEl.style.display = "block";
-          }, 500);
+  <!-- Scripts -->
+  <script src="https://unpkg.com/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+  <script>
+    // QR Code Generation
+    const deepLink = "exps://EXPS_URL_PLACEHOLDER";
+    
+    const qrCode = new QRCodeStyling({
+      width: 400,
+      height: 400,
+      data: deepLink,
+      image: "/favicon.png",
+      dotsOptions: {
+        color: "#1A1A1A",
+        type: "rounded",
+      },
+      backgroundOptions: {
+        color: "#ffffff",
+      },
+      imageOptions: {
+        crossOrigin: "anonymous",
+        margin: 8,
+        imageSize: 0.4,
+        borderRadius: 8,
+      },
+      cornersSquareOptions: {
+        type: "extra-rounded",
+      },
+      cornersDotOptions: {
+        type: "dot",
+      },
+      qrOptions: {
+        errorCorrectionLevel: "H",
+      },
+    });
+    
+    qrCode.append(document.getElementById("qr-code"));
+    
+    // FAQ Accordion
+    document.querySelectorAll('.faq-question').forEach(question => {
+      question.addEventListener('click', () => {
+        const item = question.parentElement;
+        item.classList.toggle('active');
+      });
+    });
+    
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
         }
-      })();
-    </script>
-  </body>
+      });
+    });
+  </script>
+</body>
 </html>

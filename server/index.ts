@@ -215,6 +215,16 @@ function configureExpoAndLanding(app: express.Application) {
     log("Admin panel available at /admin");
   }
 
+  // Serve favicon
+  app.get("/favicon.png", (_req: Request, res: Response) => {
+    const faviconPath = path.resolve(process.cwd(), "server", "templates", "favicon.png");
+    if (fs.existsSync(faviconPath)) {
+      res.sendFile(faviconPath);
+    } else {
+      res.status(404).send("Favicon not found");
+    }
+  });
+
   // Redirect /verify to /api/auth/verify-email (for email verification links)
   app.get("/verify", (req: Request, res: Response) => {
     const token = req.query.token;
@@ -222,6 +232,25 @@ function configureExpoAndLanding(app: express.Application) {
       return res.redirect(`/api/auth/verify-email?token=${token}`);
     }
     res.redirect("/");
+  });
+
+  // Legal pages
+  app.get("/uslovi-koriscenja", (_req: Request, res: Response) => {
+    const termsPath = path.resolve(process.cwd(), "server", "templates", "terms.html");
+    if (fs.existsSync(termsPath)) {
+      res.sendFile(termsPath);
+    } else {
+      res.status(404).send("Page not found");
+    }
+  });
+
+  app.get("/politika-privatnosti", (_req: Request, res: Response) => {
+    const privacyPath = path.resolve(process.cwd(), "server", "templates", "privacy.html");
+    if (fs.existsSync(privacyPath)) {
+      res.sendFile(privacyPath);
+    } else {
+      res.status(404).send("Page not found");
+    }
   });
 
   app.use((req: Request, res: Response, next: NextFunction) => {
