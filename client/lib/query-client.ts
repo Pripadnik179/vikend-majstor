@@ -23,17 +23,24 @@ export function getApiUrl(): string {
     return currentOrigin;
   }
   
-  // For mobile (React Native), use the configured domain with port 5000
-  // IMPORTANT: Keep the :5000 port so image requests go to Express server, not Expo bundler
+  // For mobile (React Native), use the configured domain
   const host = process.env.EXPO_PUBLIC_DOMAIN;
 
   if (!host) {
     throw new Error("EXPO_PUBLIC_DOMAIN is not set");
   }
 
-  // Ensure host includes port 5000 for direct connection to Express server
-  const hostWithPort = host.includes(':5000') ? host : `${host}:5000`;
+  // For production domains (like vikendmajstor.rs), don't add port - Replit handles routing
+  // For development domains with :5000, keep as-is
+  const isProductionDomain = host.includes('vikendmajstor.rs') || 
+                              (!host.includes(':') && !host.includes('replit'));
   
+  if (isProductionDomain) {
+    return `https://${host}`;
+  }
+  
+  // For development, ensure port 5000 for Express server
+  const hostWithPort = host.includes(':5000') ? host : `${host}:5000`;
   return `https://${hostWithPort}`;
 }
 
