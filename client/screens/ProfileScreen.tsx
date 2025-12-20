@@ -8,6 +8,7 @@ import { StarIcon, ChevronRightIcon, LogOutIcon, ClockIcon } from '@/components/
 import { DynamicIcon } from '@/components/icons/DynamicIcon';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
+import { VerificationBanner } from '@/components/VerificationBanner';
 import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -84,6 +85,7 @@ export default function ProfileScreen() {
       }}
       scrollIndicatorInsets={{ bottom: insets.bottom }}
     >
+      <VerificationBanner style={{ marginHorizontal: 0, marginBottom: Spacing.lg }} />
       <Card style={styles.profileCard}>
         <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
           <ThemedText style={styles.avatarText}>

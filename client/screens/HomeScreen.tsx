@@ -10,6 +10,7 @@ import { SearchIcon, XIcon, SlidersIcon, BoxIcon } from '@/components/icons/TabB
 import { ItemCard } from '@/components/ItemCard';
 import { FilterModal, FilterState } from '@/components/FilterModal';
 import { PromoBanner } from '@/components/PromoBanner';
+import { VerificationBanner } from '@/components/VerificationBanner';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout } from '@/hooks/useWebLayout';
@@ -162,6 +163,7 @@ export default function HomeScreen() {
 
   const listHeader = useMemo(() => (
     <View style={styles.header}>
+      <VerificationBanner />
       <PromoBanner
         premiumItems={homeData?.premiumItems || []}
         earlyAdopterSlotsRemaining={homeData?.remainingEarlyAdopterSlots || 0}
