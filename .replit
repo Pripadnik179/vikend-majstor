@@ -50,3 +50,6 @@ args = "npm run all:dev"
 waitForPort = 8081
 ensurePreviewReachable = "/status"
 
+[objectStorage]
+defaultBucketID = "replit-objstore-0071bde5-4893-4ce1-b3f8-e4cdf1d30dfc"
+
