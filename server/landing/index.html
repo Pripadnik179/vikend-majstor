@@ -2,7 +2,7 @@
 <html lang="sr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>VikendMajstor - Platforma za iznajmljivanje alata</title>
   <meta name="description" content="VikendMajstor je platforma za iznajmljivanje alata. Pronađite alat koji vam treba ili zaradite iznajmljivanjem svog alata.">
   <link rel="icon" type="image/png" href="/favicon.png">
@@ -31,11 +31,16 @@
       --border: #E5E5E5;
     }
     
+    html {
+      scroll-behavior: smooth;
+    }
+    
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       line-height: 1.6;
       color: var(--text);
       background: var(--background);
+      overflow-x: hidden;
     }
     
     a {
@@ -52,7 +57,7 @@
     /* Navigation */
     .nav {
       background: var(--dark);
-      padding: 16px 0;
+      padding: 12px 0;
       position: fixed;
       top: 0;
       left: 0;
@@ -69,31 +74,34 @@
     .nav-logo {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      z-index: 1001;
     }
     
     .nav-logo img {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       border-radius: 8px;
     }
     
     .nav-logo-text {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 700;
       color: var(--primary);
     }
     
     .nav-links {
       display: flex;
-      gap: 32px;
+      gap: 28px;
       list-style: none;
     }
     
     .nav-links a {
       color: #FFFFFF;
       font-weight: 500;
+      font-size: 15px;
       transition: color 0.2s;
+      padding: 8px 0;
     }
     
     .nav-links a:hover {
@@ -103,37 +111,106 @@
     .nav-cta {
       background: var(--primary);
       color: var(--dark);
-      padding: 10px 24px;
+      padding: 10px 20px;
       border-radius: 8px;
       font-weight: 600;
+      font-size: 14px;
       transition: background 0.2s;
+      white-space: nowrap;
     }
     
     .nav-cta:hover {
       background: var(--primary-dark);
     }
     
+    /* Mobile Menu Button */
     .mobile-menu-btn {
       display: none;
       background: none;
       border: none;
       color: #FFFFFF;
-      font-size: 24px;
+      font-size: 28px;
       cursor: pointer;
+      padding: 8px;
+      z-index: 1001;
+      width: 44px;
+      height: 44px;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Mobile Menu Overlay */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--dark);
+      z-index: 999;
+      padding-top: 80px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    
+    .mobile-menu.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .mobile-menu-links {
+      list-style: none;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .mobile-menu-links li {
+      margin-bottom: 8px;
+    }
+    
+    .mobile-menu-links a {
+      display: block;
+      color: #FFFFFF;
+      font-size: 20px;
+      font-weight: 500;
+      padding: 16px 20px;
+      border-radius: 12px;
+      transition: background 0.2s;
+    }
+    
+    .mobile-menu-links a:hover,
+    .mobile-menu-links a:active {
+      background: var(--dark-secondary);
+      color: var(--primary);
+    }
+    
+    .mobile-menu-cta {
+      display: block;
+      background: var(--primary);
+      color: var(--dark);
+      font-size: 18px;
+      font-weight: 600;
+      padding: 16px 32px;
+      border-radius: 12px;
+      margin: 24px 20px 0;
+      text-align: center;
     }
     
     /* Hero Section */
     .hero {
       background: linear-gradient(135deg, var(--dark) 0%, var(--dark-secondary) 100%);
-      padding: 140px 0 80px;
+      padding: 120px 0 60px;
       text-align: center;
     }
     
     .hero h1 {
-      font-size: 48px;
+      font-size: 42px;
       font-weight: 800;
       color: #FFFFFF;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+      line-height: 1.2;
     }
     
     .hero h1 span {
@@ -141,30 +218,35 @@
     }
     
     .hero p {
-      font-size: 20px;
+      font-size: 18px;
       color: #CCCCCC;
-      max-width: 600px;
-      margin: 0 auto 40px;
+      max-width: 560px;
+      margin: 0 auto 32px;
+      padding: 0 16px;
     }
     
     .hero-buttons {
       display: flex;
-      gap: 16px;
+      gap: 12px;
       justify-content: center;
       flex-wrap: wrap;
+      padding: 0 16px;
     }
     
     .btn-primary {
       background: var(--primary);
       color: var(--dark);
-      padding: 16px 32px;
-      border-radius: 8px;
-      font-size: 18px;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 16px;
       font-weight: 600;
       transition: all 0.2s;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      min-height: 50px;
+      min-width: 160px;
     }
     
     .btn-primary:hover {
@@ -172,15 +254,24 @@
       transform: translateY(-2px);
     }
     
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
     .btn-secondary {
       background: transparent;
       color: #FFFFFF;
-      padding: 16px 32px;
-      border-radius: 8px;
-      font-size: 18px;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 16px;
       font-weight: 600;
       border: 2px solid #FFFFFF;
       transition: all 0.2s;
+      min-height: 50px;
+      min-width: 160px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .btn-secondary:hover {
@@ -189,44 +280,59 @@
     
     /* QR Code Section */
     .qr-section {
-      padding: 60px 0;
+      padding: 48px 0;
       background: var(--background-secondary);
       text-align: center;
     }
     
     .qr-section h2 {
-      font-size: 28px;
+      font-size: 24px;
+      margin-bottom: 12px;
+      padding: 0 16px;
+    }
+    
+    .qr-section > .container > p {
+      color: var(--text-secondary);
       margin-bottom: 20px;
+      padding: 0 16px;
     }
     
     .qr-code-container {
-      width: 200px;
-      height: 200px;
-      margin: 20px auto;
+      width: 180px;
+      height: 180px;
+      margin: 16px auto;
       background: #FFFFFF;
       border-radius: 16px;
-      padding: 16px;
+      padding: 12px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .qr-code-container canvas {
+      width: 100% !important;
+      height: 100% !important;
     }
     
     .store-buttons {
       display: flex;
-      gap: 16px;
+      gap: 12px;
       justify-content: center;
-      margin-top: 24px;
+      margin-top: 20px;
       flex-wrap: wrap;
+      padding: 0 16px;
     }
     
     .store-btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 12px 24px;
+      padding: 14px 24px;
       background: var(--dark);
       color: #FFFFFF;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: 500;
+      font-size: 15px;
       transition: opacity 0.2s;
+      min-height: 50px;
     }
     
     .store-btn:hover {
@@ -240,50 +346,51 @@
     
     /* About Section */
     .about {
-      padding: 80px 0;
+      padding: 60px 0;
     }
     
     .section-title {
       text-align: center;
-      font-size: 36px;
+      font-size: 32px;
       font-weight: 700;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     
     .section-subtitle {
       text-align: center;
-      font-size: 18px;
+      font-size: 16px;
       color: var(--text-secondary);
-      max-width: 600px;
-      margin: 0 auto 48px;
+      max-width: 560px;
+      margin: 0 auto 40px;
+      padding: 0 16px;
     }
     
     .about-content {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 48px;
-      align-items: center;
+      gap: 40px;
+      align-items: start;
     }
     
     .about-text p {
-      font-size: 18px;
+      font-size: 16px;
       color: var(--text-secondary);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       line-height: 1.8;
     }
     
     .eco-card {
       background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
       border-radius: 16px;
-      padding: 32px;
+      padding: 24px;
       border-left: 4px solid var(--success);
     }
     
     .eco-card h3 {
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-size: 20px;
+      gap: 10px;
+      font-size: 18px;
       color: var(--success);
       margin-bottom: 16px;
     }
@@ -295,63 +402,68 @@
     .eco-card li {
       display: flex;
       align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 10px;
       color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
     }
     
     .eco-card li::before {
       content: "✓";
       color: var(--success);
       font-weight: bold;
+      flex-shrink: 0;
     }
     
     /* How it Works */
     .how-it-works {
-      padding: 80px 0;
+      padding: 60px 0;
       background: var(--background-secondary);
     }
     
     .steps {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
+      gap: 24px;
     }
     
     .step {
       text-align: center;
-      padding: 32px;
+      padding: 28px 20px;
       background: #FFFFFF;
       border-radius: 16px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
     
     .step-number {
-      width: 60px;
-      height: 60px;
+      width: 56px;
+      height: 56px;
       background: var(--primary);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
       color: var(--dark);
-      margin: 0 auto 20px;
+      margin: 0 auto 16px;
     }
     
     .step h3 {
-      font-size: 20px;
-      margin-bottom: 12px;
+      font-size: 18px;
+      margin-bottom: 10px;
     }
     
     .step p {
       color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.6;
     }
     
     /* FAQ Section */
     .faq {
-      padding: 80px 0;
+      padding: 60px 0;
     }
     
     .faq-grid {
@@ -362,27 +474,34 @@
     .faq-item {
       border: 1px solid var(--border);
       border-radius: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       overflow: hidden;
     }
     
     .faq-question {
-      padding: 20px 24px;
+      padding: 18px 20px;
       background: #FFFFFF;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-weight: 600;
+      font-size: 15px;
       transition: background 0.2s;
+      gap: 12px;
+      min-height: 56px;
+      -webkit-tap-highlight-color: transparent;
     }
     
-    .faq-question:hover {
+    .faq-question:hover,
+    .faq-question:active {
       background: var(--background-secondary);
     }
     
     .faq-arrow {
       transition: transform 0.3s;
+      flex-shrink: 0;
+      font-size: 12px;
     }
     
     .faq-item.active .faq-arrow {
@@ -390,26 +509,27 @@
     }
     
     .faq-answer {
-      padding: 0 24px;
+      padding: 0 20px;
       max-height: 0;
       overflow: hidden;
-      transition: all 0.3s;
+      transition: all 0.3s ease-out;
       background: var(--background-secondary);
     }
     
     .faq-item.active .faq-answer {
-      padding: 20px 24px;
-      max-height: 200px;
+      padding: 18px 20px;
+      max-height: 300px;
     }
     
     .faq-answer p {
       color: var(--text-secondary);
       line-height: 1.7;
+      font-size: 15px;
     }
     
     /* Contact Section */
     .contact {
-      padding: 80px 0;
+      padding: 60px 0;
       background: var(--dark);
       color: #FFFFFF;
     }
@@ -425,39 +545,48 @@
     .contact-info {
       display: flex;
       justify-content: center;
-      gap: 48px;
+      gap: 32px;
       flex-wrap: wrap;
     }
     
     .contact-item {
       text-align: center;
-      padding: 32px;
+      padding: 28px 24px;
       background: var(--dark-secondary);
       border-radius: 16px;
       min-width: 280px;
+      max-width: 360px;
+      width: 100%;
     }
     
     .contact-icon {
-      width: 60px;
-      height: 60px;
+      width: 56px;
+      height: 56px;
       background: var(--primary);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 16px;
-      font-size: 24px;
+      margin: 0 auto 14px;
+      font-size: 22px;
     }
     
     .contact-item h3 {
-      font-size: 18px;
+      font-size: 17px;
       margin-bottom: 8px;
+    }
+    
+    .contact-item p {
+      color: #999;
+      margin-bottom: 8px;
+      font-size: 14px;
     }
     
     .contact-item a {
       color: var(--primary);
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 600;
+      word-break: break-all;
     }
     
     .contact-item a:hover {
@@ -467,32 +596,33 @@
     /* Footer */
     .footer {
       background: var(--dark);
-      padding: 48px 0 24px;
+      padding: 40px 0 20px;
       border-top: 1px solid #333;
     }
     
     .footer-content {
       display: grid;
       grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 48px;
-      margin-bottom: 48px;
+      gap: 32px;
+      margin-bottom: 32px;
     }
     
     .footer-brand h3 {
       color: var(--primary);
-      font-size: 24px;
-      margin-bottom: 16px;
+      font-size: 22px;
+      margin-bottom: 12px;
     }
     
     .footer-brand p {
       color: #999;
       line-height: 1.7;
+      font-size: 14px;
     }
     
     .footer-links h4 {
       color: #FFFFFF;
-      font-size: 16px;
-      margin-bottom: 16px;
+      font-size: 15px;
+      margin-bottom: 14px;
     }
     
     .footer-links ul {
@@ -500,12 +630,15 @@
     }
     
     .footer-links li {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     
     .footer-links a {
       color: #999;
+      font-size: 14px;
       transition: color 0.2s;
+      display: inline-block;
+      padding: 4px 0;
     }
     
     .footer-links a:hover {
@@ -514,45 +647,314 @@
     
     .footer-bottom {
       text-align: center;
-      padding-top: 24px;
+      padding-top: 20px;
       border-top: 1px solid #333;
       color: #666;
+      font-size: 14px;
     }
     
-    /* Mobile Styles */
-    @media (max-width: 768px) {
+    /* ===================== */
+    /* RESPONSIVE BREAKPOINTS */
+    /* ===================== */
+    
+    /* Tablet Landscape (1024px) */
+    @media (max-width: 1024px) {
       .nav-links {
+        gap: 20px;
+      }
+      
+      .footer-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+      }
+      
+      .about-content {
+        gap: 32px;
+      }
+    }
+    
+    /* Tablet Portrait (768px) */
+    @media (max-width: 768px) {
+      /* Navigation */
+      .nav-links,
+      .nav-cta {
         display: none;
       }
       
       .mobile-menu-btn {
+        display: flex;
+      }
+      
+      .mobile-menu {
         display: block;
+      }
+      
+      /* Hero */
+      .hero {
+        padding: 100px 0 48px;
       }
       
       .hero h1 {
         font-size: 32px;
+        padding: 0 12px;
       }
       
       .hero p {
         font-size: 16px;
       }
       
+      .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+        max-width: 280px;
+      }
+      
+      /* About */
       .about-content {
         grid-template-columns: 1fr;
+        gap: 24px;
       }
       
+      .section-title {
+        font-size: 28px;
+      }
+      
+      /* Steps */
       .steps {
         grid-template-columns: 1fr;
+        gap: 16px;
       }
       
+      /* Footer */
       .footer-content {
         grid-template-columns: 1fr;
         text-align: center;
+        gap: 24px;
       }
       
+      .footer-links h4 {
+        margin-top: 8px;
+      }
+      
+      /* Contact */
       .contact-info {
         flex-direction: column;
         align-items: center;
+        padding: 0 16px;
+      }
+      
+      .contact-item {
+        min-width: unset;
+        width: 100%;
+        max-width: 400px;
+      }
+    }
+    
+    /* Mobile Large (576px) */
+    @media (max-width: 576px) {
+      .container {
+        padding: 0 16px;
+      }
+      
+      /* Hero */
+      .hero {
+        padding: 90px 0 40px;
+      }
+      
+      .hero h1 {
+        font-size: 28px;
+      }
+      
+      .hero p {
+        font-size: 15px;
+        margin-bottom: 24px;
+      }
+      
+      /* QR Section */
+      .qr-section {
+        padding: 40px 0;
+      }
+      
+      .qr-section h2 {
+        font-size: 20px;
+      }
+      
+      .qr-code-container {
+        width: 160px;
+        height: 160px;
+        padding: 10px;
+      }
+      
+      .store-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .store-btn {
+        width: 100%;
+        max-width: 250px;
+        justify-content: center;
+      }
+      
+      /* Sections */
+      .about,
+      .how-it-works,
+      .faq,
+      .contact {
+        padding: 48px 0;
+      }
+      
+      .section-title {
+        font-size: 24px;
+      }
+      
+      .section-subtitle {
+        font-size: 15px;
+        margin-bottom: 32px;
+      }
+      
+      /* Eco Card */
+      .eco-card {
+        padding: 20px;
+      }
+      
+      .eco-card h3 {
+        font-size: 16px;
+      }
+      
+      .eco-card li {
+        font-size: 14px;
+      }
+      
+      /* Steps */
+      .step {
+        padding: 24px 16px;
+      }
+      
+      .step-number {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+      
+      .step h3 {
+        font-size: 17px;
+      }
+      
+      .step p {
+        font-size: 14px;
+      }
+      
+      /* FAQ */
+      .faq-question {
+        padding: 16px;
+        font-size: 14px;
+      }
+      
+      .faq-item.active .faq-answer {
+        padding: 16px;
+      }
+      
+      .faq-answer p {
+        font-size: 14px;
+      }
+      
+      /* Contact */
+      .contact-item {
+        padding: 24px 20px;
+      }
+      
+      .contact-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+      
+      /* Footer */
+      .footer {
+        padding: 32px 0 16px;
+      }
+      
+      .footer-brand h3 {
+        font-size: 20px;
+      }
+      
+      .footer-brand p {
+        font-size: 13px;
+      }
+      
+      .footer-links a {
+        font-size: 13px;
+      }
+    }
+    
+    /* Mobile Small (380px) */
+    @media (max-width: 380px) {
+      .nav-logo-text {
+        font-size: 17px;
+      }
+      
+      .nav-logo img {
+        width: 32px;
+        height: 32px;
+      }
+      
+      .hero h1 {
+        font-size: 24px;
+      }
+      
+      .hero p {
+        font-size: 14px;
+      }
+      
+      .btn-primary,
+      .btn-secondary {
+        padding: 12px 20px;
+        font-size: 15px;
+        min-height: 46px;
+      }
+      
+      .qr-code-container {
+        width: 140px;
+        height: 140px;
+      }
+      
+      .section-title {
+        font-size: 22px;
+      }
+    }
+    
+    /* Prevent text selection on touch devices for buttons */
+    .btn-primary,
+    .btn-secondary,
+    .store-btn,
+    .faq-question,
+    .mobile-menu-btn {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    
+    /* Active states for touch */
+    @media (hover: none) and (pointer: coarse) {
+      .btn-primary:active {
+        background: var(--primary-dark);
+        transform: scale(0.98);
+      }
+      
+      .btn-secondary:active {
+        background: rgba(255,255,255,0.15);
+        transform: scale(0.98);
+      }
+      
+      .store-btn:active {
+        opacity: 0.8;
+        transform: scale(0.98);
       }
     }
   </style>
@@ -573,9 +975,21 @@
         <li><a href="#kontakt">Kontakt</a></li>
       </ul>
       <a href="#app" class="nav-cta">Otvori aplikaciju</a>
-      <button class="mobile-menu-btn">&#9776;</button>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Otvori meni">&#9776;</button>
     </div>
   </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu" id="mobileMenu">
+    <ul class="mobile-menu-links">
+      <li><a href="#app" class="mobile-menu-link">Alati</a></li>
+      <li><a href="#o-nama" class="mobile-menu-link">O nama</a></li>
+      <li><a href="#kako-radi" class="mobile-menu-link">Kako radi</a></li>
+      <li><a href="#faq" class="mobile-menu-link">FAQ</a></li>
+      <li><a href="#kontakt" class="mobile-menu-link">Kontakt</a></li>
+    </ul>
+    <a href="#app" class="mobile-menu-cta mobile-menu-link">Otvori aplikaciju</a>
+  </div>
 
   <!-- Hero Section -->
   <section class="hero">
@@ -593,14 +1007,14 @@
   <section class="qr-section" id="app">
     <div class="container">
       <h2>Skeniraj QR kod da otvoris aplikaciju</h2>
-      <p style="color: var(--text-secondary); margin-bottom: 20px;">Koristi Expo Go aplikaciju na svom telefonu</p>
+      <p>Koristi Expo Go aplikaciju na svom telefonu</p>
       <div class="qr-code-container" id="qr-code"></div>
       <div class="store-buttons">
-        <a href="https://apps.apple.com/app/id982107779" class="store-btn" target="_blank">
+        <a href="https://apps.apple.com/app/id982107779" class="store-btn" target="_blank" rel="noopener">
           <img src="https://apps.apple.com/assets/images/favicon/favicon-apps-48-fad34e0d87e86dcf72ded1faff4ba9d0.png" alt="App Store">
           App Store
         </a>
-        <a href="https://play.google.com/store/apps/details?id=host.exp.exponent" class="store-btn" target="_blank">
+        <a href="https://play.google.com/store/apps/details?id=host.exp.exponent" class="store-btn" target="_blank" rel="noopener">
           <img src="https://www.gstatic.com/android/market_images/web/favicon_v3.ico" alt="Google Play">
           Google Play
         </a>
@@ -620,13 +1034,13 @@
             VikendMajstor je platforma za iznajmljivanje alata. Nas cilj je da korisnicima omogucimo lak pristup potrebnim alatima bez kupovine, da podstaknemo deljenje resursa i doprinesemo zastiti zivotne sredine kroz odgovorno koriscenje i ponovnu upotrebu.
           </p>
           <p>
-            Umesto da kupujete alat koji cete koristiti jednom ili dvaput godisnje, iznajmite ga od komsije po povoljnoj ceni. Tako stedite novac, prostor u garazi, a i pomažete planeti.
+            Umesto da kupujete alat koji cete koristiti jednom ili dvaput godisnje, iznajmite ga od komsije po povoljnoj ceni. Tako stedite novac, prostor u garazi, a i pomazete planeti.
           </p>
         </div>
         
         <div class="eco-card">
           <h3>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
             Ekoloska poruka
           </h3>
           <ul>
@@ -670,7 +1084,7 @@
   <section class="faq" id="faq">
     <div class="container">
       <h2 class="section-title">Cesta pitanja</h2>
-      <p class="section-subtitle">Odgovori na najcesde postavljana pitanja</p>
+      <p class="section-subtitle">Odgovori na najcesce postavljana pitanja</p>
       
       <div class="faq-grid">
         <div class="faq-item">
@@ -746,7 +1160,7 @@
         <div class="contact-item">
           <div class="contact-icon">&#9993;</div>
           <h3>Email podrska</h3>
-          <p style="color: #999; margin-bottom: 8px;">Odgovaramo u roku od 24 sata</p>
+          <p>Odgovaramo u roku od 24 sata</p>
           <a href="mailto:podrska@vikendmajstor.rs">podrska@vikendmajstor.rs</a>
         </div>
       </div>
@@ -797,6 +1211,41 @@
   <!-- Scripts -->
   <script src="https://unpkg.com/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
   <script>
+    // Mobile Menu Toggle
+    (function() {
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      const mobileLinks = document.querySelectorAll('.mobile-menu-link');
+      let isOpen = false;
+      
+      function toggleMenu() {
+        isOpen = !isOpen;
+        mobileMenu.classList.toggle('active', isOpen);
+        menuBtn.innerHTML = isOpen ? '&#10005;' : '&#9776;';
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+      }
+      
+      function closeMenu() {
+        isOpen = false;
+        mobileMenu.classList.remove('active');
+        menuBtn.innerHTML = '&#9776;';
+        document.body.style.overflow = '';
+      }
+      
+      menuBtn.addEventListener('click', toggleMenu);
+      
+      mobileLinks.forEach(link => {
+        link.addEventListener('click', closeMenu);
+      });
+      
+      // Close on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isOpen) {
+          closeMenu();
+        }
+      });
+    })();
+    
     // QR Code Generation
     const deepLink = "exps://EXPS_URL_PLACEHOLDER";
     
@@ -835,19 +1284,30 @@
     document.querySelectorAll('.faq-question').forEach(question => {
       question.addEventListener('click', () => {
         const item = question.parentElement;
+        // Close other open items
+        document.querySelectorAll('.faq-item.active').forEach(activeItem => {
+          if (activeItem !== item) {
+            activeItem.classList.remove('active');
+          }
+        });
         item.classList.toggle('active');
       });
     });
     
-    // Smooth scroll
+    // Smooth scroll with offset for fixed header
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function(e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const target = document.querySelector(targetId);
         if (target) {
-          target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
+          const headerHeight = 70;
+          const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
           });
         }
       });
