@@ -35,12 +35,14 @@ type AuthUser = Omit<User, 'password'>;
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
+  isVerified: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, role?: string) => Promise<void>;
   loginWithGoogle: (accessToken: string) => Promise<void>;
   loginWithApple: (identityToken: string, fullName?: { givenName?: string; familyName?: string } | null) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  resendVerificationEmail: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -200,8 +202,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  const resendVerificationEmail = async (): Promise<boolean> => {
+    try {
+      const response = await apiRequest('POST', '/api/auth/resend-verification');
+      return response.ok;
+    } catch (error) {
+      console.error('Failed to resend verification email:', error);
+      return false;
+    }
+  };
+
+  const isVerified = user?.emailVerified ?? false;
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, loginWithGoogle, loginWithApple, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, isVerified, login, register, loginWithGoogle, loginWithApple, logout, refreshUser, resendVerificationEmail }}>
       {children}
     </AuthContext.Provider>
   );
