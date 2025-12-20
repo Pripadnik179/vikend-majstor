@@ -1,295 +1,46 @@
 # VikendMajstor - P2P Tool Rental Platform
 
 ## Overview
-VikendMajstor is a mobile P2P rental platform for tools and items built with Expo (React Native). The app allows users to rent tools from neighbors with features like dual user roles (Owner/Renter), item listings with photos, search/filter capabilities, booking system with calendar, in-app messaging, and reviews/ratings.
+VikendMajstor is a mobile peer-to-peer rental platform for tools and items, built with Expo (React Native). Its purpose is to connect users who need tools with neighbors willing to rent them out, fostering a sharing economy. The platform enables users to list items with photos, search and filter for tools, manage bookings via an in-app calendar, communicate through messaging, and provide reviews and ratings. The project aims to provide a robust, user-friendly experience for both tool owners and renters, monetized through a subscription-based model and an early adopter program.
 
-## Tech Stack
-- **Frontend**: Expo (React Native) with TypeScript
-- **Backend**: Express.js with TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
-- **Storage**: Replit Object Storage for image uploads
-- **State Management**: TanStack React Query
+## User Preferences
+I prefer simple language. I want iterative development. Ask before making major changes. I prefer detailed explanations.
 
-## Project Structure
-```
-├── client/              # Expo React Native app
-│   ├── components/      # Reusable UI components
-│   ├── contexts/        # React contexts (Auth, Theme)
-│   ├── hooks/           # Custom hooks
-│   ├── navigation/      # React Navigation setup
-│   ├── screens/         # App screens
-│   └── lib/             # Utilities (query-client)
-├── server/              # Express backend
-│   ├── auth.ts          # Authentication routes
-│   ├── routes.ts        # API routes
-│   ├── storage.ts       # Database storage layer
-│   └── db.ts            # Database connection
-├── shared/              # Shared types and schema
-│   └── schema.ts        # Drizzle schema definitions
-└── assets/              # App icons and images
-```
+## System Architecture
+The application is built using a modern full-stack JavaScript approach. The frontend is an Expo (React Native) app written in TypeScript, leveraging TanStack React Query for state management. The backend is an Express.js server, also in TypeScript, interacting with a PostgreSQL database via Drizzle ORM. Replit Object Storage is used for handling image uploads.
 
-## Authentication Methods
-The app supports multiple authentication methods:
+Key features include:
+- **Authentication**: Supports Email/Password (with verification), Google OAuth, and Apple Sign-In (iOS only).
+- **User Management**: Dual roles (Owner/Renter), profile management, and role switching.
+- **Item Management**: CRUD operations for items, supporting up to 4 photos per item, categorized listings, and activity tags.
+- **Location-Based Filtering**: Items can be filtered by distance from the user's GPS location, with a fallback to predefined city coordinates.
+- **Booking System**: Date-based booking requests, availability calendar, and status management (pending, confirmed, cancelled, completed) with a "pay on pickup" option.
+- **Communication**: In-app messaging with conversation threading and unread indicators.
+- **Reviews & Ratings**: 1-5 star ratings and written reviews for items and users.
+- **Monetization**:
+    - **Ad Expiration**: All ads expire after 30 days.
+    - **Free Ad Limit**: Free users have a lifetime limit of 5 created ads.
+    - **Subscription Tiers**: "Besplatno" (Free), "Standard", and "Premium" with varying benefits like unlimited ads, advanced categories, and featured listings.
+    - **Early Adopter Program**: First 100 registered users receive 1 month of free premium access.
+    - **Promotional Modals**: Modals for subscription upgrades and reaching ad limits.
+- **Admin Panel**: A web-based admin panel (`/admin`) and mobile admin screens, accessible only to users with `isAdmin=true`, offering user management (activation, subscription, duration) and statistics.
+- **UI/UX**: The UI is in Serbian (Latin script) with a Caterpillar-inspired black-yellow color palette, aiming for an iOS 26 Liquid Glass design aesthetic with a mobile-first responsive approach. Custom SVG icons are used throughout the application, replacing font-based icons to ensure consistent rendering across platforms.
 
-### 1. Email/Password Authentication
-- Standard email and password login/registration
-- Passwords are securely hashed using scrypt
+Security measures include rate limiting, IP blocking for failed login attempts, XSS protection, input validation, and secure authentication practices (scrypt for password hashing, secure session cookies, token-based mobile auth).
 
-### 2. Google OAuth (Requires Configuration)
-- Requires Google Cloud Console credentials:
-  - `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` - Web client ID
-  - `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` - iOS client ID
-  - `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` - Android client ID
-
-### 3. Apple Sign-In (iOS Only)
-- Uses expo-apple-authentication
-- Available only on iOS devices (iOS 13+)
-- Automatically shows on iOS when available
-- Backend validates Apple JWT identity token
-- Extracts user email and name from Apple credentials
-
-## Environment Variables
-
-### Required Secrets
-- `SESSION_SECRET` - Express session secret (configured)
-- `DATABASE_URL` - PostgreSQL connection string (auto-configured)
-
-### Optional (For Payment Integration)
-- `STRIPE_SECRET_KEY` - Stripe API secret key
-- `STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
-
-### Optional (For Google OAuth)
-- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`
-- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
-- `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`
-
-## Key Features Implemented
-
-### User Features
-- User registration/login (Email, Google, Apple)
-- Profile management
-- Role switching (Owner/Renter)
-
-### Item Management
-- Create/edit/delete items
-- Up to 4 photos per item with Object Storage
-- Category and location-based organization
-- Advanced filtering (price range, rating, deposit, distance)
-- Activity tags (activityTags) - items can be tagged for activities like Renoviranje, Gradnja, Bašta, etc.
-
-### Distance-Based Filtering
-- Filter items by distance from user's GPS location
-- Uses Haversine formula for accurate distance calculation
-- 9 distance options: Sve, 1km, 2km, 5km, 10km, 20km, 50km, 100km
-- City coordinates fallback: If GPS unavailable, uses predefined coordinates for 30+ Serbian cities
-- Items without coordinates are excluded when distance filter is active
-- Shared cityCoordinates.ts module provides getCityCoordinates() and calculateDistance() functions
-
-### Booking System
-- Date-based booking requests
-- Availability calendar on item detail page
-- Booking status management (pending, confirmed, cancelled, completed)
-- Pay on pickup option
-
-### Messaging
-- In-app messaging between users
-- Conversation threading
-- Unread message indicators
-
-### Reviews & Ratings
-- Star ratings (1-5)
-- Written reviews
-- Average rating calculation for items and users
-
-## Design Guidelines
-- UI in Serbian (Latin script)
-- Caterpillar-inspired black-yellow color palette (#FFCC00 primary yellow, #1A1A1A accent black)
-- iOS 26 Liquid Glass interface design
-- Mobile-first responsive design
-
-## Running the App
-The app runs with `npm run all:dev` which starts:
-- Expo dev server on port 8081
-- Express API server on port 5000
-
-## Monetization System
-
-### Ad Expiration
-- All ads automatically expire after 30 days
-- Expired ads are deleted from the database on server startup
-- Items are filtered out from search results when expired
-
-### Free Ad Limit System
-- Free users have a **lifetime limit of 5 total ads created** (not active ads)
-- Tracked via `totalAdsCreated` field in users table
-- Deleting ads does NOT reset the counter - this prevents circumvention
-- Users must upgrade to Standard or Premium for unlimited ads
-- `POST /api/items` checks `totalAdsCreated >= 5` before allowing creation
-- MyItemsScreen shows expiration countdown for each ad
-
-### Subscription Tiers
-1. **Besplatno (Free)**: 0 RSD/mesec
-   - 5 oglasa doživotno (30-day expiration per ad)
-   - Osnovne kategorije
-   - Poruke sa zakupcima
-   
-2. **Standard**: 500 RSD/mesec
-   - Neograničen broj oglasa
-   - Pristup svim kategorijama
-   - Statistika oglasa
-
-3. **Premium**: 1000 RSD/mesec
-   - Sve iz Standard paketa
-   - 1 istaknuti oglas na vrhu pretrage
-   - Premium značka na oglasima
-   - Prioritet u rezultatima pretrage
-
-### Early Adopter Program
-- First 100 registered users automatically become early adopters
-- Early adopters receive FREE premium access for 1 month
-- Registration automatically sets: isEarlyAdopter=true, subscriptionType="premium", 30-day subscriptionEndDate
-- Counter shows remaining slots on homepage banner and subscription page
-
-## Promotional Modals
-- **BeVisibleModal**: Shows 2 seconds after app load for free users, promoting subscription upgrade
-- **UpgradeLimitModal**: Shows immediately when free user with 5 ads tries to add new ad
-  - Displays plan comparison (Standard vs Premium)
-  - Navigates to Subscription screen on upgrade button click
-
-## Recent Changes (December 2024)
-- Added Legal screen (Pravne informacije) with Privacy Policy and Terms of Use
-- Updated About screen with ecological message encouraging sustainable sharing
-- Added navigation from About screen to Legal screen for privacy/terms
-- Privacy Policy covers data usage, third-party sharing, location data, and GDPR compliance
-- Terms of Use includes user responsibilities, liability disclaimer, premium subscription info, and account suspension rules
-- Added "Budi vidljiv" promotional popup for free users on app startup
-- Added immediate upgrade modal when free user reaches 5 ad limit in AddItemScreen
-- Added Apple Sign-In support for iOS users
-- Implemented Google OAuth infrastructure
-- Added availability calendar to item detail page
-- Added advanced filtering (price range, rating, deposit)
-- Added booking endpoints for item availability
-- Added homepage promotional banner (PromoBanner component)
-  - Early adopter program banner with remaining slots
-  - Premium items carousel for premium subscribers
-- Added /api/home endpoint for homepage data
-- Fixed SearchScreen to pass all filters (category, subcategory, toolType, powerSource) to backend
-- Fixed BookingFlowScreen to block dates for both 'confirmed' and 'pending' bookings
-- Fixed SubscriptionScreen to show plan comparison with FREE, Standard, and Premium tiers
-- Added "Pretplata" menu item in Profile with subscription badge
-- Automatic early adopter registration for first 100 users across all auth methods
-- Implemented lifetime 5-ad limit for free users via `totalAdsCreated` field (deleting ads doesn't reset counter)
-- Added DELETE `/api/items/:id` endpoint for item deletion
-- Added expiration countdown display in MyItemsScreen (shows days remaining until 30-day expiration)
-- Added push notification system for booking workflow (requires development build for full functionality)
-- Fixed SearchBar component to properly sync with parent state when clearFilters is called
-- Added error handling and loading states to BookingDetailScreen for better Android support
-- Fixed web login by updating getApiUrl() in client/lib/query-client.ts to handle web platform properly (uses window.location.origin for Replit webview, http://localhost:5000 for local dev)
-- Added token-based authentication for mobile devices (authToken saved to expo-secure-store)
-- Fixed SearchScreen grid layout - added numColumns={2} for 2-column item display
-- Fixed white space issue in MainTabNavigator.tsx by correcting color references
-- Fixed seed script to properly update totalAdsCreated counter after seeding demo data
-- Fixed Android "New update available" loop by disabling automatic updates in app.json (updates.enabled=false)
-- Added "Sledeći (99 RSD)" feature for premium users with existing featured ads
-  - MyItemsScreen shows "Sledeći (99 RSD)" button for non-featured items when user already has a featured item
-  - SubscriptionScreen accepts scrollToFeature param and auto-scrolls to purchase section
-  - Card component now supports onLayout prop for position measurement
-- Fixed white space issues in Settings, MyItems, Help, About screens with proper headerStyle and contentStyle
-- Fixed premium/featured ads sorting - featured items (isFeatured: true) now appear first in search results, maintaining priority over distance-based and date-based sorting
-- Replaced ALL font-based icons (@expo/vector-icons/Feather) with custom SVG icons (react-native-svg) to fix Android Expo Go icon rendering issues with New Architecture
-  - Custom SVG components in client/components/icons/TabBarIcons.tsx with 45+ icons
-  - DynamicIcon component in client/components/icons/DynamicIcon.tsx for dynamic icon name mapping
-  - Complete migration across all screens and components - no @expo/vector-icons dependencies remain in client codebase
-  - Removed font loading from App.tsx for simpler startup
-
-## Push Notifications
-
-### Current Status
-Push notifications are implemented but require a development build with EAS configuration for full functionality.
-
-### Expo Go Limitations
-- Push notifications do NOT work in Expo Go (SDK 53+)
-- The app gracefully handles this by logging a message when projectId is not available
-- To enable full push notification support, create a development build using EAS
-
-### For Production
-1. Run `npx eas build:configure` to set up EAS
-2. The projectId will be automatically configured in app.json
-3. Build a development build: `npx eas build --profile development`
-4. Push notifications will work with the development build
-
-## Admin Panel
-
-### Access Control
-- Only users with `isAdmin=true` can access admin routes
-- Admin panel accessible from Profile screen menu (only visible to admin users)
-- All admin API routes protected by `requireAdmin` middleware
-
-### Web Admin Panel (server/admin/index.html)
-- Standalone HTML/CSS/JS admin panel served at `/admin` route
-- No separate build process required - served directly by Express
-- Features:
-  - Login page with authentication via existing API
-  - Dashboard with statistics (total users, active, premium, early adopters)
-  - User management table with filters (all/active/inactive/premium)
-  - Search functionality by name or email
-  - User detail page for editing (activation, subscription type, duration)
-- VikendMajstor black-yellow theme with dark mode UI
-- Access via direct URL only (`/admin`) - hidden from public navigation
-- Test admin account: marko@demo.com (password: demo123)
-
-### Admin API Endpoints
-- `GET /api/admin/stats` - Dashboard statistics (total users, active, premium, early adopters)
-- `GET /api/admin/users` - List all users with optional filters (status, subscription, search)
-- `GET /api/admin/users/:id` - Get user details
-- `PATCH /api/admin/users/:id` - Update user (isActive, subscriptionType, subscriptionDays)
-
-### Admin Capabilities
-- View all users with filters (all/active/inactive/premium)
-- Search users by name or email
-- Activate/deactivate user accounts
-- Manually assign subscription type (free/basic/premium)
-- Set custom subscription duration (7, 30, 90, 365 days)
-- View system-wide statistics
-
-### Mobile Admin Screens
-- `AdminScreen.tsx` - User list, filters, search bar, statistics dashboard
-- `AdminUserDetailScreen.tsx` - Individual user management
-- Accessible from Profile screen menu (only visible to admin users)
-
-### Logging
-- All admin actions logged: `[ADMIN] User {email} updated user {email}: isActive={value}, subscriptionType={value}, days={value}`
-
-## Security Measures
-
-### Rate Limiting (server/security.ts)
-- **General API**: 100 requests per 15 minutes per IP
-- **Auth endpoints** (login, register, OAuth): 10 requests per 15 minutes per IP
-- **Strict endpoints**: 5 requests per hour per IP (for sensitive operations)
-
-### IP Blocking
-- After 5 failed login attempts, IP is automatically blocked for 15 minutes
-- Login attempts are logged with timestamp, IP, email, and success/failure status
-- Automatic unblock after 15-minute lockout period
-
-### XSS Protection
-- All input is sanitized (HTML entities escaped) except password and email fields
-- Helmet middleware for secure HTTP headers
-- Content Security Policy configured for the application
-
-### Input Validation
-- Email format validation with normalization
-- Password minimum length enforcement (6 characters)
-- Name length validation (2-100 characters)
-- express-validator middleware for robust validation
-
-### Authentication Security
-- Passwords hashed using scrypt with random salt
-- Secure session cookies (httpOnly, secure in production)
-- Token-based auth for mobile with base64-encoded userId:secret
-
-### Logging
-- All login attempts logged: `[AUTH] timestamp | SUCCESS/FAILED | IP | Email`
-- Security events logged: `[SECURITY] IP blocked after X failed attempts`
-- Error logging with full context: method, path, IP, message, stack trace
+## External Dependencies
+- **PostgreSQL**: Primary database for application data.
+- **Drizzle ORM**: Used for interacting with the PostgreSQL database.
+- **Replit Object Storage**: Utilized for storing item images.
+- **SMTP Service (mail.vikendmajstor.rs)**: For sending email verification links.
+- **Google Cloud Console**: Required for Google OAuth integration (client IDs).
+- **Apple Sign-In**: For Apple authentication on iOS devices.
+- **Stripe**: Optional integration for payment processing (requires `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY`).
+- **Expo**: The framework for building the React Native application.
+- **TanStack React Query**: For data fetching, caching, and state management.
+- **Express.js**: Backend web framework.
+- **Helmet**: Middleware for securing HTTP headers.
+- **express-validator**: Middleware for input validation.
+- **scrypt**: For secure password hashing.
+- **expo-secure-store**: For securely storing authentication tokens on mobile devices.
+- **react-native-svg**: For custom SVG icon rendering.
