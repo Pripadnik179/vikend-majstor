@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VikendMajstor - Iznajmi alat od komšije</title>
-  <meta name="description" content="P2P platforma za iznajmljivanje alata. Pronađi alat koji ti treba ili zaradi iznajmljujući svoje alate komšijama.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>VikendMajstor - Platforma za iznajmljivanje alata</title>
+  <meta name="description" content="VikendMajstor je platforma za iznajmljivanje alata. Pronađite alat koji vam treba ili zaradite iznajmljivanjem svog alata.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <meta property="og:title" content="VikendMajstor - Platforma za iznajmljivanje alata">
+  <meta property="og:description" content="Pronađite alat koji vam treba ili zaradite iznajmljivanjem svog alata.">
+  <meta property="og:image" content="/favicon.png">
   <style>
     * {
       margin: 0;
@@ -18,104 +20,151 @@
     :root {
       --primary: #FFCC00;
       --primary-dark: #E6B800;
-      --accent: #1A1A1A;
-      --text: #1A1A1A;
+      --dark: #1A1A1A;
+      --dark-secondary: #2A2A2A;
+      --text: #333333;
       --text-secondary: #666666;
+      --text-light: #999999;
       --background: #FFFFFF;
-      --background-light: #F8F8F8;
-      --border: #E0E0E0;
+      --background-secondary: #F5F5F5;
+      --success: #22C55E;
+      --border: #E5E5E5;
     }
     
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       line-height: 1.6;
+      color: var(--text);
       background: var(--background);
+    }
+    
+    a {
+      text-decoration: none;
+      color: inherit;
     }
     
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 24px;
+      padding: 0 20px;
     }
     
-    /* Header */
-    header {
+    /* Navigation */
+    .nav {
+      background: var(--dark);
+      padding: 16px 0;
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
       z-index: 1000;
     }
     
-    .header-content {
+    .nav-container {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 72px;
     }
     
-    .logo {
+    .nav-logo {
       display: flex;
       align-items: center;
       gap: 12px;
-      text-decoration: none;
-      color: var(--text);
     }
     
-    .logo-icon {
+    .nav-logo img {
       width: 40px;
       height: 40px;
-      background: var(--primary);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
+      border-radius: 8px;
     }
     
-    .logo-text {
-      font-size: 22px;
+    .nav-logo-text {
+      font-size: 24px;
       font-weight: 700;
+      color: var(--primary);
     }
     
     .nav-links {
       display: flex;
       gap: 32px;
-      align-items: center;
+      list-style: none;
     }
     
     .nav-links a {
-      text-decoration: none;
-      color: var(--text-secondary);
+      color: #FFFFFF;
       font-weight: 500;
       transition: color 0.2s;
     }
     
     .nav-links a:hover {
-      color: var(--text);
+      color: var(--primary);
     }
     
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 12px 24px;
+    .nav-cta {
+      background: var(--primary);
+      color: var(--dark);
+      padding: 10px 24px;
       border-radius: 8px;
       font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s;
-      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .nav-cta:hover {
+      background: var(--primary-dark);
+    }
+    
+    .mobile-menu-btn {
+      display: none;
+      background: none;
       border: none;
-      font-size: 16px;
+      color: #FFFFFF;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, var(--dark) 0%, var(--dark-secondary) 100%);
+      padding: 140px 0 80px;
+      text-align: center;
+    }
+    
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 20px;
+    }
+    
+    .hero h1 span {
+      color: var(--primary);
+    }
+    
+    .hero p {
+      font-size: 20px;
+      color: #CCCCCC;
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+    
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
     
     .btn-primary {
       background: var(--primary);
-      color: var(--accent);
+      color: var(--dark);
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .btn-primary:hover {
@@ -124,408 +173,326 @@
     }
     
     .btn-secondary {
-      background: var(--accent);
-      color: white;
-    }
-    
-    .btn-secondary:hover {
-      background: #333;
-      transform: translateY(-2px);
-    }
-    
-    .btn-outline {
       background: transparent;
-      border: 2px solid var(--accent);
-      color: var(--accent);
-    }
-    
-    .btn-outline:hover {
-      background: var(--accent);
-      color: white;
-    }
-    
-    /* Hero Section */
-    .hero {
-      padding: 160px 0 100px;
-      background: linear-gradient(135deg, #FFFBEB 0%, #FFF 50%, #F8F8F8 100%);
-    }
-    
-    .hero-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
-    }
-    
-    .hero-text h1 {
-      font-size: 52px;
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 24px;
-    }
-    
-    .hero-text h1 span {
-      color: var(--primary-dark);
-    }
-    
-    .hero-text p {
-      font-size: 20px;
-      color: var(--text-secondary);
-      margin-bottom: 32px;
-      max-width: 480px;
-    }
-    
-    .hero-buttons {
-      display: flex;
-      gap: 16px;
-    }
-    
-    .app-store-buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-    }
-    
-    .store-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--accent);
-      color: white;
-      padding: 10px 16px;
+      color: #FFFFFF;
+      padding: 16px 32px;
       border-radius: 8px;
-      text-decoration: none;
+      font-size: 18px;
+      font-weight: 600;
+      border: 2px solid #FFFFFF;
       transition: all 0.2s;
     }
     
-    .store-badge:hover {
-      background: #333;
-      transform: translateY(-2px);
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
     }
     
-    .store-badge svg {
-      width: 24px;
-      height: 24px;
-    }
-    
-    .store-badge-text {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    
-    .store-badge-text .small {
-      font-size: 10px;
-      opacity: 0.8;
-    }
-    
-    .store-badge-text .large {
-      font-size: 14px;
-      font-weight: 600;
-    }
-    
-    .hero-stats {
-      display: flex;
-      gap: 40px;
-      margin-top: 48px;
-      padding-top: 32px;
-      border-top: 1px solid var(--border);
-    }
-    
-    .stat {
+    /* QR Code Section */
+    .qr-section {
+      padding: 60px 0;
+      background: var(--background-secondary);
       text-align: center;
     }
     
-    .stat-number {
-      font-size: 36px;
-      font-weight: 800;
-      color: var(--accent);
+    .qr-section h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
     }
     
-    .stat-label {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
-    
-    .hero-image {
-      position: relative;
-    }
-    
-    .hero-image-wrapper {
-      background: var(--primary);
-      border-radius: 24px;
-      padding: 40px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .hero-image-wrapper::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-    }
-    
-    .tool-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
-    
-    .tool-card-mini {
-      background: white;
-      border-radius: 12px;
+    .qr-code-container {
+      width: 200px;
+      height: 200px;
+      margin: 20px auto;
+      background: #FFFFFF;
+      border-radius: 16px;
       padding: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .store-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .store-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--dark);
+      color: #FFFFFF;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    
+    .store-btn:hover {
+      opacity: 0.9;
+    }
+    
+    .store-btn img {
+      width: 20px;
+      height: 20px;
+    }
+    
+    /* About Section */
+    .about {
+      padding: 80px 0;
+    }
+    
+    .section-title {
       text-align: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    .tool-card-mini img {
-      width: 60px;
-      height: 60px;
-      object-fit: contain;
-      margin-bottom: 8px;
-    }
-    
-    .tool-card-mini p {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--accent);
-    }
-    
-    /* How It Works */
-    .how-it-works {
-      padding: 100px 0;
-      background: var(--background);
-    }
-    
-    .section-header {
-      text-align: center;
-      margin-bottom: 60px;
-    }
-    
-    .section-header h2 {
-      font-size: 40px;
-      font-weight: 800;
+      font-size: 36px;
+      font-weight: 700;
       margin-bottom: 16px;
     }
     
-    .section-header p {
+    .section-subtitle {
+      text-align: center;
       font-size: 18px;
       color: var(--text-secondary);
       max-width: 600px;
-      margin: 0 auto;
+      margin: 0 auto 48px;
+    }
+    
+    .about-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    
+    .about-text p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+    
+    .eco-card {
+      background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+      border-radius: 16px;
+      padding: 32px;
+      border-left: 4px solid var(--success);
+    }
+    
+    .eco-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      color: var(--success);
+      margin-bottom: 16px;
+    }
+    
+    .eco-card ul {
+      list-style: none;
+    }
+    
+    .eco-card li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    
+    .eco-card li::before {
+      content: "✓";
+      color: var(--success);
+      font-weight: bold;
+    }
+    
+    /* How it Works */
+    .how-it-works {
+      padding: 80px 0;
+      background: var(--background-secondary);
     }
     
     .steps {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 40px;
+      gap: 32px;
     }
     
     .step {
       text-align: center;
-      padding: 40px 24px;
-      background: var(--background-light);
+      padding: 32px;
+      background: #FFFFFF;
       border-radius: 16px;
-      position: relative;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
     
     .step-number {
-      width: 56px;
-      height: 56px;
+      width: 60px;
+      height: 60px;
       background: var(--primary);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
-      font-weight: 800;
-      margin: 0 auto 24px;
+      font-weight: 700;
+      color: var(--dark);
+      margin: 0 auto 20px;
     }
     
     .step h3 {
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 20px;
       margin-bottom: 12px;
     }
     
     .step p {
       color: var(--text-secondary);
-      font-size: 16px;
     }
     
-    .step-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-    }
-    
-    /* Featured Tools */
-    .featured-tools {
-      padding: 100px 0;
-      background: var(--background-light);
-    }
-    
-    .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
-    }
-    
-    .tool-card {
-      background: white;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .tool-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    }
-    
-    .tool-card-image {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-      background: var(--background-light);
-    }
-    
-    .tool-card-content {
-      padding: 16px;
-    }
-    
-    .tool-card-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .tool-card-location {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
-    }
-    
-    .tool-card-price {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--accent);
-    }
-    
-    .tool-card-price span {
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--text-secondary);
-    }
-    
-    /* Early Adopter */
-    .early-adopter {
+    /* FAQ Section */
+    .faq {
       padding: 80px 0;
-      background: var(--accent);
-      color: white;
     }
     
-    .early-adopter-content {
+    .faq-grid {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    
+    .faq-question {
+      padding: 20px 24px;
+      background: #FFFFFF;
+      cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 40px;
+      font-weight: 600;
+      transition: background 0.2s;
     }
     
-    .early-adopter-text h2 {
-      font-size: 36px;
-      font-weight: 800;
-      margin-bottom: 16px;
+    .faq-question:hover {
+      background: var(--background-secondary);
     }
     
-    .early-adopter-text p {
-      font-size: 18px;
-      opacity: 0.8;
-      max-width: 500px;
+    .faq-arrow {
+      transition: transform 0.3s;
     }
     
-    .slots-counter {
+    .faq-item.active .faq-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .faq-answer {
+      padding: 0 24px;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s;
+      background: var(--background-secondary);
+    }
+    
+    .faq-item.active .faq-answer {
+      padding: 20px 24px;
+      max-height: 200px;
+    }
+    
+    .faq-answer p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    
+    /* Contact Section */
+    .contact {
+      padding: 80px 0;
+      background: var(--dark);
+      color: #FFFFFF;
+    }
+    
+    .contact .section-title {
+      color: #FFFFFF;
+    }
+    
+    .contact .section-subtitle {
+      color: #CCCCCC;
+    }
+    
+    .contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    
+    .contact-item {
+      text-align: center;
+      padding: 32px;
+      background: var(--dark-secondary);
+      border-radius: 16px;
+      min-width: 280px;
+    }
+    
+    .contact-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--primary);
+      border-radius: 50%;
       display: flex;
       align-items: center;
-      gap: 16px;
-      background: rgba(255, 204, 0, 0.15);
-      border: 2px solid var(--primary);
-      border-radius: 12px;
-      padding: 24px 32px;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 24px;
     }
     
-    .slots-number {
-      font-size: 48px;
-      font-weight: 800;
-      color: var(--primary);
-    }
-    
-    .slots-label {
-      font-size: 16px;
-      line-height: 1.4;
-    }
-    
-    /* CTA Section */
-    .cta {
-      padding: 100px 0;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-      text-align: center;
-    }
-    
-    .cta h2 {
-      font-size: 40px;
-      font-weight: 800;
-      margin-bottom: 16px;
-      color: var(--accent);
-    }
-    
-    .cta p {
-      font-size: 20px;
-      color: var(--accent);
-      opacity: 0.8;
-      margin-bottom: 32px;
-    }
-    
-    .cta .btn {
+    .contact-item h3 {
       font-size: 18px;
-      padding: 16px 40px;
+      margin-bottom: 8px;
+    }
+    
+    .contact-item a {
+      color: var(--primary);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .contact-item a:hover {
+      text-decoration: underline;
     }
     
     /* Footer */
-    footer {
-      background: var(--accent);
-      color: white;
-      padding: 60px 0 24px;
+    .footer {
+      background: var(--dark);
+      padding: 48px 0 24px;
+      border-top: 1px solid #333;
     }
     
     .footer-content {
       display: grid;
       grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 40px;
-      margin-bottom: 40px;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+    
+    .footer-brand h3 {
+      color: var(--primary);
+      font-size: 24px;
+      margin-bottom: 16px;
     }
     
     .footer-brand p {
-      margin-top: 16px;
-      opacity: 0.7;
-      font-size: 14px;
-      max-width: 300px;
+      color: #999;
+      line-height: 1.7;
     }
     
     .footer-links h4 {
+      color: #FFFFFF;
       font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     
     .footer-links ul {
@@ -537,337 +504,354 @@
     }
     
     .footer-links a {
-      color: white;
-      opacity: 0.7;
-      text-decoration: none;
-      font-size: 14px;
-      transition: opacity 0.2s;
+      color: #999;
+      transition: color 0.2s;
     }
     
     .footer-links a:hover {
-      opacity: 1;
-    }
-    
-    .footer-app-download {
-      text-align: center;
-      padding: 24px 0;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      margin-bottom: 24px;
-    }
-    
-    .footer-app-download p {
-      font-size: 14px;
-      opacity: 0.8;
-      margin-bottom: 12px;
+      color: var(--primary);
     }
     
     .footer-bottom {
-      padding-top: 24px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
       text-align: center;
-      font-size: 14px;
-      opacity: 0.6;
+      padding-top: 24px;
+      border-top: 1px solid #333;
+      color: #666;
     }
     
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .hero-content {
-        grid-template-columns: 1fr;
-        gap: 40px;
-      }
-      
-      .hero-image {
-        display: none;
-      }
-      
-      .tools-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .footer-content {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-    
+    /* Mobile Styles */
     @media (max-width: 768px) {
       .nav-links {
         display: none;
       }
       
-      .hero {
-        padding: 120px 0 60px;
+      .mobile-menu-btn {
+        display: block;
       }
       
-      .hero-text h1 {
-        font-size: 36px;
+      .hero h1 {
+        font-size: 32px;
       }
       
-      .hero-buttons {
-        flex-direction: column;
+      .hero p {
+        font-size: 16px;
       }
       
-      .app-store-buttons {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      
-      .hero-stats {
-        gap: 24px;
+      .about-content {
+        grid-template-columns: 1fr;
       }
       
       .steps {
         grid-template-columns: 1fr;
       }
       
-      .early-adopter-content {
-        flex-direction: column;
-        text-align: center;
-      }
-      
       .footer-content {
         grid-template-columns: 1fr;
         text-align: center;
+      }
+      
+      .contact-info {
+        flex-direction: column;
+        align-items: center;
       }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container header-content">
-      <a href="/" class="logo">
-        <div class="logo-icon">V</div>
-        <span class="logo-text">VikendMajstor</span>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container nav-container">
+      <a href="#" class="nav-logo">
+        <img src="/favicon.png" alt="VikendMajstor">
+        <span class="nav-logo-text">VikendMajstor</span>
       </a>
-      <nav class="nav-links">
-        <a href="#kako-radi">Kako radi</a>
-        <a href="#alati">Alati</a>
-        <a href="#o-nama">O nama</a>
-        <a href="/app" class="btn btn-primary">Otvori aplikaciju</a>
-      </nav>
+      <ul class="nav-links">
+        <li><a href="#app">Alati</a></li>
+        <li><a href="#o-nama">O nama</a></li>
+        <li><a href="#kako-radi">Kako radi</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#kontakt">Kontakt</a></li>
+      </ul>
+      <a href="#app" class="nav-cta">Otvori aplikaciju</a>
+      <button class="mobile-menu-btn">&#9776;</button>
     </div>
-  </header>
+  </nav>
 
+  <!-- Hero Section -->
   <section class="hero">
-    <div class="container hero-content">
-      <div class="hero-text">
-        <h1>Iznajmi alat <span>od komšije</span></h1>
-        <p>Zašto kupovati skupu opremu za jednokratnu upotrebu? Pronađi alat u svom kraju i uštedi novac, ili zaradi iznajmljujući svoje alate.</p>
-        <div class="hero-buttons">
-          <a href="/app" class="btn btn-primary">Pregledaj alate</a>
-          <a href="/app" class="btn btn-outline">Postani iznajmljivač</a>
-        </div>
-        <div class="app-store-buttons">
-          <a href="#" class="store-badge" title="Uskoro na App Store">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-            </svg>
-            <div class="store-badge-text">
-              <span class="small">Preuzmi na</span>
-              <span class="large">App Store</span>
-            </div>
-          </a>
-          <a href="#" class="store-badge" title="Uskoro na Google Play">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
-            </svg>
-            <div class="store-badge-text">
-              <span class="small">Preuzmi na</span>
-              <span class="large">Google Play</span>
-            </div>
-          </a>
-        </div>
-        <div class="hero-stats">
-          <div class="stat">
-            <div class="stat-number" id="tools-count">50+</div>
-            <div class="stat-label">Dostupnih alata</div>
-          </div>
-          <div class="stat">
-            <div class="stat-number" id="cities-count">10+</div>
-            <div class="stat-label">Gradova</div>
-          </div>
-          <div class="stat">
-            <div class="stat-number" id="users-count">100+</div>
-            <div class="stat-label">Korisnika</div>
-          </div>
-        </div>
+    <div class="container">
+      <h1>Iznajmi alat od <span>komsije</span></h1>
+      <p>VikendMajstor je platforma za iznajmljivanje alata. Pronadji alat koji ti treba ili zaradi iznajmljivanjem svog alata.</p>
+      <div class="hero-buttons">
+        <a href="#app" class="btn-primary">Pregledaj alate</a>
+        <a href="#kako-radi" class="btn-secondary">Kako funkcionise</a>
       </div>
-      <div class="hero-image">
-        <div class="hero-image-wrapper">
-          <div class="tool-grid" id="mini-tools">
-          </div>
+    </div>
+  </section>
+
+  <!-- QR Code / App Section -->
+  <section class="qr-section" id="app">
+    <div class="container">
+      <h2>Skeniraj QR kod da otvoris aplikaciju</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 20px;">Koristi Expo Go aplikaciju na svom telefonu</p>
+      <div class="qr-code-container" id="qr-code"></div>
+      <div class="store-buttons">
+        <a href="https://apps.apple.com/app/id982107779" class="store-btn" target="_blank">
+          <img src="https://apps.apple.com/assets/images/favicon/favicon-apps-48-fad34e0d87e86dcf72ded1faff4ba9d0.png" alt="App Store">
+          App Store
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=host.exp.exponent" class="store-btn" target="_blank">
+          <img src="https://www.gstatic.com/android/market_images/web/favicon_v3.ico" alt="Google Play">
+          Google Play
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about" id="o-nama">
+    <div class="container">
+      <h2 class="section-title">O nama</h2>
+      <p class="section-subtitle">Povezujemo ljude koji imaju alate sa onima kojima su potrebni</p>
+      
+      <div class="about-content">
+        <div class="about-text">
+          <p>
+            VikendMajstor je platforma za iznajmljivanje alata. Nas cilj je da korisnicima omogucimo lak pristup potrebnim alatima bez kupovine, da podstaknemo deljenje resursa i doprinesemo zastiti zivotne sredine kroz odgovorno koriscenje i ponovnu upotrebu.
+          </p>
+          <p>
+            Umesto da kupujete alat koji cete koristiti jednom ili dvaput godisnje, iznajmite ga od komsije po povoljnoj ceni. Tako stedite novac, prostor u garazi, a i pomažete planeti.
+          </p>
+        </div>
+        
+        <div class="eco-card">
+          <h3>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+            Ekoloska poruka
+          </h3>
+          <ul>
+            <li>Manje kupovine = manje proizvodnje = manje otpada</li>
+            <li>Deljenje resursa = racionalno koriscenje energije i materijala</li>
+            <li>Zajednica koja razmenjuje = zajednica koja stedi i cuva planetu</li>
+            <li>Produzavamo zivotni vek alata kroz zajednicko koriscenje</li>
+          </ul>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- How it Works -->
   <section class="how-it-works" id="kako-radi">
     <div class="container">
-      <div class="section-header">
-        <h2>Kako funkcioniše?</h2>
-        <p>Jednostavan proces u tri koraka - od pretrage do korišćenja alata</p>
-      </div>
+      <h2 class="section-title">Kako funkcionise</h2>
+      <p class="section-subtitle">Tri jednostavna koraka do alata koji vam treba</p>
+      
       <div class="steps">
         <div class="step">
           <div class="step-number">1</div>
-          <h3>Pronađi alat</h3>
-          <p>Pretraži dostupne alate u tvom kraju. Filtriraj po kategoriji, ceni ili lokaciji.</p>
+          <h3>Pronadji alat</h3>
+          <p>Pretrazite oglase u vasoj okolini i pronadjite alat koji vam treba po povoljnoj ceni.</p>
         </div>
         <div class="step">
           <div class="step-number">2</div>
-          <h3>Rezerviši termin</h3>
-          <p>Izaberi datume, kontaktiraj vlasnika i dogovori detalje preuzimanja.</p>
+          <h3>Rezervisi</h3>
+          <p>Posaljite zahtev za rezervaciju, izaberite datume i sacekajte potvrdu od vlasnika.</p>
         </div>
         <div class="step">
           <div class="step-number">3</div>
-          <h3>Koristi i vrati</h3>
-          <p>Preuzmi alat, završi svoj projekat i vrati ga vlasniku. Jednostavno!</p>
+          <h3>Preuzmi i koristi</h3>
+          <p>Dogovorite se o preuzimanju, koristite alat i vratite ga u dogovorenom roku.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="featured-tools" id="alati">
+  <!-- FAQ Section -->
+  <section class="faq" id="faq">
     <div class="container">
-      <div class="section-header">
-        <h2>Popularni alati</h2>
-        <p>Pogledaj neke od najtraženijih alata na platformi</p>
-      </div>
-      <div class="tools-grid" id="tools-grid">
+      <h2 class="section-title">Cesta pitanja</h2>
+      <p class="section-subtitle">Odgovori na najcesde postavljana pitanja</p>
+      
+      <div class="faq-grid">
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako da dodam oglas?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Kliknite na "+" dugme u donjem meniju da biste dodali novi oglas. Popunite naslov, opis, kategoriju, cenu po danu i dodajte fotografije. Besplatni korisnici mogu dodati do 5 oglasa.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako funkcionise rezervacija?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Pronadjite stvar koju zelite da iznajmite, izaberite datume i posaljite zahtev za rezervaciju. Vlasnik ce primiti obavestenje i moze da prihvati ili odbije zahtev. Nakon potvrde, dogovorite se o preuzimanju.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako se vrsi placanje?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Placanje se vrsi direktno izmedju korisnika prilikom preuzimanja stvari. VikendMajstor trenutno ne procesira placanja kroz aplikaciju. Depozit se vraca nakon vracanja stvari u dobrom stanju.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Da li je moj novac siguran?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Preporucujemo da uvek trazite depozit kao garanciju. Fotografisite stvar pre i posle iznajmljivanja. U slucaju problema, kontaktirajte nasu podrsku.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako da postanem Premium korisnik?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Idjite na Profil > Pretplata i izaberite Premium plan. Premium korisnici imaju neogranicen broj oglasa, istaknute oglase na vrhu pretrage i premium znacku.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Sta ako imam problem sa rezervacijom?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Koristite chat funkciju da komunicirate direktno sa drugom stranom. Ako ne mozete da resite problem, kontaktirajte nasu podrsku na podrska@vikendmajstor.rs</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="early-adopter">
-    <div class="container early-adopter-content">
-      <div class="early-adopter-text">
-        <h2>Postani rani korisnik</h2>
-        <p>Pridruži se prvim korisnicima i dobij besplatan mesec Premium pristupa. Ograničen broj mesta!</p>
-        <a href="/app" class="btn btn-primary" style="margin-top: 24px;">Aktiviraj Premium besplatno</a>
-      </div>
-      <div class="slots-counter">
-        <div class="slots-number" id="remaining-slots">--</div>
-        <div class="slots-label">preostalih<br>mesta</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="cta">
+  <!-- Contact Section -->
+  <section class="contact" id="kontakt">
     <div class="container">
-      <h2>Spreman da počneš?</h2>
-      <p>Registruj se besplatno i pronađi alat koji ti treba već danas.</p>
-      <a href="/app" class="btn btn-secondary">Otvori aplikaciju</a>
+      <h2 class="section-title">Kontaktirajte nas</h2>
+      <p class="section-subtitle">Imate pitanja? Rado cemo vam pomoci.</p>
+      
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">&#9993;</div>
+          <h3>Email podrska</h3>
+          <p style="color: #999; margin-bottom: 8px;">Odgovaramo u roku od 24 sata</p>
+          <a href="mailto:podrska@vikendmajstor.rs">podrska@vikendmajstor.rs</a>
+        </div>
+      </div>
     </div>
   </section>
 
-  <footer id="o-nama">
+  <!-- Footer -->
+  <footer class="footer">
     <div class="container">
       <div class="footer-content">
         <div class="footer-brand">
-          <div class="logo">
-            <div class="logo-icon">V</div>
-            <span class="logo-text" style="color: white;">VikendMajstor</span>
-          </div>
-          <p>P2P platforma za iznajmljivanje alata. Povezujemo ljude koji imaju alate sa onima kojima su potrebni.</p>
+          <h3>VikendMajstor</h3>
+          <p>Platforma za iznajmljivanje alata i opreme. Povezujemo komsije i stedimo planetu kroz deljenje resursa.</p>
         </div>
+        
         <div class="footer-links">
-          <h4>Platforma</h4>
+          <h4>Navigacija</h4>
           <ul>
-            <li><a href="/app">Aplikacija</a></li>
+            <li><a href="#app">Alati</a></li>
+            <li><a href="#o-nama">O nama</a></li>
             <li><a href="#kako-radi">Kako radi</a></li>
-            <li><a href="#alati">Alati</a></li>
+            <li><a href="#faq">FAQ</a></li>
           </ul>
         </div>
+        
         <div class="footer-links">
-          <h4>Podrška</h4>
+          <h4>Pravne informacije</h4>
           <ul>
-            <li><a href="#">Česta pitanja</a></li>
-            <li><a href="#">Kontakt</a></li>
-            <li><a href="#">Pomoć</a></li>
+            <li><a href="/uslovi-koriscenja">Uslovi koriscenja</a></li>
+            <li><a href="/politika-privatnosti">Politika privatnosti</a></li>
           </ul>
         </div>
+        
         <div class="footer-links">
-          <h4>Pravno</h4>
+          <h4>Kontakt</h4>
           <ul>
-            <li><a href="#">Uslovi korišćenja</a></li>
-            <li><a href="#">Politika privatnosti</a></li>
+            <li><a href="mailto:podrska@vikendmajstor.rs">podrska@vikendmajstor.rs</a></li>
           </ul>
         </div>
       </div>
-      <div class="footer-app-download">
-        <p>Preuzmi aplikaciju:</p>
-        <div class="app-store-buttons" style="margin-top: 12px; justify-content: center;">
-          <a href="#" class="store-badge" title="Uskoro na App Store">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-            </svg>
-            <div class="store-badge-text">
-              <span class="small">Preuzmi na</span>
-              <span class="large">App Store</span>
-            </div>
-          </a>
-          <a href="#" class="store-badge" title="Uskoro na Google Play">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
-            </svg>
-            <div class="store-badge-text">
-              <span class="small">Preuzmi na</span>
-              <span class="large">Google Play</span>
-            </div>
-          </a>
-        </div>
-      </div>
+      
       <div class="footer-bottom">
-        &copy; 2024 VikendMajstor. Sva prava zadržana.
+        <p>&copy; 2024 VikendMajstor. Sva prava zadrzana.</p>
       </div>
     </div>
   </footer>
 
+  <!-- Scripts -->
+  <script src="https://unpkg.com/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
   <script>
-    async function loadData() {
-      try {
-        const [itemsRes, homeRes] = await Promise.all([
-          fetch('/api/items?limit=8'),
-          fetch('/api/home')
-        ]);
-        
-        const items = await itemsRes.json();
-        const homeData = await homeRes.json();
-        
-        const toolsGrid = document.getElementById('tools-grid');
-        const miniTools = document.getElementById('mini-tools');
-        const remainingSlots = document.getElementById('remaining-slots');
-        
-        if (Array.isArray(items) && items.length > 0) {
-          toolsGrid.innerHTML = items.slice(0, 8).map(item => `
-            <div class="tool-card">
-              <img src="${item.images && item.images[0] ? item.images[0] : '/placeholder-tool.png'}" alt="${item.title}" class="tool-card-image" onerror="this.src='/placeholder-tool.png'">
-              <div class="tool-card-content">
-                <div class="tool-card-title">${item.title}</div>
-                <div class="tool-card-location">${item.city}</div>
-                <div class="tool-card-price">${item.pricePerDay} RSD <span>/dan</span></div>
-              </div>
-            </div>
-          `).join('');
-          
-          miniTools.innerHTML = items.slice(0, 4).map(item => `
-            <div class="tool-card-mini">
-              <img src="${item.images && item.images[0] ? item.images[0] : '/placeholder-tool.png'}" alt="${item.title}" onerror="this.style.display='none'">
-              <p>${item.title.split(' ').slice(0, 2).join(' ')}</p>
-            </div>
-          `).join('');
-          
-          document.getElementById('tools-count').textContent = items.length + '+';
-        }
-        
-        if (homeData.remainingEarlyAdopterSlots !== undefined) {
-          remainingSlots.textContent = homeData.remainingEarlyAdopterSlots;
-        }
-      } catch (error) {
-        console.error('Error loading data:', error);
-      }
-    }
+    // QR Code Generation
+    const deepLink = "exps://EXPS_URL_PLACEHOLDER";
     
-    loadData();
+    const qrCode = new QRCodeStyling({
+      width: 400,
+      height: 400,
+      data: deepLink,
+      image: "/favicon.png",
+      dotsOptions: {
+        color: "#1A1A1A",
+        type: "rounded",
+      },
+      backgroundOptions: {
+        color: "#ffffff",
+      },
+      imageOptions: {
+        crossOrigin: "anonymous",
+        margin: 8,
+        imageSize: 0.4,
+        borderRadius: 8,
+      },
+      cornersSquareOptions: {
+        type: "extra-rounded",
+      },
+      cornersDotOptions: {
+        type: "dot",
+      },
+      qrOptions: {
+        errorCorrectionLevel: "H",
+      },
+    });
+    
+    qrCode.append(document.getElementById("qr-code"));
+    
+    // FAQ Accordion
+    document.querySelectorAll('.faq-question').forEach(question => {
+      question.addEventListener('click', () => {
+        const item = question.parentElement;
+        item.classList.toggle('active');
+      });
+    });
+    
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
   </script>
 </body>
 </html>
