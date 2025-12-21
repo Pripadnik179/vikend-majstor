@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { users, items } from "../shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 import * as fs from "fs";
@@ -28,6 +28,11 @@ async function uploadImage(localPath: string, remoteName: string): Promise<strin
   const destination = `public/items/${remoteName}`;
   
   try {
+    if (!fs.existsSync(localPath)) {
+      console.log(`File not found: ${localPath}, using placeholder`);
+      return `https://via.placeholder.com/400x300?text=${encodeURIComponent(remoteName)}`;
+    }
+    
     const bucket = objectStorageClient.bucket(bucketId);
     const file = bucket.file(destination);
     
@@ -51,106 +56,143 @@ async function uploadImage(localPath: string, remoteName: string): Promise<strin
   }
 }
 
-async function seed() {
-  console.log("Starting seed...");
+const DEMO_EMAIL_SUFFIX = "@demo.vikendmajstor.rs";
+
+export async function seedDemoData(): Promise<{ users: number; items: number }> {
+  console.log("[SEED] Starting demo data seed...");
   
   const imageFiles = [
-    { local: "attached_assets/generated_images/cordless_power_drill.png", remote: "cordless-power-drill.png" },
-    { local: "attached_assets/generated_images/angle_grinder_tool.png", remote: "angle-grinder.png" },
-    { local: "attached_assets/generated_images/circular_saw_tool.png", remote: "circular-saw.png" },
-    { local: "attached_assets/generated_images/pressure_washer_machine.png", remote: "pressure-washer.png" },
-    { local: "attached_assets/generated_images/concrete_mixer_machine.png", remote: "concrete-mixer.png" },
-    { local: "attached_assets/generated_images/gasoline_chainsaw.png", remote: "chainsaw.png" },
-    { local: "attached_assets/generated_images/electric_orbital_sander.png", remote: "orbital-sander.png" },
-    { local: "attached_assets/generated_images/portable_power_generator.png", remote: "generator.png" },
-    { local: "attached_assets/generated_images/rotary_hammer_drill.png", remote: "rotary-hammer.png" },
-    { local: "attached_assets/generated_images/tile_cutter_machine.png", remote: "tile-cutter.png" },
+    { local: "attached_assets/stock_images/power_drill_construc_aab87253.jpg", remote: "demo-drill-1.jpg" },
+    { local: "attached_assets/stock_images/power_drill_construc_88d24ac2.jpg", remote: "demo-drill-2.jpg" },
+    { local: "attached_assets/stock_images/angle_grinder_power__67fea1d6.jpg", remote: "demo-grinder-1.jpg" },
+    { local: "attached_assets/stock_images/angle_grinder_power__fa5044c9.jpg", remote: "demo-grinder-2.jpg" },
+    { local: "attached_assets/stock_images/circular_saw_wood_cu_782311cf.jpg", remote: "demo-saw-1.jpg" },
+    { local: "attached_assets/stock_images/circular_saw_wood_cu_f8a54218.jpg", remote: "demo-saw-2.jpg" },
+    { local: "attached_assets/stock_images/concrete_mixer_const_eb48124d.jpg", remote: "demo-mixer-1.jpg" },
+    { local: "attached_assets/stock_images/concrete_mixer_const_70c4cfbb.jpg", remote: "demo-mixer-2.jpg" },
+    { local: "attached_assets/stock_images/pressure_washer_clea_e6a0f759.jpg", remote: "demo-washer-1.jpg" },
+    { local: "attached_assets/stock_images/pressure_washer_clea_acfb4285.jpg", remote: "demo-washer-2.jpg" },
+    { local: "attached_assets/stock_images/lawn_mower_garden_fb0c4911.jpg", remote: "demo-mower-1.jpg" },
+    { local: "attached_assets/stock_images/lawn_mower_garden_483255de.jpg", remote: "demo-mower-2.jpg" },
+    { local: "attached_assets/stock_images/electric_sander_wood_5ea4579b.jpg", remote: "demo-sander-1.jpg" },
+    { local: "attached_assets/stock_images/electric_sander_wood_20677c0e.jpg", remote: "demo-sander-2.jpg" },
+    { local: "attached_assets/stock_images/hammer_drill_profess_982f972f.jpg", remote: "demo-hammer-1.jpg" },
+    { local: "attached_assets/stock_images/hammer_drill_profess_5caf5550.jpg", remote: "demo-hammer-2.jpg" },
+    { local: "attached_assets/stock_images/chainsaw_cutting_woo_69813d2f.jpg", remote: "demo-chainsaw-1.jpg" },
+    { local: "attached_assets/stock_images/chainsaw_cutting_woo_2663231f.jpg", remote: "demo-chainsaw-2.jpg" },
+    { local: "attached_assets/stock_images/scaffolding_construc_b8f2d01c.jpg", remote: "demo-scaffold-1.jpg" },
+    { local: "attached_assets/stock_images/scaffolding_construc_b7700a42.jpg", remote: "demo-scaffold-2.jpg" },
   ];
   
-  console.log("Uploading images...");
+  console.log("[SEED] Uploading images...");
   const imageUrls: string[] = [];
   for (const img of imageFiles) {
     const url = await uploadImage(img.local, img.remote);
     imageUrls.push(url);
-    console.log(`Uploaded: ${img.remote}`);
   }
+  console.log(`[SEED] Uploaded ${imageUrls.length} images`);
   
-  console.log("Creating users...");
+  console.log("[SEED] Creating demo users...");
   const hashedPassword = await hashPassword("demo123");
   
   const demoUsers = [
     { 
-      email: "marko@demo.com", 
+      email: `marko${DEMO_EMAIL_SUFFIX}`, 
       name: "Marko Petrović", 
       phone: "+381641234567",
       city: "Beograd",
       district: "Novi Beograd",
-      role: "owner" as const,
-      rating: "4.8",
-      totalRatings: 12,
       subscriptionType: "premium" as const,
     },
     { 
-      email: "jelena@demo.com", 
+      email: `jelena${DEMO_EMAIL_SUFFIX}`, 
       name: "Jelena Nikolić", 
       phone: "+381642345678",
       city: "Novi Sad",
       district: "Liman",
-      role: "owner" as const,
-      rating: "4.5",
-      totalRatings: 8,
       subscriptionType: "basic" as const,
     },
     { 
-      email: "stefan@demo.com", 
+      email: `stefan${DEMO_EMAIL_SUFFIX}`, 
       name: "Stefan Jovanović", 
       phone: "+381643456789",
       city: "Niš",
       district: "Centar",
-      role: "owner" as const,
-      rating: "4.9",
-      totalRatings: 15,
       subscriptionType: "premium" as const,
     },
     { 
-      email: "ana@demo.com", 
+      email: `ana${DEMO_EMAIL_SUFFIX}`, 
       name: "Ana Đorđević", 
       phone: "+381644567890",
       city: "Kragujevac",
       district: "Aerodrom",
-      role: "owner" as const,
-      rating: "4.2",
-      totalRatings: 5,
       subscriptionType: "free" as const,
     },
     { 
-      email: "nikola@demo.com", 
+      email: `nikola${DEMO_EMAIL_SUFFIX}`, 
       name: "Nikola Stojanović", 
       phone: "+381645678901",
       city: "Subotica",
       district: "Centar",
-      role: "owner" as const,
-      rating: "4.7",
-      totalRatings: 10,
+      subscriptionType: "basic" as const,
+    },
+    { 
+      email: `milica${DEMO_EMAIL_SUFFIX}`, 
+      name: "Milica Marković", 
+      phone: "+381646789012",
+      city: "Zrenjanin",
+      district: "Centar",
+      subscriptionType: "premium" as const,
+    },
+    { 
+      email: `dragan${DEMO_EMAIL_SUFFIX}`, 
+      name: "Dragan Ilić", 
+      phone: "+381647890123",
+      city: "Čačak",
+      district: "Centar",
+      subscriptionType: "basic" as const,
+    },
+    { 
+      email: `jovana${DEMO_EMAIL_SUFFIX}`, 
+      name: "Jovana Pavlović", 
+      phone: "+381648901234",
+      city: "Leskovac",
+      district: "Centar",
+      subscriptionType: "free" as const,
+    },
+    { 
+      email: `milan${DEMO_EMAIL_SUFFIX}`, 
+      name: "Milan Todorović", 
+      phone: "+381649012345",
+      city: "Valjevo",
+      district: "Centar",
+      subscriptionType: "premium" as const,
+    },
+    { 
+      email: `tamara${DEMO_EMAIL_SUFFIX}`, 
+      name: "Tamara Kostić", 
+      phone: "+381640123456",
+      city: "Šabac",
+      district: "Centar",
       subscriptionType: "basic" as const,
     },
   ];
   
   const createdUsers: { id: string; city: string; district: string }[] = [];
+  let usersCreated = 0;
   
   for (const userData of demoUsers) {
-    const subscriptionEndDate = userData.subscriptionType !== 'free' 
-      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      : null;
-    
-    // Check if user already exists
     const existingUser = await db.select().from(users).where(eq(users.email, userData.email)).limit(1);
     
     if (existingUser.length > 0) {
       const user = existingUser[0];
       createdUsers.push({ id: user.id, city: userData.city, district: userData.district || "" });
-      console.log(`Using existing user: ${userData.name}`);
+      console.log(`[SEED] Demo user already exists: ${userData.name}`);
     } else {
+      const subscriptionEndDate = userData.subscriptionType !== 'free' 
+        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        : null;
+      
       const [user] = await db.insert(users).values({
         email: userData.email,
         password: hashedPassword,
@@ -158,24 +200,23 @@ async function seed() {
         phone: userData.phone,
         city: userData.city,
         district: userData.district,
-        role: userData.role,
-        rating: userData.rating,
-        totalRatings: userData.totalRatings,
+        role: "owner",
+        rating: (4 + Math.random()).toFixed(1),
+        totalRatings: Math.floor(Math.random() * 15) + 1,
         subscriptionType: userData.subscriptionType,
         subscriptionEndDate,
+        emailVerified: true,
+        isActive: true,
       }).returning();
       
       createdUsers.push({ id: user.id, city: userData.city, district: userData.district || "" });
-      console.log(`Created user: ${userData.name}`);
+      usersCreated++;
+      console.log(`[SEED] Created demo user: ${userData.name}`);
     }
   }
   
-  console.log("Creating items...");
+  console.log("[SEED] Creating demo items...");
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-  
-  // imageUrls mapping:
-  // 0: cordless power drill, 1: angle grinder, 2: circular saw, 3: pressure washer
-  // 4: concrete mixer, 5: chainsaw, 6: orbital sander, 7: generator, 8: rotary hammer, 9: tile cutter
   
   const demoItems = [
     {
@@ -184,112 +225,81 @@ async function seed() {
       description: "Profesionalna akumulatorska bušilica Bosch sa dva akumulatora. Idealna za bušenje u betonu, drvu i metalu. Uključena torba za nošenje i set burgija.",
       category: "Električni alati",
       subCategory: "Bušilice",
-      toolType: "Akumulatorska bušilica",
       brand: "Bosch",
       powerSource: "Akumulator",
       powerWatts: 650,
       pricePerDay: 800,
       deposit: 5000,
-      images: [imageUrls[0]], // cordless power drill
-      rating: "4.8",
-      totalRatings: 6,
+      images: [imageUrls[0], imageUrls[1]],
       isFeatured: true,
     },
     {
       ownerIndex: 0,
-      title: "Makita kružna testera 190mm",
-      description: "Snažna električna kružna testera za precizno sečenje drva. Dubina reza do 66mm. Laser za precizno vođenje.",
+      title: "DeWalt ugaona brusilica 230mm",
+      description: "Profesionalna ugaona brusilica za sečenje i brušenje metala i kamena. Snaga 2200W. Uključeni zaštitni poklopac i ručka.",
       category: "Električni alati",
-      subCategory: "Testere",
-      toolType: "Kružna testera",
-      brand: "Makita",
-      powerSource: "Struja",
-      powerWatts: 1800,
-      pricePerDay: 1200,
-      deposit: 8000,
-      images: [imageUrls[2]], // circular saw
-      rating: "4.9",
-      totalRatings: 8,
+      subCategory: "Brusilice",
+      brand: "DeWalt",
+      powerSource: "Električni (struja)",
+      powerWatts: 2200,
+      pricePerDay: 900,
+      deposit: 6000,
+      images: [imageUrls[2], imageUrls[3]],
       isFeatured: false,
     },
     {
       ownerIndex: 1,
+      title: "Makita kružna testera 190mm",
+      description: "Snažna električna kružna testera za precizno sečenje drva. Dubina reza do 66mm. Laser za precizno vođenje.",
+      category: "Električni alati",
+      subCategory: "Testere",
+      brand: "Makita",
+      powerSource: "Električni (struja)",
+      powerWatts: 1800,
+      pricePerDay: 1200,
+      deposit: 8000,
+      images: [imageUrls[4], imageUrls[5]],
+      isFeatured: true,
+    },
+    {
+      ownerIndex: 1,
+      title: "Betonijer mešalica 160L",
+      description: "Električna mešalica za beton kapaciteta 160 litara. Idealna za manje građevinske radove. Točkovi za lako premeštanje.",
+      category: "Građevinske mašine",
+      subCategory: "Mešalice",
+      brand: "Lescha",
+      powerSource: "Električni (struja)",
+      powerWatts: 650,
+      pricePerDay: 1500,
+      deposit: 10000,
+      images: [imageUrls[6], imageUrls[7]],
+      isFeatured: false,
+    },
+    {
+      ownerIndex: 2,
       title: "Kärcher perač pod pritiskom K5",
       description: "Profesionalni perač pod pritiskom za čišćenje dvorišta, automobila, fasada. Pritisak do 145 bara. Uključeno crevo od 8m.",
       category: "Oprema za čišćenje",
       subCategory: "Perači pod pritiskom",
       brand: "Kärcher",
-      powerSource: "Struja",
+      powerSource: "Električni (struja)",
       powerWatts: 2100,
       pricePerDay: 1500,
       deposit: 10000,
-      images: [imageUrls[3]], // pressure washer
-      rating: "4.6",
-      totalRatings: 4,
-      isFeatured: false,
-    },
-    {
-      ownerIndex: 1,
-      title: "Stihl benzinska lančana testera MS 250",
-      description: "Profesionalna benzinska lančana testera za sečenje drveća i ogreva. Dužina mača 40cm. Automatsko podmazivanje lanca.",
-      category: "Baštenski alati",
-      subCategory: "Lančane testere",
-      brand: "Stihl",
-      powerSource: "Benzin",
-      pricePerDay: 1800,
-      deposit: 12000,
-      images: [imageUrls[5]], // chainsaw
-      rating: "4.5",
-      totalRatings: 3,
+      images: [imageUrls[8], imageUrls[9]],
       isFeatured: true,
     },
     {
       ownerIndex: 2,
-      title: "DeWalt ugaona brusilica 230mm",
-      description: "Profesionalna ugaona brusilica za sečenje i brušenje metala i kamena. Snaga 2200W. Uključeni zaštitni poklopac i ručka.",
-      category: "Električni alati",
-      subCategory: "Brusilice",
-      toolType: "Ugaona brusilica",
-      brand: "DeWalt",
-      powerSource: "Struja",
-      powerWatts: 2200,
-      pricePerDay: 900,
-      deposit: 6000,
-      images: [imageUrls[1]], // angle grinder
-      rating: "4.9",
-      totalRatings: 7,
-      isFeatured: false,
-    },
-    {
-      ownerIndex: 2,
-      title: "Hilti TE 7-C SDS-Plus čekić bušilica",
-      description: "Profesionalni čekić za bušenje u betonu i zidariji. Energija udara 2.6J. Uključen kofer sa setom burgija.",
-      category: "Električni alati",
-      subCategory: "Čekić bušilice",
-      brand: "Hilti",
-      powerSource: "Struja",
-      powerWatts: 800,
-      pricePerDay: 1100,
+      title: "Husqvarna motorna kosilica",
+      description: "Profesionalna benzinska kosilica za travu. Širina košenja 53cm. Kanta za sakupljanje trave 70L.",
+      category: "Bašta",
+      subCategory: "Košenje",
+      brand: "Husqvarna",
+      powerSource: "Benzinski",
+      pricePerDay: 1200,
       deposit: 8000,
-      images: [imageUrls[8]], // rotary hammer
-      rating: "4.7",
-      totalRatings: 5,
-      isFeatured: false,
-    },
-    {
-      ownerIndex: 3,
-      title: "Betonijer mešalica 160L",
-      description: "Električna mešalica za beton kapaciteta 160 litara. Idealna za manje građevinske radove. Točkovi za lako premeštanje.",
-      category: "Građevinska oprema",
-      subCategory: "Betonijeri",
-      brand: "Lescha",
-      powerSource: "Struja",
-      powerWatts: 650,
-      pricePerDay: 1500,
-      deposit: 10000,
-      images: [imageUrls[4]], // concrete mixer
-      rating: "4.3",
-      totalRatings: 2,
+      images: [imageUrls[10], imageUrls[11]],
       isFeatured: false,
     },
     {
@@ -298,53 +308,185 @@ async function seed() {
       description: "Profesionalna orbitalna brusilica za finu obradu drveta. Prečnik ploče 125mm. Priključak za usisavanje prašine.",
       category: "Električni alati",
       subCategory: "Brusilice",
-      toolType: "Orbitalna brusilica",
       brand: "Bosch",
-      powerSource: "Struja",
+      powerSource: "Električni (struja)",
       powerWatts: 350,
       pricePerDay: 600,
       deposit: 4000,
-      images: [imageUrls[6]], // orbital sander
-      rating: "4.4",
-      totalRatings: 3,
+      images: [imageUrls[12], imageUrls[13]],
       isFeatured: false,
     },
     {
+      ownerIndex: 3,
+      title: "Hilti TE 7-C SDS-Plus čekić bušilica",
+      description: "Profesionalni čekić za bušenje u betonu i zidariji. Energija udara 2.6J. Uključen kofer sa setom burgija.",
+      category: "Električni alati",
+      subCategory: "Bušilice",
+      brand: "Hilti",
+      powerSource: "Električni (struja)",
+      powerWatts: 800,
+      pricePerDay: 1100,
+      deposit: 8000,
+      images: [imageUrls[14], imageUrls[15]],
+      isFeatured: true,
+    },
+    {
       ownerIndex: 4,
-      title: "Honda agregat EU 22i",
-      description: "Tihi inverterski agregat snage 2.2kW. Idealan za kampovanje, gradilište ili rezervno napajanje. Potrošnja samo 1L/h.",
-      category: "Građevinska oprema",
-      subCategory: "Agregati",
-      brand: "Honda",
-      powerSource: "Benzin",
+      title: "Stihl benzinska lančana testera MS 250",
+      description: "Profesionalna benzinska lančana testera za sečenje drveća i ogreva. Dužina mača 40cm. Automatsko podmazivanje lanca.",
+      category: "Bašta",
+      subCategory: "Orezivanje",
+      brand: "Stihl",
+      powerSource: "Benzinski",
+      pricePerDay: 1800,
+      deposit: 12000,
+      images: [imageUrls[16], imageUrls[17]],
+      isFeatured: false,
+    },
+    {
+      ownerIndex: 5,
+      title: "Građevinska skela set 8m",
+      description: "Komplet građevinske skele visine do 8 metara. Aluminijumska konstrukcija, lagana za montažu. Uključene sigurnosne ograde.",
+      category: "Građevinske mašine",
+      subCategory: "Skele",
+      brand: "Generic",
+      powerSource: "Ručni",
+      pricePerDay: 2000,
+      deposit: 15000,
+      images: [imageUrls[18], imageUrls[19]],
+      isFeatured: true,
+    },
+    {
+      ownerIndex: 5,
+      title: "Milwaukee akumulatorska bušilica M18",
+      description: "Snažna akumulatorska udarna bušilica Milwaukee. Dva akumulatora od 5Ah, punjač i kofer u kompletu.",
+      category: "Akumulatorski alati",
+      subCategory: "Bušilice",
+      brand: "Milwaukee",
+      powerSource: "Akumulator",
+      powerWatts: 700,
+      pricePerDay: 1000,
+      deposit: 7000,
+      images: [imageUrls[0], imageUrls[1]],
+      isFeatured: false,
+    },
+    {
+      ownerIndex: 6,
+      title: "Festool tračna brusilica BS 75",
+      description: "Profesionalna tračna brusilica za brušenje velikih površina. Širina trake 75mm. Uključen set brusnih traka.",
+      category: "Električni alati",
+      subCategory: "Brusilice",
+      brand: "Festool",
+      powerSource: "Električni (struja)",
+      powerWatts: 1010,
+      pricePerDay: 800,
+      deposit: 5000,
+      images: [imageUrls[12], imageUrls[13]],
+      isFeatured: false,
+    },
+    {
+      ownerIndex: 6,
+      title: "Metabo potapajuća pumpa za prljavu vodu",
+      description: "Snažna potapajuća pumpa kapaciteta 18000L/h. Idealna za ispumpavanje podruma, bazena. Može da prečisti čestice do 30mm.",
+      category: "Građevinske mašine",
+      subCategory: "Pumpe",
+      brand: "Metabo",
+      powerSource: "Električni (struja)",
+      powerWatts: 1100,
+      pricePerDay: 700,
+      deposit: 4000,
+      images: [imageUrls[8], imageUrls[9]],
+      isFeatured: false,
+    },
+    {
+      ownerIndex: 7,
+      title: "Vibroploca za sabijanje zemlje 90kg",
+      description: "Profesionalna vibroploca za sabijanje tla i peska. Težina 90kg, benzinski motor. Idealna za pripremu terena.",
+      category: "Građevinske mašine",
+      subCategory: "Vibroploci",
+      brand: "Wacker Neuson",
+      powerSource: "Benzinski",
       pricePerDay: 2500,
       deposit: 20000,
-      images: [imageUrls[7]], // generator
-      rating: "4.6",
-      totalRatings: 4,
+      images: [imageUrls[6], imageUrls[7]],
+      isFeatured: true,
+    },
+    {
+      ownerIndex: 7,
+      title: "Bosch laser nivelir GLL 3-80",
+      description: "Profesionalni linijski laser sa 3 linije od 360 stepeni. Domet do 30m. Stativ i torbica u kompletu.",
+      category: "Merni/laserski",
+      subCategory: "Laseri",
+      brand: "Bosch",
+      powerSource: "Akumulator",
+      pricePerDay: 900,
+      deposit: 6000,
+      images: [imageUrls[14], imageUrls[15]],
       isFeatured: false,
     },
     {
-      ownerIndex: 4,
-      title: "Rubi mašina za sečenje pločica",
-      description: "Profesionalna mašina za sečenje keramičkih pločica do 60cm. Dijamantski disk i sistem vodenog hlađenja.",
-      category: "Građevinska oprema",
+      ownerIndex: 8,
+      title: "Einhell električna šrafciger glodalica",
+      description: "Višenamenska električna alatka za glodanje drva. Uključen set glodala različitih oblika.",
+      category: "Električni alati",
+      subCategory: "Glodalice",
+      brand: "Einhell",
+      powerSource: "Električni (struja)",
+      powerWatts: 1200,
+      pricePerDay: 700,
+      deposit: 4500,
+      images: [imageUrls[4], imageUrls[5]],
+      isFeatured: false,
+    },
+    {
+      ownerIndex: 8,
+      title: "Honda agregat EU 22i",
+      description: "Tihi inverterski agregat snage 2.2kW. Idealan za kampovanje, gradilište ili rezervno napajanje.",
+      category: "Građevinske mašine",
+      subCategory: "Agregati",
+      brand: "Honda",
+      powerSource: "Benzinski",
+      pricePerDay: 2500,
+      deposit: 20000,
+      images: [imageUrls[18], imageUrls[19]],
+      isFeatured: true,
+    },
+    {
+      ownerIndex: 9,
+      title: "Rubi mašina za sečenje pločica TX-900",
+      description: "Profesionalna mašina za sečenje keramičkih pločica do 90cm. Dijamantski disk i sistem vodenog hlađenja.",
+      category: "Građevinske mašine",
       subCategory: "Mašine za sečenje",
-      toolType: "Mašina za pločice",
       brand: "Rubi",
-      powerSource: "Struja",
+      powerSource: "Električni (struja)",
       powerWatts: 800,
       pricePerDay: 1200,
       deposit: 8000,
-      images: [imageUrls[9]], // tile cutter
-      rating: "4.8",
-      totalRatings: 6,
+      images: [imageUrls[2], imageUrls[3]],
+      isFeatured: false,
+    },
+    {
+      ownerIndex: 9,
+      title: "Black+Decker električna kosačica",
+      description: "Električna kosačica za travnjake do 400m2. Širina košenja 38cm, kanta 45L.",
+      category: "Bašta",
+      subCategory: "Košenje",
+      brand: "Black+Decker",
+      powerSource: "Električni (struja)",
+      powerWatts: 1400,
+      pricePerDay: 600,
+      deposit: 4000,
+      images: [imageUrls[10], imageUrls[11]],
       isFeatured: false,
     },
   ];
   
+  let itemsCreated = 0;
+  
   for (const itemData of demoItems) {
     const owner = createdUsers[itemData.ownerIndex];
+    if (!owner) continue;
+    
     const cityCoords = getCityCoordinates(owner.city);
     
     await db.insert(items).values({
@@ -353,7 +495,6 @@ async function seed() {
       description: itemData.description,
       category: itemData.category,
       subCategory: itemData.subCategory || null,
-      toolType: itemData.toolType || null,
       brand: itemData.brand || null,
       powerSource: itemData.powerSource || null,
       powerWatts: itemData.powerWatts || null,
@@ -364,47 +505,49 @@ async function seed() {
       latitude: cityCoords?.latitude.toString() || null,
       longitude: cityCoords?.longitude.toString() || null,
       images: itemData.images,
-      rating: itemData.rating,
-      totalRatings: itemData.totalRatings,
+      rating: (4 + Math.random()).toFixed(1),
+      totalRatings: Math.floor(Math.random() * 10) + 1,
       isFeatured: itemData.isFeatured,
       isAvailable: true,
       expiresAt,
     });
     
-    console.log(`Created item: ${itemData.title}`);
+    itemsCreated++;
   }
   
-  // Update totalAdsCreated counter for each user based on items created
-  console.log("Updating ad counters...");
-  const ownerItemCounts = new Map<number, number>();
-  for (const itemData of demoItems) {
-    const count = ownerItemCounts.get(itemData.ownerIndex) || 0;
-    ownerItemCounts.set(itemData.ownerIndex, count + 1);
-  }
-  
-  for (const [ownerIndex, itemCount] of ownerItemCounts) {
-    const owner = createdUsers[ownerIndex];
-    await db.update(users)
-      .set({ totalAdsCreated: itemCount })
-      .where(eq(users.id, owner.id));
-    console.log(`Updated totalAdsCreated for user ${ownerIndex}: ${itemCount} ads`);
-  }
-  
-  console.log("\nSeed completed successfully!");
-  console.log(`Created ${demoUsers.length} users`);
-  console.log(`Created ${demoItems.length} items`);
-  console.log("\nDemo login credentials:");
-  console.log("Email: marko@demo.com (Premium)");
-  console.log("Email: jelena@demo.com (Standard)");
-  console.log("Email: stefan@demo.com (Premium)");
-  console.log("Email: ana@demo.com (Free)");
-  console.log("Email: nikola@demo.com (Standard)");
-  console.log("Password for all: demo123");
-  
-  process.exit(0);
+  console.log(`[SEED] Demo data seeding complete: ${usersCreated} users, ${itemsCreated} items`);
+  return { users: usersCreated, items: itemsCreated };
 }
 
-seed().catch((error) => {
-  console.error("Seed error:", error);
-  process.exit(1);
-});
+export async function deleteDemoData(): Promise<{ users: number; items: number }> {
+  console.log("[SEED] Deleting demo data...");
+  
+  const demoUsersList = await db.select().from(users).where(like(users.email, `%${DEMO_EMAIL_SUFFIX}`));
+  
+  let itemsDeleted = 0;
+  let usersDeleted = 0;
+  
+  for (const user of demoUsersList) {
+    const deletedItems = await db.delete(items).where(eq(items.ownerId, user.id)).returning();
+    itemsDeleted += deletedItems.length;
+    
+    await db.delete(users).where(eq(users.id, user.id));
+    usersDeleted++;
+    console.log(`[SEED] Deleted demo user: ${user.name} and ${deletedItems.length} items`);
+  }
+  
+  console.log(`[SEED] Demo data deletion complete: ${usersDeleted} users, ${itemsDeleted} items`);
+  return { users: usersDeleted, items: itemsDeleted };
+}
+
+export async function getDemoDataStats(): Promise<{ users: number; items: number }> {
+  const demoUsersList = await db.select().from(users).where(like(users.email, `%${DEMO_EMAIL_SUFFIX}`));
+  
+  let totalItems = 0;
+  for (const user of demoUsersList) {
+    const userItems = await db.select().from(items).where(eq(items.ownerId, user.id));
+    totalItems += userItems.length;
+  }
+  
+  return { users: demoUsersList.length, items: totalItems };
+}

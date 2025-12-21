@@ -9,6 +9,7 @@ import {
   sendBookingConfirmedNotification,
   sendBookingCancelledNotification
 } from "./notifications";
+import { seedDemoData, deleteDemoData, getDemoDataStats } from "./seed-demo";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -1098,6 +1099,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ isAdmin: user?.isAdmin || false });
     } catch (error) {
       res.status(500).json({ error: "Greška pri proveri admin statusa" });
+    }
+  });
+
+  app.get("/api/admin/demo-data", isAdmin, async (req, res) => {
+    try {
+      const stats = await getDemoDataStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error getting demo data stats:", error);
+      res.status(500).json({ error: "Greška pri dobijanju demo podataka" });
+    }
+  });
+
+  app.post("/api/admin/demo-data/seed", isAdmin, async (req, res) => {
+    try {
+      console.log(`[ADMIN] User ${req.user?.email} initiated demo data seeding`);
+      const result = await seedDemoData();
+      res.json({ 
+        success: true, 
+        message: `Kreirano ${result.users} korisnika i ${result.items} oglasa`,
+        ...result 
+      });
+    } catch (error) {
+      console.error("Error seeding demo data:", error);
+      res.status(500).json({ error: "Greška pri kreiranju demo podataka" });
+    }
+  });
+
+  app.delete("/api/admin/demo-data", isAdmin, async (req, res) => {
+    try {
+      console.log(`[ADMIN] User ${req.user?.email} initiated demo data deletion`);
+      const result = await deleteDemoData();
+      res.json({ 
+        success: true, 
+        message: `Obrisano ${result.users} korisnika i ${result.items} oglasa`,
+        ...result 
+      });
+    } catch (error) {
+      console.error("Error deleting demo data:", error);
+      res.status(500).json({ error: "Greška pri brisanju demo podataka" });
     }
   });
 
