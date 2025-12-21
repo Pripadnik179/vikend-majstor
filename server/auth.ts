@@ -327,7 +327,7 @@ export function setupAuth(app: Express) {
         return res.status(401).json({ error: "Neispravan Google token" });
       }
 
-      const googleUser = await response.json() as { email?: string; name?: string; picture?: string };
+      const googleUser = await response.json();
       const { email, name, picture } = googleUser;
 
       if (!email) {
