@@ -85,6 +85,10 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async updateUserPassword(userId: string, hashedPassword: string): Promise<void> {
+    await db.update(users).set({ password: hashedPassword }).where(eq(users.id, userId));
+  }
+
   async incrementUserAdsCreated(userId: string): Promise<void> {
     await db.update(users)
       .set({ totalAdsCreated: sql`COALESCE(${users.totalAdsCreated}, 0) + 1` })

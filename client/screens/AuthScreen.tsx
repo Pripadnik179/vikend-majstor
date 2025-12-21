@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MailIcon, AppleIcon } from '@/components/icons/TabBarIcons';
+import { MailIcon, AppleIcon, EyeIcon, EyeOffIcon } from '@/components/icons/TabBarIcons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/Button';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
+import { apiRequest } from '@/lib/query-client';
 
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
@@ -34,10 +35,13 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
 
   useEffect(() => {
     if (Platform.OS === 'ios' && AppleAuthentication) {
@@ -89,6 +93,31 @@ export default function AuthScreen() {
       Alert.alert('Greška', error.message || 'Greška pri Apple prijavi');
     } finally {
       setIsAppleLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert('Greska', 'Unesite email adresu');
+      return;
+    }
+
+    setForgotPasswordLoading(true);
+    try {
+      await apiRequest('POST', '/api/auth/forgot-password', { email });
+      Alert.alert(
+        'Email poslat',
+        'Ako nalog sa ovom email adresom postoji, poslali smo vam link za resetovanje lozinke.',
+        [{ text: 'OK', onPress: () => setIsForgotPassword(false) }]
+      );
+    } catch (error: any) {
+      Alert.alert(
+        'Email poslat',
+        'Ako nalog sa ovom email adresom postoji, poslali smo vam link za resetovanje lozinke.'
+      );
+      setIsForgotPassword(false);
+    } finally {
+      setForgotPasswordLoading(false);
     }
   };
 
@@ -216,32 +245,72 @@ export default function AuthScreen() {
           autoComplete="email"
         />
 
-        <TextInput
-          style={inputStyle}
-          placeholder="Lozinka"
-          placeholderTextColor={theme.textTertiary}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="password"
-        />
+        {isForgotPassword ? (
+          <>
+            <Button onPress={handleForgotPassword} disabled={forgotPasswordLoading} style={styles.button}>
+              {forgotPasswordLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                'Posalji link za resetovanje'
+              )}
+            </Button>
+            <Pressable onPress={() => setIsForgotPassword(false)} style={styles.switchButton}>
+              <ThemedText type="body" style={{ color: theme.textSecondary }}>
+                Nazad na{' '}
+                <ThemedText type="link">prijavu</ThemedText>
+              </ThemedText>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[inputStyle, styles.passwordInput]}
+                placeholder="Lozinka"
+                placeholderTextColor={theme.textTertiary}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                autoComplete="password"
+              />
+              <Pressable
+                style={styles.eyeButton}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOffIcon size={22} color={theme.textSecondary} />
+                ) : (
+                  <EyeIcon size={22} color={theme.textSecondary} />
+                )}
+              </Pressable>
+            </View>
 
-        <Button onPress={handleSubmit} disabled={isLoading} style={styles.button}>
-          {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            isLogin ? 'Prijavi se' : 'Registruj se'
-          )}
-        </Button>
+            {isLogin ? (
+              <Pressable onPress={() => setIsForgotPassword(true)} style={styles.forgotPassword}>
+                <ThemedText type="small" style={{ color: Colors.light.primary }}>
+                  Zaboravili ste lozinku?
+                </ThemedText>
+              </Pressable>
+            ) : null}
 
-        <Pressable onPress={() => setIsLogin(!isLogin)} style={styles.switchButton}>
-          <ThemedText type="body" style={{ color: theme.textSecondary }}>
-            {isLogin ? 'Nemaš nalog? ' : 'Već imaš nalog? '}
-            <ThemedText type="link">
-              {isLogin ? 'Registruj se' : 'Prijavi se'}
-            </ThemedText>
-          </ThemedText>
-        </Pressable>
+            <Button onPress={handleSubmit} disabled={isLoading} style={styles.button}>
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                isLogin ? 'Prijavi se' : 'Registruj se'
+              )}
+            </Button>
+
+            <Pressable onPress={() => setIsLogin(!isLogin)} style={styles.switchButton}>
+              <ThemedText type="body" style={{ color: theme.textSecondary }}>
+                {isLogin ? 'Nemas nalog? ' : 'Vec imas nalog? '}
+                <ThemedText type="link">
+                  {isLogin ? 'Registruj se' : 'Prijavi se'}
+                </ThemedText>
+              </ThemedText>
+            </Pressable>
+          </>
+        )}
       </View>
     </KeyboardAwareScrollViewCompat>
   );
@@ -329,5 +398,25 @@ const styles = StyleSheet.create({
   switchButton: {
     marginTop: Spacing.xl,
     alignItems: 'center',
+  },
+  passwordContainer: {
+    position: 'relative',
+    marginBottom: Spacing.md,
+  },
+  passwordInput: {
+    marginBottom: 0,
+    paddingRight: 50,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 16,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: Spacing.md,
   },
 });

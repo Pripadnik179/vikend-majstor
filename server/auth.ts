@@ -4,7 +4,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { storage } from "./storage";
-import { sendVerificationEmail } from "./email";
+import { sendVerificationEmail, sendPasswordResetEmail } from "./email";
 import { logLoginAttempt, validateLogin, validateRegistration, handleValidationErrors } from "./security";
 import type { User } from "@shared/schema";
 
@@ -300,6 +300,236 @@ export function setupAuth(app: Express) {
       res.clearCookie("connect.sid");
       res.json({ success: true });
     });
+  });
+
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: "Email je obavezan" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (user) {
+        const resetToken = randomBytes(32).toString("hex");
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        
+        await storage.createVerificationToken(user.id, resetToken, "password_reset", expiresAt);
+        await sendPasswordResetEmail(email, resetToken, user.name);
+      }
+
+      // Always return success to prevent email enumeration
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.json({ success: true });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password) {
+        return res.status(400).json({ error: "Token i nova lozinka su obavezni" });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({ error: "Lozinka mora imati najmanje 6 karaktera" });
+      }
+
+      const tokenRecord = await storage.getVerificationToken(token);
+      if (!tokenRecord || tokenRecord.type !== "password_reset") {
+        return res.status(400).json({ error: "Nevazeci ili istekli link za resetovanje" });
+      }
+
+      if (new Date() > tokenRecord.expiresAt) {
+        await storage.deleteVerificationToken(token);
+        return res.status(400).json({ error: "Link za resetovanje je istekao" });
+      }
+
+      const hashedPassword = await hashPassword(password);
+      await storage.updateUserPassword(tokenRecord.userId, hashedPassword);
+      await storage.deleteVerificationToken(token);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ error: "Greska pri resetovanju lozinke" });
+    }
+  });
+
+  app.get("/reset-password", async (req, res) => {
+    const { token } = req.query;
+    
+    if (!token || typeof token !== 'string') {
+      return res.send(getVerificationPage(false, 'Nevazeci link za resetovanje lozinke.'));
+    }
+
+    const tokenRecord = await storage.getVerificationToken(token);
+    if (!tokenRecord || tokenRecord.type !== "password_reset") {
+      return res.send(getVerificationPage(false, 'Nevazeci link za resetovanje lozinke.'));
+    }
+
+    if (new Date() > tokenRecord.expiresAt) {
+      await storage.deleteVerificationToken(token);
+      return res.send(getVerificationPage(false, 'Link za resetovanje je istekao. Zatrazite novi link.'));
+    }
+
+    // Show password reset form
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Resetovanje lozinke - VikendMajstor</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1A1A1A 0%, #333 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+          }
+          .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+          }
+          .logo { font-size: 28px; font-weight: 700; color: #FFCC00; margin-bottom: 24px; text-align: center; }
+          h1 { color: #1A1A1A; margin-bottom: 16px; font-size: 24px; text-align: center; }
+          p { color: #666; font-size: 14px; margin-bottom: 24px; text-align: center; }
+          .form-group { margin-bottom: 16px; position: relative; }
+          label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; }
+          input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 12px 40px 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+          }
+          .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+          }
+          button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background: #FFCC00;
+            color: #1A1A1A;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+          }
+          button[type="submit"]:hover { background: #E6B800; }
+          button[type="submit"]:disabled { opacity: 0.5; cursor: not-allowed; }
+          .error { color: #ff4444; font-size: 14px; margin-top: 8px; display: none; }
+          .success { color: #22C55E; font-size: 14px; margin-top: 8px; display: none; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="logo">VikendMajstor</div>
+          <h1>Nova lozinka</h1>
+          <p>Unesite novu lozinku za vas nalog</p>
+          <form id="resetForm">
+            <div class="form-group">
+              <label for="password">Nova lozinka</label>
+              <input type="password" id="password" name="password" required minlength="6" placeholder="Najmanje 6 karaktera">
+              <button type="button" class="toggle-password" onclick="togglePassword('password', this)">👁</button>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Potvrdite lozinku</label>
+              <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Ponovite lozinku">
+              <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword', this)">👁</button>
+            </div>
+            <div class="error" id="error"></div>
+            <div class="success" id="success"></div>
+            <button type="submit" id="submitBtn">Resetuj lozinku</button>
+          </form>
+        </div>
+        <script>
+          function togglePassword(fieldId, btn) {
+            const field = document.getElementById(fieldId);
+            if (field.type === 'password') {
+              field.type = 'text';
+              btn.textContent = '🙈';
+            } else {
+              field.type = 'password';
+              btn.textContent = '👁';
+            }
+          }
+          
+          document.getElementById('resetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorEl = document.getElementById('error');
+            const successEl = document.getElementById('success');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            errorEl.style.display = 'none';
+            successEl.style.display = 'none';
+            
+            if (password !== confirmPassword) {
+              errorEl.textContent = 'Lozinke se ne podudaraju';
+              errorEl.style.display = 'block';
+              return;
+            }
+            
+            if (password.length < 6) {
+              errorEl.textContent = 'Lozinka mora imati najmanje 6 karaktera';
+              errorEl.style.display = 'block';
+              return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Resetovanje...';
+            
+            try {
+              const res = await fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: '${token}', password })
+              });
+              
+              const data = await res.json();
+              
+              if (res.ok) {
+                successEl.textContent = 'Lozinka je uspesno resetovana! Mozete se prijaviti sa novom lozinkom.';
+                successEl.style.display = 'block';
+                document.getElementById('resetForm').style.display = 'none';
+              } else {
+                errorEl.textContent = data.error || 'Greska pri resetovanju lozinke';
+                errorEl.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Resetuj lozinku';
+              }
+            } catch (err) {
+              errorEl.textContent = 'Greska pri povezivanju sa serverom';
+              errorEl.style.display = 'block';
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Resetuj lozinku';
+            }
+          });
+        </script>
+      </body>
+      </html>
+    `);
   });
 
   app.get("/api/auth/me", (req, res) => {
