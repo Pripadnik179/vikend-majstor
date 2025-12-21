@@ -1,0 +1,25 @@
+{
+  "name": "vikendmajstor-api",
+  "version": "1.0.0",
+  "description": "VikendMajstor P2P Tool Rental Platform API",
+  "main": "dist/server/index.js",
+  "scripts": {
+    "start": "node dist/server/index.js"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.38.3",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "express-session": "^1.18.1",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.0.0",
+    "jose": "^5.9.6",
+    "mysql2": "^3.12.0",
+    "nodemailer": "^6.10.0",
+    "resend": "^4.1.2",
+    "zod": "^3.24.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
