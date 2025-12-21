@@ -5,6 +5,44 @@ import { storage } from "./storage";
 import { setupSecurity } from "./security";
 import * as fs from "fs";
 import * as path from "path";
+import { scrypt, randomBytes } from "crypto";
+import { promisify } from "util";
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPasswordForAdmin(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
+
+async function initializeAdminAccount() {
+  const adminEmail = "admin@vikendmajstor.rs";
+  const adminPassword = "Caralazara13";
+  
+  try {
+    const existingAdmin = await storage.getUserByEmail(adminEmail);
+    if (!existingAdmin) {
+      const hashedPassword = await hashPasswordForAdmin(adminPassword);
+      await storage.createUser({
+        email: adminEmail,
+        password: hashedPassword,
+        name: "Administrator",
+        role: "owner",
+        emailVerified: true,
+        isAdmin: true,
+        isActive: true,
+      });
+      console.log(`[ADMIN] Created admin account: ${adminEmail}`);
+    } else if (!existingAdmin.isAdmin) {
+      // Ensure existing user has admin privileges
+      await storage.updateUserAdmin(existingAdmin.id, { isAdmin: true, isActive: true });
+      console.log(`[ADMIN] Updated existing user to admin: ${adminEmail}`);
+    }
+  } catch (error) {
+    console.error("[ADMIN] Error initializing admin account:", error);
+  }
+}
 
 const app = express();
 const log = console.log;
@@ -325,6 +363,9 @@ function setupErrorHandler(app: express.Application) {
   } catch (error) {
     console.error("Error cleaning up expired items:", error);
   }
+
+  // Initialize admin account if it doesn't exist
+  await initializeAdminAccount();
 
   const port = parseInt(process.env.PORT || "5000", 10);
   server.listen(
