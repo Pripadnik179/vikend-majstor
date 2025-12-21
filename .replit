@@ -7,7 +7,7 @@ packages = ["yakut"]
 
 [deployment]
 deploymentTarget = "cloudrun"
-build = ["sh", "-c", "npm run expo:static:build && npm run server:build"]
+build = ["sh", "-c", "npm run server:build"]
 run = ["npm", "run", "server:prod"]
 
 [[ports]]
