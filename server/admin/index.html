@@ -477,6 +477,7 @@
       <nav class="sidebar-nav">
         <button class="nav-item active" data-page="dashboard">📊 Dashboard</button>
         <button class="nav-item" data-page="users">👥 Korisnici</button>
+        <button class="nav-item" data-page="demo-data">🧪 Demo podaci</button>
       </nav>
       <div class="sidebar-footer">
         <div class="user-info">
@@ -537,6 +538,61 @@
         <div id="user-detail-success" class="success-message hidden"></div>
         <div id="user-detail-content">
           <div class="loading-container"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Demo Data Page -->
+      <div id="page-demo-data" class="hidden">
+        <div class="page-header">
+          <h1 class="page-title">Demo podaci</h1>
+          <p class="page-subtitle">Upravljanje demo korisnicima i oglasima za prezentacije</p>
+        </div>
+        
+        <div id="demo-data-message" class="hidden"></div>
+        
+        <div class="stats-grid" style="margin-bottom: 32px;">
+          <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(139, 92, 246, 0.2);">🧪</div>
+            <div class="stat-value" id="demo-users-count">0</div>
+            <div class="stat-label">Demo korisnika</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.2);">📦</div>
+            <div class="stat-value" id="demo-items-count">0</div>
+            <div class="stat-label">Demo oglasa</div>
+          </div>
+        </div>
+        
+        <div class="card" style="padding: 24px;">
+          <h3 class="card-title" style="margin-bottom: 16px;">Upravljanje demo podacima</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6;">
+            Demo podaci se koriste za prezentacije i testiranje aplikacije. Svi demo korisnici imaju email koji zavrsava na <strong>@demo.vikendmajstor.rs</strong> i lozinku <strong>demo123</strong>.
+          </p>
+          
+          <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <button id="seed-demo-btn" class="btn btn-primary" style="width: auto;">
+              ➕ Dodaj demo podatke
+            </button>
+            <button id="delete-demo-btn" class="btn btn-danger" style="width: auto;">
+              🗑️ Obrisi demo podatke
+            </button>
+          </div>
+          
+          <div style="margin-top: 24px; padding: 16px; background: var(--surface-elevated); border-radius: 8px;">
+            <div style="font-weight: 500; margin-bottom: 8px;">Demo korisnici:</div>
+            <ul style="margin-left: 20px; color: var(--text-secondary); line-height: 1.8;">
+              <li>marko@demo.vikendmajstor.rs (Premium)</li>
+              <li>jelena@demo.vikendmajstor.rs (Standard)</li>
+              <li>stefan@demo.vikendmajstor.rs (Premium)</li>
+              <li>ana@demo.vikendmajstor.rs (Besplatno)</li>
+              <li>nikola@demo.vikendmajstor.rs (Standard)</li>
+              <li>milica@demo.vikendmajstor.rs (Premium)</li>
+              <li>dragan@demo.vikendmajstor.rs (Standard)</li>
+              <li>jovana@demo.vikendmajstor.rs (Besplatno)</li>
+              <li>milan@demo.vikendmajstor.rs (Premium)</li>
+              <li>tamara@demo.vikendmajstor.rs (Standard)</li>
+            </ul>
+          </div>
         </div>
       </div>
     </main>
@@ -855,6 +911,83 @@
       }
     }
 
+    // Demo Data
+    async function loadDemoDataStats() {
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/demo-data`, { credentials: 'include' });
+        if (!res.ok) throw new Error();
+        const stats = await res.json();
+        document.getElementById('demo-users-count').textContent = stats.users;
+        document.getElementById('demo-items-count').textContent = stats.items;
+      } catch (e) {
+        console.error('Error loading demo data stats:', e);
+      }
+    }
+
+    async function seedDemoData() {
+      const btn = document.getElementById('seed-demo-btn');
+      const msgEl = document.getElementById('demo-data-message');
+      
+      btn.disabled = true;
+      btn.textContent = 'Kreiranje...';
+      msgEl.classList.add('hidden');
+      
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/demo-data/seed`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.error || 'Greska pri kreiranju');
+        
+        msgEl.className = 'success-message';
+        msgEl.textContent = data.message;
+        msgEl.classList.remove('hidden');
+        await loadDemoDataStats();
+      } catch (e) {
+        msgEl.className = 'error-message';
+        msgEl.textContent = e.message;
+        msgEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '➕ Dodaj demo podatke';
+      }
+    }
+
+    async function deleteDemoData() {
+      if (!confirm('Da li ste sigurni da zelite da obrisete sve demo podatke?')) return;
+      
+      const btn = document.getElementById('delete-demo-btn');
+      const msgEl = document.getElementById('demo-data-message');
+      
+      btn.disabled = true;
+      btn.textContent = 'Brisanje...';
+      msgEl.classList.add('hidden');
+      
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/demo-data`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.error || 'Greska pri brisanju');
+        
+        msgEl.className = 'success-message';
+        msgEl.textContent = data.message;
+        msgEl.classList.remove('hidden');
+        await loadDemoDataStats();
+      } catch (e) {
+        msgEl.className = 'error-message';
+        msgEl.textContent = e.message;
+        msgEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🗑️ Obrisi demo podatke';
+      }
+    }
+
     // Navigation
     function navigateTo(page) {
       currentPage = page;
@@ -864,10 +997,12 @@
       document.getElementById('page-dashboard').classList.add('hidden');
       document.getElementById('page-users').classList.add('hidden');
       document.getElementById('page-user-detail').classList.add('hidden');
+      document.getElementById('page-demo-data').classList.add('hidden');
       document.getElementById(`page-${page}`).classList.remove('hidden');
       
       if (page === 'dashboard') loadDashboard();
       if (page === 'users') loadUsers();
+      if (page === 'demo-data') loadDemoDataStats();
     }
 
     // Event listeners
@@ -895,6 +1030,8 @@
 
     document.getElementById('logout-btn').onclick = logout;
     document.getElementById('back-to-users').onclick = () => navigateTo('users');
+    document.getElementById('seed-demo-btn').onclick = seedDemoData;
+    document.getElementById('delete-demo-btn').onclick = deleteDemoData;
     
     document.querySelectorAll('.nav-item').forEach(btn => {
       btn.onclick = () => navigateTo(btn.dataset.page);
