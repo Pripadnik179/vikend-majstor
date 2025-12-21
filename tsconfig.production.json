@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./production/dist",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    },
+    "baseUrl": ".",
+    "types": ["node"]
+  },
+  "include": [
+    "server/**/*.ts",
+    "shared/schema-mysql.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "client",
+    "server/seed-demo.ts"
+  ]
+}
