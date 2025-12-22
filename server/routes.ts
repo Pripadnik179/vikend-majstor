@@ -1169,6 +1169,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "Korisnik nije pronađen" });
+      }
+      
+      if (user.isAdmin) {
+        return res.status(403).json({ error: "Ne možete obrisati admin korisnika" });
+      }
+      
+      console.log(`[ADMIN] User ${req.user?.email} deleting user ${user.email}`);
+      
+      const result = await storage.deleteUserWithData(userId);
+      
+      res.json({
+        success: true,
+        message: `Korisnik ${user.email} je obrisan`,
+        deleted: result
+      });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Greška pri brisanju korisnika" });
+    }
+  });
+
   app.get("/api/admin/demo-data", isAdmin, async (req, res) => {
     try {
       const stats = await getDemoDataStats();

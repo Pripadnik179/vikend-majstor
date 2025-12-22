@@ -10,7 +10,7 @@ import { Button } from '@/components/Button';
 import { useTheme } from '@/hooks/useTheme';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import { Spacing, BorderRadius } from '@/constants/theme';
-import { UserIcon, CheckCircleIcon, XCircleIcon, StarIcon, CalendarIcon } from '@/components/icons/TabBarIcons';
+import { UserIcon, CheckCircleIcon, XCircleIcon, StarIcon, CalendarIcon, TrashIcon } from '@/components/icons/TabBarIcons';
 
 interface AdminUser {
   id: string;
@@ -93,6 +93,38 @@ export default function AdminUserDetailScreen() {
       Alert.alert('Greška', error.message || 'Došlo je do greške');
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('DELETE', `/api/admin/users/${userId}`);
+    },
+    onSuccess: async (response) => {
+      const data = await response.json();
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      Alert.alert('Uspešno', data.message || 'Korisnik je obrisan');
+      navigation.goBack();
+    },
+    onError: (error: any) => {
+      Alert.alert('Greška', error.message || 'Greška pri brisanju korisnika');
+    },
+  });
+
+  const handleDeleteUser = () => {
+    if (user?.isAdmin) {
+      Alert.alert('Greška', 'Ne možete obrisati admin korisnika');
+      return;
+    }
+    
+    Alert.alert(
+      'Potvrda brisanja',
+      `Da li ste sigurni da želite da obrišete korisnika ${user?.name}?\n\nOvo će obrisati:\n- Sve oglase korisnika\n- Sve rezervacije\n- Sve poruke\n- Sve recenzije`,
+      [
+        { text: 'Odustani', style: 'cancel' },
+        { text: 'Obriši', style: 'destructive', onPress: () => deleteMutation.mutate() },
+      ]
+    );
+  };
 
   const handleSave = () => {
     const data: any = {};
@@ -381,6 +413,25 @@ export default function AdminUserDetailScreen() {
           {updateMutation.isPending ? <ActivityIndicator color="#1A1A1A" /> : 'Sačuvaj promene'}
         </Button>
       )}
+
+      {!user.isAdmin && (
+        <Pressable 
+          onPress={handleDeleteUser}
+          disabled={deleteMutation.isPending}
+          style={styles.deleteUserButton}
+        >
+          {deleteMutation.isPending ? (
+            <ActivityIndicator color="#F44336" />
+          ) : (
+            <View style={styles.deleteButtonContent}>
+              <TrashIcon size={20} color="#F44336" />
+              <ThemedText type="body" style={{ color: '#F44336', marginLeft: Spacing.sm }}>
+                Obriši korisnika
+              </ThemedText>
+            </View>
+          )}
+        </Pressable>
+      )}
     </ScrollView>
   );
 }
@@ -497,5 +548,18 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: Spacing.md,
+  },
+  deleteUserButton: {
+    marginTop: Spacing.xl,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: '#F44336',
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

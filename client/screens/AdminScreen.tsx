@@ -1,14 +1,15 @@
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, FlatList, TextInput, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, StyleSheet, FlatList, TextInput, Pressable, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Card } from '@/components/Card';
+import { Button } from '@/components/Button';
 import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
-import { SearchIcon, UserIcon, CheckCircleIcon, XCircleIcon, StarIcon } from '@/components/icons/TabBarIcons';
+import { SearchIcon, UserIcon, CheckCircleIcon, XCircleIcon, StarIcon, PlusIcon, TrashIcon } from '@/components/icons/TabBarIcons';
 import { getApiUrl, apiRequest } from '@/lib/query-client';
 
 interface AdminUser {
@@ -35,16 +36,77 @@ interface AdminStats {
   earlyAdopters: number;
 }
 
+interface DemoDataStats {
+  demoUsers: number;
+  demoItems: number;
+}
+
 export default function AdminScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const navigation = useNavigation<any>();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive' | 'premium'>('all');
+  const [showDemoSection, setShowDemoSection] = useState(false);
 
   const { data: stats, isLoading: statsLoading } = useQuery<AdminStats>({
     queryKey: ['/api/admin/stats'],
   });
+
+  const { data: demoStats } = useQuery<DemoDataStats>({
+    queryKey: ['/api/admin/demo-data'],
+  });
+
+  const seedDemoMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('POST', '/api/admin/demo-data/seed');
+    },
+    onSuccess: async (response) => {
+      const data = await response.json();
+      queryClient.invalidateQueries({ queryKey: ['/api/admin'] });
+      Alert.alert('Uspeh', data.message || 'Demo podaci su kreirani');
+    },
+    onError: (error: any) => {
+      Alert.alert('Greška', error.message || 'Greška pri kreiranju demo podataka');
+    },
+  });
+
+  const deleteDemoMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('DELETE', '/api/admin/demo-data');
+    },
+    onSuccess: async (response) => {
+      const data = await response.json();
+      queryClient.invalidateQueries({ queryKey: ['/api/admin'] });
+      Alert.alert('Uspeh', data.message || 'Demo podaci su obrisani');
+    },
+    onError: (error: any) => {
+      Alert.alert('Greška', error.message || 'Greška pri brisanju demo podataka');
+    },
+  });
+
+  const handleSeedDemo = () => {
+    Alert.alert(
+      'Potvrda',
+      'Da li želite da kreirate demo korisnike i oglase?',
+      [
+        { text: 'Odustani', style: 'cancel' },
+        { text: 'Kreiraj', onPress: () => seedDemoMutation.mutate() },
+      ]
+    );
+  };
+
+  const handleDeleteDemo = () => {
+    Alert.alert(
+      'Potvrda',
+      'Da li ste sigurni da želite da obrišete SVE demo podatke?',
+      [
+        { text: 'Odustani', style: 'cancel' },
+        { text: 'Obriši', style: 'destructive', onPress: () => deleteDemoMutation.mutate() },
+      ]
+    );
+  };
 
   const { data: users, isLoading, refetch, isRefetching } = useQuery<AdminUser[]>({
     queryKey: ['/api/admin/users', searchQuery, filter],
@@ -140,6 +202,51 @@ export default function AdminScreen() {
 
   return (
     <ThemedView style={[styles.container, { paddingTop: Spacing.lg }]}>
+      <Pressable 
+        onPress={() => setShowDemoSection(!showDemoSection)}
+        style={[styles.demoToggle, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
+      >
+        <ThemedText type="body" style={{ color: theme.primary }}>
+          Demo podaci {demoStats ? `(${demoStats.demoUsers} korisnika, ${demoStats.demoItems} oglasa)` : ''}
+        </ThemedText>
+      </Pressable>
+
+      {showDemoSection && (
+        <Card style={styles.demoSection}>
+          <ThemedText type="h4" style={{ marginBottom: Spacing.md }}>Upravljanje demo podacima</ThemedText>
+          <View style={styles.demoButtons}>
+            <Button 
+              onPress={handleSeedDemo} 
+              disabled={seedDemoMutation.isPending}
+              style={styles.demoButton}
+            >
+              {seedDemoMutation.isPending ? (
+                <ActivityIndicator size="small" color="#1A1A1A" />
+              ) : (
+                <View style={styles.buttonContent}>
+                  <PlusIcon size={16} color="#1A1A1A" />
+                  <ThemedText type="body" style={{ color: '#1A1A1A', marginLeft: Spacing.xs }}>Dodaj demo</ThemedText>
+                </View>
+              )}
+            </Button>
+            <Pressable 
+              onPress={handleDeleteDemo}
+              disabled={deleteDemoMutation.isPending}
+              style={[styles.deleteButton, { borderColor: '#F44336' }]}
+            >
+              {deleteDemoMutation.isPending ? (
+                <ActivityIndicator size="small" color="#F44336" />
+              ) : (
+                <View style={styles.buttonContent}>
+                  <TrashIcon size={16} color="#F44336" />
+                  <ThemedText type="body" style={{ color: '#F44336', marginLeft: Spacing.xs }}>Obriši demo</ThemedText>
+                </View>
+              )}
+            </Pressable>
+          </View>
+        </Card>
+      )}
+
       {stats && (
         <View style={styles.statsRow}>
           <View style={[styles.statCard, { backgroundColor: theme.backgroundSecondary }]}>
@@ -326,5 +433,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.full,
+  },
+  demoToggle: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+    alignItems: 'center',
+  },
+  demoSection: {
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  demoButtons: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  demoButton: {
+    flex: 1,
+  },
+  deleteButton: {
+    flex: 1,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

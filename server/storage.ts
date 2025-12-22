@@ -22,6 +22,7 @@ export interface IStorage {
   
   getAllUsers(filters?: { search?: string; isActive?: boolean; subscriptionType?: string }): Promise<User[]>;
   updateUserAdmin(id: string, data: { isActive?: boolean; isAdmin?: boolean; subscriptionType?: 'free' | 'basic' | 'premium'; subscriptionDays?: number }): Promise<User | undefined>;
+  deleteUserWithData(id: string): Promise<{ deletedItems: number; deletedBookings: number; deletedMessages: number; deletedReviews: number }>;
   
   getItems(filters?: { 
     category?: string; 
@@ -614,6 +615,55 @@ export class DatabaseStorage implements IStorage {
     
     const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
     return user || undefined;
+  }
+
+  async deleteUserWithData(id: string): Promise<{ deletedItems: number; deletedBookings: number; deletedMessages: number; deletedReviews: number }> {
+    const userItems = await db.select({ id: items.id }).from(items).where(eq(items.ownerId, id));
+    const itemIds = userItems.map(i => i.id);
+    
+    let deletedBookings = 0;
+    if (itemIds.length > 0) {
+      const bookingResult = await db.delete(bookings).where(
+        or(
+          eq(bookings.renterId, id),
+          inArray(bookings.itemId, itemIds)
+        )
+      );
+      deletedBookings = bookingResult.rowCount || 0;
+    } else {
+      const bookingResult = await db.delete(bookings).where(eq(bookings.renterId, id));
+      deletedBookings = bookingResult.rowCount || 0;
+    }
+    
+    const messageResult = await db.delete(messages).where(eq(messages.senderId, id));
+    const deletedMessages = messageResult.rowCount || 0;
+    
+    await db.delete(conversations).where(
+      or(
+        eq(conversations.user1Id, id),
+        eq(conversations.user2Id, id)
+      )
+    );
+    
+    const reviewResult = await db.delete(reviews).where(
+      or(
+        eq(reviews.reviewerId, id),
+        eq(reviews.revieweeId, id)
+      )
+    );
+    const deletedReviews = reviewResult.rowCount || 0;
+    
+    let deletedItems = 0;
+    if (itemIds.length > 0) {
+      const itemResult = await db.delete(items).where(eq(items.ownerId, id));
+      deletedItems = itemResult.rowCount || 0;
+    }
+    
+    await db.delete(verificationTokens).where(eq(verificationTokens.userId, id));
+    
+    await db.delete(users).where(eq(users.id, id));
+    
+    return { deletedItems, deletedBookings, deletedMessages, deletedReviews };
   }
 
   async getUserStats(): Promise<{ totalUsers: number; activeUsers: number; premiumUsers: number; earlyAdopters: number }> {
