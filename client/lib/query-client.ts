@@ -16,11 +16,8 @@ export function getApiUrl(): string {
       return 'http://localhost:5000';
     }
     
-    // Production: app.vikendmajstor.rs uses api.vikendmajstor.rs
-    if (currentOrigin.includes('app.vikendmajstor.rs')) {
-      return 'https://api.vikendmajstor.rs';
-    }
-    
+    // Production: use same origin for API calls (no separate subdomain needed)
+    // The server handles /api/* routes on the same domain
     return currentOrigin;
   }
   
