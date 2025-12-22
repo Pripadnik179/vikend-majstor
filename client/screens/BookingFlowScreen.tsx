@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Pressable, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, StyleSheet, Pressable, Alert, ActivityIndicator, Platform, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
@@ -13,16 +13,21 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout } from '@/hooks/useWebLayout';
 import { apiRequest } from '@/lib/query-client';
 import { Spacing, BorderRadius, Colors } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item, User, Booking } from '@shared/schema';
+
+const MAX_BOOKING_WIDTH = 500;
 
 type ItemWithOwner = Item & { owner: User };
 
 export default function BookingFlowScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { width } = useWindowDimensions();
+  const { isDesktop } = useWebLayout();
   const route = useRoute<RouteProp<RootStackParamList, 'BookingFlow'>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const queryClient = useQueryClient();
@@ -32,6 +37,10 @@ export default function BookingFlowScreen() {
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'cash'>('cash');
   const [isLoading, setIsLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [dateError, setDateError] = useState<string | null>(null);
+
+  const containerWidth = isDesktop ? Math.min(width, MAX_BOOKING_WIDTH) : width;
+  const horizontalPadding = isDesktop ? Math.max(Spacing.lg, (width - MAX_BOOKING_WIDTH) / 2) : Spacing.lg;
 
   const { data: item, isLoading: isLoadingItem } = useQuery<ItemWithOwner>({
     queryKey: ['/api/items', route.params.itemId],
@@ -84,13 +93,18 @@ export default function BookingFlowScreen() {
   };
 
   const selectQuickDate = (option: typeof quickDates[0]) => {
+    setDateError(null);
     const start = new Date(option.start);
     start.setHours(0, 0, 0, 0);
     const end = new Date(start);
     end.setDate(start.getDate() + option.days - 1);
     
     if (!isDateRangeAvailable(start, end)) {
-      Alert.alert('Nedostupno', 'Izabrani datumi su već rezervisani. Molimo izaberite druge datume.');
+      const errorMsg = 'Izabrani datumi su vec rezervisani. Molimo izaberite druge datume.';
+      setDateError(errorMsg);
+      if (Platform.OS !== 'web') {
+        Alert.alert('Nedostupno', errorMsg);
+      }
       return;
     }
     
@@ -201,7 +215,13 @@ export default function BookingFlowScreen() {
   return (
     <KeyboardAwareScrollViewCompat
       style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
-      contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + Spacing.xl }]}
+      contentContainerStyle={[
+        styles.container, 
+        { 
+          paddingBottom: insets.bottom + Spacing.xl,
+          paddingHorizontal: horizontalPadding,
+        }
+      ]}
     >
       <Card style={styles.itemCard}>
         <ThemedText type="h4">{item.title}</ThemedText>
@@ -229,6 +249,13 @@ export default function BookingFlowScreen() {
             </Pressable>
           ))}
         </View>
+        {dateError ? (
+          <View style={[styles.errorContainer, { backgroundColor: Colors.light.error + '15' }]}>
+            <ThemedText type="small" style={{ color: Colors.light.error }}>
+              {dateError}
+            </ThemedText>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.section}>
@@ -331,7 +358,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    padding: Spacing.lg,
+    paddingVertical: Spacing.lg,
   },
   itemCard: {
     marginBottom: Spacing.xl,
@@ -392,6 +419,11 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     marginTop: Spacing.md,
+  },
+  errorContainer: {
+    marginTop: Spacing.sm,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.sm,
   },
   successContainer: {
     flex: 1,
