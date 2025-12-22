@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Pressable, Platform, useWindowDimensions, Text } from "react-native";
+import { View, StyleSheet, Pressable, Platform, useWindowDimensions, Text, Alert } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { BlurView } from "expo-blur";
 import { useNavigation } from "@react-navigation/native";
@@ -11,6 +11,7 @@ import MessagesStackNavigator from "@/navigation/MessagesStackNavigator";
 import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
 import { BeVisibleModal } from "@/components/BeVisibleModal";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/contexts/AuthContext";
 import { Colors, Spacing, Shadows } from "@/constants/theme";
 import type { MainTabParamList, RootStackParamList } from "./types";
 import { HomeIcon, GridIcon, CalendarIcon, MessageIcon, UserIcon, PlusIcon } from "@/components/icons/TabBarIcons";
@@ -22,8 +23,31 @@ const isWeb = Platform.OS === 'web';
 function FloatingAddButton() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { isDark, theme } = useTheme();
+  const { user, isVerified } = useAuth();
   const { width } = useWindowDimensions();
   const isDesktop = isWeb && width >= 768;
+
+  const handleAddPress = () => {
+    if (!user) {
+      Alert.alert(
+        'Prijava potrebna',
+        'Morate biti prijavljeni da biste dodali oglas.',
+        [{ text: 'U redu' }]
+      );
+      return;
+    }
+    
+    if (!isVerified) {
+      Alert.alert(
+        'Potvrdite email',
+        'Pre dodavanja oglasa morate da potvrdite vašu email adresu. Proverite inbox za link za potvrdu.',
+        [{ text: 'U redu' }]
+      );
+      return;
+    }
+    
+    navigation.navigate('AddItem');
+  };
 
   if (isDesktop) {
     return (
@@ -35,7 +59,7 @@ function FloatingAddButton() {
             opacity: pressed ? 0.9 : 1,
           },
         ]}
-        onPress={() => navigation.navigate('AddItem')}
+        onPress={handleAddPress}
       >
         <PlusIcon size={20} color="#FFFFFF" />
         <Text style={styles.webAddButtonText}>Dodaj oglas</Text>
@@ -53,7 +77,7 @@ function FloatingAddButton() {
             transform: [{ scale: pressed ? 0.95 : 1 }],
           },
         ]}
-        onPress={() => navigation.navigate('AddItem')}
+        onPress={handleAddPress}
       >
         <PlusIcon size={28} color="#FFFFFF" />
       </Pressable>
