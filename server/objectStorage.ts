@@ -11,6 +11,16 @@ import {
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&#x2F;/g, '/')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'");
+}
+
 export const objectStorageClient = new Storage({
   credentials: {
     audience: "replit",
@@ -167,11 +177,13 @@ export class ObjectStorageService {
   }
 
   normalizeObjectEntityPath(rawPath: string): string {
-    if (!rawPath.startsWith("https://storage.googleapis.com/")) {
-      return rawPath;
+    let decodedPath = decodeHtmlEntities(rawPath);
+    
+    if (!decodedPath.startsWith("https://storage.googleapis.com/")) {
+      return decodedPath;
     }
   
-    const url = new URL(rawPath);
+    const url = new URL(decodedPath);
     const rawObjectPath = url.pathname;
   
     let objectEntityDir = this.getPrivateObjectDir();
