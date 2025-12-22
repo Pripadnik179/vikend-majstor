@@ -116,7 +116,7 @@ export function sanitizeObject(obj: any): any {
 
 export function xssProtection(req: Request, res: Response, next: NextFunction) {
   if (req.body && typeof req.body === 'object') {
-    const skipFields = ['password', 'email'];
+    const skipFields = ['password', 'email', 'images', 'uploadURL'];
     const sanitizedBody: any = {};
     
     for (const key of Object.keys(req.body)) {
