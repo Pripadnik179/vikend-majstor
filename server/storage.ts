@@ -62,6 +62,10 @@ export interface IStorage {
   getReviewsForUser(userId: string): Promise<Review[]>;
   getItemReviews(itemId: string): Promise<(Review & { reviewer: User })[]>;
   createReview(review: InsertReview): Promise<Review>;
+  
+  createVerificationToken(userId: string, type?: string, customToken?: string, customExpiresAt?: Date): Promise<VerificationToken>;
+  getVerificationToken(token: string): Promise<VerificationToken | undefined>;
+  deleteVerificationToken(token: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -522,9 +526,9 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId));
   }
 
-  async createVerificationToken(userId: string, type: string = 'email'): Promise<VerificationToken> {
-    const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  async createVerificationToken(userId: string, type: string = 'email', customToken?: string, customExpiresAt?: Date): Promise<VerificationToken> {
+    const token = customToken || crypto.randomUUID();
+    const expiresAt = customExpiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000);
     
     await db.delete(verificationTokens).where(
       and(eq(verificationTokens.userId, userId), eq(verificationTokens.type, type))

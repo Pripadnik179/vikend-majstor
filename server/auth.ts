@@ -111,16 +111,19 @@ export function setupAuth(app: Express) {
     throw new Error("SESSION_SECRET must be set");
   }
 
+  const isProduction = process.env.NODE_ENV === "production";
+  
   app.use(
     session({
       secret: sessionSecret,
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: process.env.NODE_ENV === "production",
+        secure: isProduction,
         httpOnly: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        sameSite: "lax",
+        sameSite: isProduction ? "none" : "lax",
+        domain: isProduction ? ".vikendmajstor.rs" : undefined,
       },
     })
   );
