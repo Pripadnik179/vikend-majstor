@@ -342,6 +342,11 @@ function configureExpoAndLanding(app: express.Application) {
   
   // Serve Expo web build for app.vikendmajstor.rs
   app.use((req: Request, res: Response, next: NextFunction) => {
+    // Skip API routes - they should be handled by the API router
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    
     const hostname = req.hostname || req.headers.host?.split(':')[0] || '';
     const isAppSubdomain = hostname === 'app.vikendmajstor.rs' || hostname.includes('app.');
     
