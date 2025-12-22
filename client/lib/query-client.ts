@@ -10,16 +10,17 @@ export function getApiUrl(): string {
   const isWeb = typeof window !== 'undefined' && typeof document !== 'undefined';
   
   if (isWeb) {
-    // On web, use same origin - requests go through the proxy
-    // For localhost development, use localhost:5000
     const currentOrigin = window.location.origin;
     
     if (currentOrigin.includes('localhost:8081')) {
       return 'http://localhost:5000';
     }
     
-    // For Replit and production: use same origin
-    // The Express server on port 5000 serves both API and static files
+    // Production: app.vikendmajstor.rs uses api.vikendmajstor.rs
+    if (currentOrigin.includes('app.vikendmajstor.rs')) {
+      return 'https://api.vikendmajstor.rs';
+    }
+    
     return currentOrigin;
   }
   
