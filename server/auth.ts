@@ -111,7 +111,8 @@ export function setupAuth(app: Express) {
     throw new Error("SESSION_SECRET must be set");
   }
 
-  const isProduction = process.env.NODE_ENV === "production";
+  const replitDomains = process.env.REPLIT_DOMAINS || '';
+  const isProductionDomain = replitDomains.includes('vikendmajstor.rs');
   
   app.use(
     session({
@@ -119,11 +120,11 @@ export function setupAuth(app: Express) {
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: isProduction,
+        secure: isProductionDomain,
         httpOnly: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        sameSite: isProduction ? "none" : "lax",
-        domain: isProduction ? ".vikendmajstor.rs" : undefined,
+        sameSite: isProductionDomain ? "none" : "lax",
+        domain: isProductionDomain ? ".vikendmajstor.rs" : undefined,
       },
     })
   );
