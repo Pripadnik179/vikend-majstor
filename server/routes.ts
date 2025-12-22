@@ -12,6 +12,12 @@ import {
 import { seedDemoData, deleteDemoData, getDemoDataStats } from "./seed-demo";
 import * as path from "path";
 import * as fs from "fs";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+// ES module polyfill for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
