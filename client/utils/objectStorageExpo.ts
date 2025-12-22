@@ -116,3 +116,28 @@ export async function finalizeUpload(
   const { objectPath } = await response.json();
   return objectPath;
 }
+
+export async function finalizeUploadWeb(
+  uploadURL: string,
+  finalizeEndpoint: string = '/api/objects/finalize',
+): Promise<string> {
+  const apiUrl = getApiUrl();
+  const endpoint = new URL(finalizeEndpoint, apiUrl).toString();
+  
+  const response = await window.fetch(endpoint, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ uploadURL }),
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to finalize upload: ${response.status}`);
+  }
+
+  const { objectPath } = await response.json();
+  return objectPath;
+}

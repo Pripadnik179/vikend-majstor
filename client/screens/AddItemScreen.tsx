@@ -19,7 +19,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
-import { uploadFileToStorage, uploadFileToStorageWeb, finalizeUpload } from '@/utils/objectStorageExpo';
+import { uploadFileToStorage, uploadFileToStorageWeb, finalizeUpload, finalizeUploadWeb } from '@/utils/objectStorageExpo';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
@@ -156,6 +156,7 @@ export default function AddItemScreen() {
       setIsLoading(true);
       try {
         let uploadURL: string;
+        let objectPath: string;
         
         if (Platform.OS === 'web') {
           const response = await fetch(result.assets[0].uri);
@@ -163,12 +164,13 @@ export default function AddItemScreen() {
           const fileName = `image-${Date.now()}.jpg`;
           const webFile = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
           uploadURL = await uploadFileToStorageWeb(webFile);
+          objectPath = await finalizeUploadWeb(uploadURL);
         } else {
           const file = new ExpoFile(result.assets[0].uri);
           uploadURL = await uploadFileToStorage(file);
+          objectPath = await finalizeUpload(uploadURL);
         }
         
-        const objectPath = await finalizeUpload(uploadURL);
         setImages([...images, objectPath]);
       } catch (error) {
         console.error('Upload error:', error);
