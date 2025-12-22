@@ -218,7 +218,7 @@ export function DateRangePicker({
                   isStart && styles.startDay,
                   isEnd && styles.endDay,
                   isBooked && styles.bookedDay,
-                  isBooked && { backgroundColor: Colors.error + '20' },
+                  isBooked && { backgroundColor: Colors.light.error + '20' },
                   isDisabled && !isBooked && { opacity: 0.3 },
                   isToday && !isSelected && styles.todayDay,
                   isToday && !isSelected && { borderColor: theme.primary },
@@ -229,7 +229,7 @@ export function DateRangePicker({
                   style={[
                     { color: theme.text, fontWeight: '500' },
                     isSelected && { color: '#FFFFFF', fontWeight: '700' },
-                    isBooked && { color: Colors.error },
+                    isBooked && { color: Colors.light.error },
                     isDisabled && !isBooked && { color: theme.textTertiary },
                   ]}
                 >
@@ -243,14 +243,14 @@ export function DateRangePicker({
 
       <View style={styles.selectionInfo}>
         <View style={[styles.selectionBox, { borderColor: startDate ? theme.primary : theme.border }]}>
-          <ThemedText type="caption" style={{ color: theme.textSecondary }}>Početak</ThemedText>
+          <ThemedText type="small" style={{ color: theme.textSecondary }}>Pocetak</ThemedText>
           <ThemedText type="body" style={{ fontWeight: '600' }}>
             {startDate ? formatDateShort(startDate) : 'Izaberi'}
           </ThemedText>
         </View>
         <ArrowRightIcon size={20} color={theme.textTertiary} />
         <View style={[styles.selectionBox, { borderColor: endDate ? theme.primary : theme.border }]}>
-          <ThemedText type="caption" style={{ color: theme.textSecondary }}>Kraj</ThemedText>
+          <ThemedText type="small" style={{ color: theme.textSecondary }}>Kraj</ThemedText>
           <ThemedText type="body" style={{ fontWeight: '600' }}>
             {endDate ? formatDateShort(endDate) : 'Izaberi'}
           </ThemedText>
@@ -259,16 +259,16 @@ export function DateRangePicker({
 
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: Colors.success }]} />
-          <ThemedText type="caption" style={{ color: theme.textSecondary }}>Dostupno</ThemedText>
+          <View style={[styles.legendDot, { backgroundColor: Colors.light.success }]} />
+          <ThemedText type="small" style={{ color: theme.textSecondary }}>Dostupno</ThemedText>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: Colors.error }]} />
-          <ThemedText type="caption" style={{ color: theme.textSecondary }}>Rezervisano</ThemedText>
+          <View style={[styles.legendDot, { backgroundColor: Colors.light.error }]} />
+          <ThemedText type="small" style={{ color: theme.textSecondary }}>Rezervisano</ThemedText>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: theme.primary }]} />
-          <ThemedText type="caption" style={{ color: theme.textSecondary }}>Izabrano</ThemedText>
+          <ThemedText type="small" style={{ color: theme.textSecondary }}>Izabrano</ThemedText>
         </View>
       </View>
     </View>
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   container: {
     borderWidth: 1,
     borderRadius: BorderRadius.md,
-    padding: Spacing.md,
+    padding: Spacing.sm,
   },
   header: {
     flexDirection: 'row',
@@ -310,6 +310,7 @@ const styles = StyleSheet.create({
   dayCell: {
     width: '14.28%',
     aspectRatio: 1,
+    maxHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 2,
@@ -319,20 +320,20 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: BorderRadius.round,
+    borderRadius: BorderRadius.full,
   },
   selectedDay: {
-    borderRadius: BorderRadius.round,
+    borderRadius: BorderRadius.full,
   },
   startDay: {
-    borderTopLeftRadius: BorderRadius.round,
-    borderBottomLeftRadius: BorderRadius.round,
+    borderTopLeftRadius: BorderRadius.full,
+    borderBottomLeftRadius: BorderRadius.full,
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
   },
   endDay: {
-    borderTopRightRadius: BorderRadius.round,
-    borderBottomRightRadius: BorderRadius.round,
+    borderTopRightRadius: BorderRadius.full,
+    borderBottomRightRadius: BorderRadius.full,
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   },
