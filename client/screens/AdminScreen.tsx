@@ -37,8 +37,8 @@ interface AdminStats {
 }
 
 interface DemoDataStats {
-  demoUsers: number;
-  demoItems: number;
+  users: number;
+  items: number;
 }
 
 export default function AdminScreen() {
@@ -142,54 +142,52 @@ export default function AdminScreen() {
     const badge = getSubscriptionBadge(item);
     
     return (
-      <Pressable onPress={() => navigation.navigate('AdminUserDetail', { userId: item.id })}>
-        <Card style={styles.userCard}>
-          <View style={styles.userHeader}>
-            <View style={styles.userInfo}>
-              <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
-                <UserIcon size={24} color="#1A1A1A" />
-              </View>
-              <View style={styles.userDetails}>
-                <View style={styles.nameRow}>
-                  <ThemedText type="h4" numberOfLines={1}>{item.name}</ThemedText>
-                  {item.isAdmin && (
-                    <View style={[styles.adminBadge, { backgroundColor: '#FF5722' }]}>
-                      <ThemedText type="small" style={{ color: '#FFFFFF' }}>Admin</ThemedText>
-                    </View>
-                  )}
-                </View>
-                <ThemedText type="small" style={{ color: theme.textSecondary }} numberOfLines={1}>
-                  {item.email}
-                </ThemedText>
-              </View>
+      <Card style={styles.userCard} onPress={() => navigation.navigate('AdminUserDetail', { userId: item.id })}>
+        <View style={styles.userHeader}>
+          <View style={styles.userInfo}>
+            <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
+              <UserIcon size={24} color="#1A1A1A" />
             </View>
-            <View style={styles.statusIcons}>
-              {item.isActive ? (
-                <CheckCircleIcon size={20} color="#4CAF50" />
-              ) : (
-                <XCircleIcon size={20} color="#F44336" />
-              )}
+            <View style={styles.userDetails}>
+              <View style={styles.nameRow}>
+                <ThemedText type="h4" numberOfLines={1}>{item.name}</ThemedText>
+                {item.isAdmin && (
+                  <View style={[styles.adminBadge, { backgroundColor: '#FF5722' }]}>
+                    <ThemedText type="small" style={{ color: '#FFFFFF' }}>Admin</ThemedText>
+                  </View>
+                )}
+              </View>
+              <ThemedText type="small" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                {item.email}
+              </ThemedText>
             </View>
           </View>
-          
-          <View style={styles.userMeta}>
-            <View style={[styles.subscriptionBadge, { backgroundColor: badge.bg }]}>
-              {item.isEarlyAdopter && <StarIcon size={12} color={badge.color} />}
-              <ThemedText type="small" style={{ color: badge.color, marginLeft: item.isEarlyAdopter ? 4 : 0 }}>
-                {badge.text}{item.isEarlyAdopter ? ' (Early)' : ''}
-              </ThemedText>
-            </View>
-            <ThemedText type="small" style={{ color: theme.textTertiary }}>
-              Oglasi: {item.totalAdsCreated}
-            </ThemedText>
-            {item.subscriptionEndDate && (
-              <ThemedText type="small" style={{ color: theme.textTertiary }}>
-                Do: {formatDate(item.subscriptionEndDate)}
-              </ThemedText>
+          <View style={styles.statusIcons}>
+            {item.isActive ? (
+              <CheckCircleIcon size={20} color="#4CAF50" />
+            ) : (
+              <XCircleIcon size={20} color="#F44336" />
             )}
           </View>
-        </Card>
-      </Pressable>
+        </View>
+        
+        <View style={styles.userMeta}>
+          <View style={[styles.subscriptionBadge, { backgroundColor: badge.bg }]}>
+            {item.isEarlyAdopter && <StarIcon size={12} color={badge.color} />}
+            <ThemedText type="small" style={{ color: badge.color, marginLeft: item.isEarlyAdopter ? 4 : 0 }}>
+              {badge.text}{item.isEarlyAdopter ? ' (Early)' : ''}
+            </ThemedText>
+          </View>
+          <ThemedText type="small" style={{ color: theme.textTertiary }}>
+            Oglasi: {item.totalAdsCreated}
+          </ThemedText>
+          {item.subscriptionEndDate && (
+            <ThemedText type="small" style={{ color: theme.textTertiary }}>
+              Do: {formatDate(item.subscriptionEndDate)}
+            </ThemedText>
+          )}
+        </View>
+      </Card>
     );
   }, [theme, navigation]);
 
@@ -207,7 +205,7 @@ export default function AdminScreen() {
         style={[styles.demoToggle, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
       >
         <ThemedText type="body" style={{ color: theme.primary }}>
-          Demo podaci {demoStats ? `(${demoStats.demoUsers} korisnika, ${demoStats.demoItems} oglasa)` : ''}
+          Demo podaci {demoStats ? `(${demoStats.users} korisnika, ${demoStats.items} oglasa)` : ''}
         </ThemedText>
       </Pressable>
 
