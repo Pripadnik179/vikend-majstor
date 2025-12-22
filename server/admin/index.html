@@ -769,7 +769,9 @@
       container.innerHTML = '<div class="loading-container"><div class="spinner"></div></div>';
       try {
         const params = new URLSearchParams();
-        if (currentFilter !== 'all') params.append('filter', currentFilter);
+        if (currentFilter === 'active') params.append('isActive', 'true');
+        else if (currentFilter === 'inactive') params.append('isActive', 'false');
+        else if (currentFilter === 'premium') params.append('subscriptionType', 'premium');
         if (searchQuery) params.append('search', searchQuery);
         
         const res = await fetch(`${API_BASE}/api/admin/users?${params}`, { credentials: 'include' });

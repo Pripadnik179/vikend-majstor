@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { useTheme } from '@/hooks/useTheme';
-import { apiRequest } from '@/lib/query-client';
+import { apiRequest, getApiUrl } from '@/lib/query-client';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import { UserIcon, CheckCircleIcon, XCircleIcon, StarIcon, CalendarIcon } from '@/components/icons/TabBarIcons';
 
@@ -65,10 +65,8 @@ export default function AdminUserDetailScreen() {
   const { data: user, isLoading, error } = useQuery<AdminUser>({
     queryKey: ['/api/admin/users', userId],
     queryFn: async () => {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error('Korisnik nije pronađen');
+      const url = new URL(`/api/admin/users/${userId}`, getApiUrl());
+      const response = await apiRequest('GET', url.toString());
       return response.json();
     },
   });

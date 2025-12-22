@@ -9,6 +9,7 @@ import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import { SearchIcon, UserIcon, CheckCircleIcon, XCircleIcon, StarIcon } from '@/components/icons/TabBarIcons';
+import { getApiUrl, apiRequest } from '@/lib/query-client';
 
 interface AdminUser {
   id: string;
@@ -54,10 +55,8 @@ export default function AdminScreen() {
       if (filter === 'inactive') params.append('isActive', 'false');
       if (filter === 'premium') params.append('subscriptionType', 'premium');
       
-      const response = await fetch(`/api/admin/users?${params.toString()}`, {
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error('Nemate pristup');
+      const url = new URL(`/api/admin/users?${params.toString()}`, getApiUrl());
+      const response = await apiRequest('GET', url.toString());
       return response.json();
     },
   });
