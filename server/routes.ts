@@ -97,6 +97,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/objects/:objectPath(*)", async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    const objectPath = `/objects/${req.params.objectPath}`;
+    console.log(`[API-OBJECTS] Requesting object: ${objectPath}`);
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      console.log(`[API-OBJECTS] Found object: ${objectPath}`);
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error(`[API-OBJECTS] Error for ${objectPath}:`, error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
   app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
     const objectStorageService = new ObjectStorageService();
     try {
