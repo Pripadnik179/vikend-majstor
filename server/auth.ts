@@ -112,7 +112,11 @@ export function setupAuth(app: Express) {
   }
 
   const replitDomains = process.env.REPLIT_DOMAINS || '';
-  const isProductionDomain = replitDomains.includes('vikendmajstor.rs');
+  const isProduction = process.env.NODE_ENV === 'production' || 
+                       replitDomains.includes('vikendmajstor.rs') ||
+                       process.env.REPLIT_DEPLOYMENT === '1';
+  
+  console.log(`[AUTH] Session config: isProduction=${isProduction}, NODE_ENV=${process.env.NODE_ENV}`);
   
   app.use(
     session({
@@ -120,11 +124,11 @@ export function setupAuth(app: Express) {
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: isProductionDomain,
+        secure: isProduction,
         httpOnly: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        sameSite: isProductionDomain ? "none" : "lax",
-        domain: isProductionDomain ? ".vikendmajstor.rs" : undefined,
+        sameSite: isProduction ? "none" : "lax",
+        domain: isProduction ? ".vikendmajstor.rs" : undefined,
       },
     })
   );
