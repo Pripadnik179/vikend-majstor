@@ -9,7 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { XIcon, CameraIcon, ChevronDownIcon, CheckIcon, BoxIcon, MapPinIcon } from '@/components/icons/TabBarIcons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import { File } from 'expo-file-system';
+import { File as ExpoFile } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/Button';
@@ -19,7 +19,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
-import { uploadFileToStorage, finalizeUpload } from '@/utils/objectStorageExpo';
+import { uploadFileToStorage, uploadFileToStorageWeb, finalizeUpload } from '@/utils/objectStorageExpo';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
@@ -155,8 +155,19 @@ export default function AddItemScreen() {
     if (!result.canceled && result.assets[0]) {
       setIsLoading(true);
       try {
-        const file = new File(result.assets[0].uri);
-        const uploadURL = await uploadFileToStorage(file);
+        let uploadURL: string;
+        
+        if (Platform.OS === 'web') {
+          const response = await fetch(result.assets[0].uri);
+          const blob = await response.blob();
+          const fileName = `image-${Date.now()}.jpg`;
+          const webFile = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+          uploadURL = await uploadFileToStorageWeb(webFile);
+        } else {
+          const file = new ExpoFile(result.assets[0].uri);
+          uploadURL = await uploadFileToStorage(file);
+        }
+        
         const objectPath = await finalizeUpload(uploadURL);
         setImages([...images, objectPath]);
       } catch (error) {
