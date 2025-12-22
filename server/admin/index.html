@@ -501,6 +501,17 @@
         <div id="stats-grid" class="stats-grid">
           <div class="loading-container"><div class="spinner"></div></div>
         </div>
+        
+        <!-- Users List on Dashboard -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header">
+            <h3 style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin: 0;">Poslednji korisnici</h3>
+            <button class="btn btn-secondary" onclick="navigateTo('users')" style="padding: 8px 16px; font-size: 13px;">Vidi sve</button>
+          </div>
+          <div id="dashboard-users-table">
+            <div class="loading-container"><div class="spinner"></div></div>
+          </div>
+        </div>
       </div>
 
       <!-- Users Page -->
@@ -694,6 +705,61 @@
         `;
       } catch (e) {
         container.innerHTML = '<div class="error-message">Greska pri ucitavanju statistike</div>';
+      }
+      
+      // Also load recent users on dashboard
+      loadDashboardUsers();
+    }
+    
+    // Dashboard Users (last 10)
+    async function loadDashboardUsers() {
+      const container = document.getElementById('dashboard-users-table');
+      if (!container) return;
+      container.innerHTML = '<div class="loading-container"><div class="spinner"></div></div>';
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/users?limit=10`, { credentials: 'include' });
+        if (!res.ok) throw new Error();
+        const users = await res.json();
+        
+        if (users.length === 0) {
+          container.innerHTML = '<div class="empty-state">Nema korisnika</div>';
+          return;
+        }
+
+        let html = `<table><thead><tr>
+          <th>Korisnik</th><th>Status</th><th>Pretplata</th><th>Datum</th><th></th>
+        </tr></thead><tbody>`;
+        
+        users.slice(0, 10).forEach(user => {
+          const statusBadge = user.isActive 
+            ? '<span class="badge badge-active">Aktivan</span>'
+            : '<span class="badge badge-inactive">Neaktivan</span>';
+          
+          let subBadge = '<span class="badge badge-free">Besplatno</span>';
+          if (user.isEarlyAdopter) subBadge = '<span class="badge badge-early">Rani korisnik</span>';
+          else if (user.subscriptionType === 'premium') subBadge = '<span class="badge badge-premium">Premium</span>';
+          else if (user.subscriptionType === 'basic') subBadge = '<span class="badge badge-standard">Standard</span>';
+          
+          const adminBadge = user.isAdmin ? '<span class="badge badge-admin">ADMIN</span>' : '';
+          const date = new Date(user.createdAt).toLocaleDateString('sr-Latn-RS');
+          
+          html += `<tr>
+            <td><div class="user-cell">
+              <div class="user-avatar">${(user.name || 'K').charAt(0).toUpperCase()}</div>
+              <div><div style="font-weight:500;">${user.name}${adminBadge}</div>
+              <div style="font-size:13px;color:var(--text-secondary);">${user.email}</div></div>
+            </div></td>
+            <td>${statusBadge}</td>
+            <td>${subBadge}</td>
+            <td style="color:var(--text-secondary);font-size:14px;">${date}</td>
+            <td><button class="btn btn-secondary" onclick="showUserDetail('${user.id}')" style="padding:8px 16px;font-size:13px;">Uredi</button></td>
+          </tr>`;
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = '<div class="error-message">Greska pri ucitavanju korisnika</div>';
       }
     }
 
