@@ -22,7 +22,15 @@ const __dirname = dirname(__filename);
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
-  app.get("/", (req, res) => {
+  app.get("/", (req, res, next) => {
+    const hostname = req.hostname || req.headers.host?.split(':')[0] || '';
+    const isAppSubdomain = hostname === 'app.vikendmajstor.rs' || hostname.includes('app.');
+    
+    // For app.vikendmajstor.rs, let static files (Expo web app) handle it
+    if (isAppSubdomain) {
+      return next();
+    }
+    
     const userAgent = req.headers['user-agent'] || '';
     const isExpoRequest = userAgent.includes('Expo') || req.headers['expo-platform'];
     
