@@ -430,6 +430,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: Spacing.xl,
+    maxWidth: 500,
+    alignSelf: 'center',
+    width: '100%',
   },
   successIcon: {
     marginBottom: Spacing.xl,
@@ -445,6 +448,7 @@ const styles = StyleSheet.create({
   },
   successCard: {
     width: '100%',
+    maxWidth: 400,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,
   },
