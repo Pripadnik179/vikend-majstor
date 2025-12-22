@@ -9,6 +9,7 @@ import {
   sendBookingConfirmedNotification,
   sendBookingCancelledNotification
 } from "./notifications";
+import { sendBookingRequestEmail, sendBookingConfirmedEmail } from "./email";
 import { seedDemoData, deleteDemoData, getDemoDataStats } from "./seed-demo";
 import * as path from "path";
 import * as fs from "fs";
@@ -615,9 +616,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const renter = await storage.getUser(req.user!.id);
+      const owner = await storage.getUser(item.ownerId);
       
       sendBookingRequestConfirmationToRenter(req.user!.id, item.title, booking.id);
       sendBookingRequestNotification(item.ownerId, renter?.name || 'Korisnik', item.title, booking.id);
+      
+      if (owner?.email) {
+        const startDateStr = new Date(req.body.startDate).toLocaleDateString('sr-RS');
+        const endDateStr = new Date(req.body.endDate).toLocaleDateString('sr-RS');
+        sendBookingRequestEmail(
+          owner.email,
+          owner.name,
+          renter?.name || 'Korisnik',
+          item.title,
+          startDateStr,
+          endDateStr,
+          req.body.totalPrice || 0
+        );
+      }
       
       res.status(201).json(booking);
     } catch (error) {
@@ -643,9 +659,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.body.status && req.body.status !== previousStatus) {
         const item = await storage.getItem(booking.itemId);
         const owner = await storage.getUser(booking.ownerId);
+        const renter = await storage.getUser(booking.renterId);
         
         if (req.body.status === 'confirmed' && item && owner) {
           sendBookingConfirmedNotification(booking.renterId, item.title, owner.name, booking.id);
+          
+          if (renter?.email) {
+            const startDateStr = new Date(booking.startDate).toLocaleDateString('sr-RS');
+            const endDateStr = new Date(booking.endDate).toLocaleDateString('sr-RS');
+            sendBookingConfirmedEmail(
+              renter.email,
+              renter.name,
+              owner.name,
+              item.title,
+              startDateStr,
+              endDateStr,
+              booking.totalPrice || 0,
+              owner.phone || undefined
+            );
+          }
         } else if (req.body.status === 'cancelled' && item) {
           const notifyUserId = req.user!.id === booking.ownerId ? booking.renterId : booking.ownerId;
           sendBookingCancelledNotification(notifyUserId, item.title, booking.id);

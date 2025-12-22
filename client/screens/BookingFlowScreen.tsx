@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Pressable, Alert, ActivityIndicator, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
@@ -14,7 +14,7 @@ import { Button } from '@/components/Button';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { useTheme } from '@/hooks/useTheme';
 import { apiRequest } from '@/lib/query-client';
-import { Spacing, BorderRadius } from '@/constants/theme';
+import { Spacing, BorderRadius, Colors } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item, User, Booking } from '@shared/schema';
 
@@ -31,6 +31,7 @@ export default function BookingFlowScreen() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'cash'>('cash');
   const [isLoading, setIsLoading] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   const { data: item, isLoading: isLoadingItem } = useQuery<ItemWithOwner>({
     queryKey: ['/api/items', route.params.itemId],
@@ -115,7 +116,7 @@ export default function BookingFlowScreen() {
 
   const handleConfirm = async () => {
     if (!startDate || !endDate) {
-      Alert.alert('Greška', 'Izaberite datume');
+      Alert.alert('Greska', 'Izaberite datume');
       return;
     }
 
@@ -133,14 +134,19 @@ export default function BookingFlowScreen() {
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/bookings'] });
+      setBookingSuccess(true);
       
-      Alert.alert(
-        'Uspešno',
-        'Vaša rezervacija je poslata vlasniku. Čekajte potvrdu.',
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
-      );
+      if (Platform.OS !== 'web') {
+        Alert.alert(
+          'Uspesno',
+          'Vasa rezervacija je poslata vlasniku. Cekajte potvrdu.',
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
+        );
+      }
     } catch (error: any) {
-      Alert.alert('Greška', error.message || 'Došlo je do greške');
+      if (Platform.OS !== 'web') {
+        Alert.alert('Greska', error.message || 'Doslo je do greske');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -155,6 +161,39 @@ export default function BookingFlowScreen() {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.backgroundRoot }]}>
         <ActivityIndicator size="large" color={theme.primary} />
+      </View>
+    );
+  }
+
+  if (bookingSuccess) {
+    return (
+      <View style={[styles.successContainer, { backgroundColor: theme.backgroundRoot }]}>
+        <View style={styles.successIcon}>
+          <CheckCircleIcon size={80} color={Colors.light.success} />
+        </View>
+        <ThemedText type="h2" style={styles.successTitle}>
+          Rezervacija poslata!
+        </ThemedText>
+        <ThemedText type="body" style={[styles.successText, { color: theme.textSecondary }]}>
+          Vasa rezervacija je uspesno poslata vlasniku predmeta. Dobicete obavestenje kada vlasnik potvrdi ili odbije vasu rezervaciju.
+        </ThemedText>
+        <Card style={styles.successCard}>
+          <View style={styles.successRow}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Predmet</ThemedText>
+            <ThemedText type="body" style={{ fontWeight: '600' }}>{item.title}</ThemedText>
+          </View>
+          <View style={[styles.successRow, { marginTop: Spacing.md }]}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Period</ThemedText>
+            <ThemedText type="body">{formatDate(startDate)} - {formatDate(endDate)}</ThemedText>
+          </View>
+          <View style={[styles.successRow, { marginTop: Spacing.md }]}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Ukupno</ThemedText>
+            <ThemedText type="body" style={{ color: theme.primary, fontWeight: '700' }}>{totalCost} RSD</ThemedText>
+          </View>
+        </Card>
+        <Button onPress={() => navigation.goBack()} style={styles.successButton}>
+          Nazad na predmet
+        </Button>
       </View>
     );
   }
@@ -353,5 +392,34 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     marginTop: Spacing.md,
+  },
+  successContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.xl,
+  },
+  successIcon: {
+    marginBottom: Spacing.xl,
+  },
+  successTitle: {
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+  successText: {
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
+  },
+  successCard: {
+    width: '100%',
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
+  },
+  successRow: {
+    flexDirection: 'column',
+  },
+  successButton: {
+    width: '100%',
   },
 });

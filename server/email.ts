@@ -222,3 +222,226 @@ export async function testEmailConnection(): Promise<boolean> {
     return false;
   }
 }
+
+export async function sendBookingRequestEmail(
+  ownerEmail: string,
+  ownerName: string,
+  renterName: string,
+  itemTitle: string,
+  startDate: string,
+  endDate: string,
+  totalPrice: number
+): Promise<boolean> {
+  const baseUrl = getBaseUrl();
+  const bookingsUrl = `${baseUrl}`;
+  
+  const mailOptions = {
+    from: `"VikendMajstor" <${process.env.SMTP_USER}>`,
+    to: ownerEmail,
+    subject: `Nova rezervacija za "${itemTitle}" - VikendMajstor`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Nova rezervacija</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td align="center" style="padding: 40px 0;">
+              <table role="presentation" style="width: 600px; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <tr>
+                  <td style="background-color: #1A1A1A; padding: 30px; text-align: center;">
+                    <h1 style="color: #FFCC00; margin: 0; font-size: 28px; font-weight: bold;">VikendMajstor</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    <h2 style="color: #1A1A1A; margin: 0 0 20px; font-size: 24px;">Zdravo, ${ownerName}!</h2>
+                    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                      Imate novu rezervaciju za vaš predmet <strong>"${itemTitle}"</strong>.
+                    </p>
+                    
+                    <table style="width: 100%; background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <strong style="color: #666;">Korisnik:</strong>
+                          <span style="color: #1A1A1A; float: right;">${renterName}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0; border-top: 1px solid #eee;">
+                          <strong style="color: #666;">Period:</strong>
+                          <span style="color: #1A1A1A; float: right;">${startDate} - ${endDate}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0; border-top: 1px solid #eee;">
+                          <strong style="color: #666;">Ukupna cena:</strong>
+                          <span style="color: #FFCC00; font-weight: bold; float: right;">${totalPrice} RSD</span>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0;">
+                      Molimo vas da potvrdite ili odbijete ovu rezervaciju u aplikaciji.
+                    </p>
+                    
+                    <table role="presentation" style="margin: 0 auto;">
+                      <tr>
+                        <td style="border-radius: 8px; background-color: #FFCC00;">
+                          <a href="${bookingsUrl}" style="display: inline-block; padding: 16px 40px; color: #1A1A1A; text-decoration: none; font-size: 18px; font-weight: bold;">
+                            Pogledaj rezervaciju
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background-color: #f5f5f5; padding: 20px 30px; text-align: center; border-top: 1px solid #eeeeee;">
+                    <p style="color: #999999; font-size: 12px; margin: 0;">
+                      &copy; ${new Date().getFullYear()} VikendMajstor. Sva prava zadržana.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+    text: `Zdravo ${ownerName}!\n\nImate novu rezervaciju za "${itemTitle}".\n\nKorisnik: ${renterName}\nPeriod: ${startDate} - ${endDate}\nUkupna cena: ${totalPrice} RSD\n\nMolimo potvrdite ili odbijete rezervaciju u aplikaciji.\n\nSrdačan pozdrav,\nVikendMajstor tim`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`[EMAIL] Booking request email sent to ${ownerEmail}`);
+    return true;
+  } catch (error) {
+    console.error(`[EMAIL] Failed to send booking request email to ${ownerEmail}:`, error);
+    return false;
+  }
+}
+
+export async function sendBookingConfirmedEmail(
+  renterEmail: string,
+  renterName: string,
+  ownerName: string,
+  itemTitle: string,
+  startDate: string,
+  endDate: string,
+  totalPrice: number,
+  ownerPhone?: string
+): Promise<boolean> {
+  const baseUrl = getBaseUrl();
+  
+  const mailOptions = {
+    from: `"VikendMajstor" <${process.env.SMTP_USER}>`,
+    to: renterEmail,
+    subject: `Rezervacija potvrđena: "${itemTitle}" - VikendMajstor`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Rezervacija potvrđena</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td align="center" style="padding: 40px 0;">
+              <table role="presentation" style="width: 600px; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <tr>
+                  <td style="background-color: #1A1A1A; padding: 30px; text-align: center;">
+                    <h1 style="color: #FFCC00; margin: 0; font-size: 28px; font-weight: bold;">VikendMajstor</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                      <div style="display: inline-block; width: 60px; height: 60px; background-color: #22C55E; border-radius: 50%; line-height: 60px;">
+                        <span style="color: white; font-size: 30px;">&#10003;</span>
+                      </div>
+                    </div>
+                    
+                    <h2 style="color: #22C55E; margin: 0 0 20px; font-size: 24px; text-align: center;">Rezervacija potvrđena!</h2>
+                    
+                    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                      Zdravo ${renterName}! Vaša rezervacija za <strong>"${itemTitle}"</strong> je potvrđena.
+                    </p>
+                    
+                    <table style="width: 100%; background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #22C55E;">
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <strong style="color: #666;">Vlasnik:</strong>
+                          <span style="color: #1A1A1A; float: right;">${ownerName}</span>
+                        </td>
+                      </tr>
+                      ${ownerPhone ? `
+                      <tr>
+                        <td style="padding: 10px 0; border-top: 1px solid #bbf7d0;">
+                          <strong style="color: #666;">Telefon:</strong>
+                          <span style="color: #1A1A1A; float: right;">${ownerPhone}</span>
+                        </td>
+                      </tr>
+                      ` : ''}
+                      <tr>
+                        <td style="padding: 10px 0; border-top: 1px solid #bbf7d0;">
+                          <strong style="color: #666;">Period:</strong>
+                          <span style="color: #1A1A1A; float: right;">${startDate} - ${endDate}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0; border-top: 1px solid #bbf7d0;">
+                          <strong style="color: #666;">Ukupna cena:</strong>
+                          <span style="color: #22C55E; font-weight: bold; float: right;">${totalPrice} RSD</span>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0;">
+                      Kontaktirajte vlasnika putem poruka u aplikaciji da dogovorite preuzimanje.
+                    </p>
+                    
+                    <table role="presentation" style="margin: 0 auto;">
+                      <tr>
+                        <td style="border-radius: 8px; background-color: #FFCC00;">
+                          <a href="${baseUrl}" style="display: inline-block; padding: 16px 40px; color: #1A1A1A; text-decoration: none; font-size: 18px; font-weight: bold;">
+                            Otvori aplikaciju
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background-color: #f5f5f5; padding: 20px 30px; text-align: center; border-top: 1px solid #eeeeee;">
+                    <p style="color: #999999; font-size: 12px; margin: 0;">
+                      &copy; ${new Date().getFullYear()} VikendMajstor. Sva prava zadržana.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+    text: `Zdravo ${renterName}!\n\nVaša rezervacija za "${itemTitle}" je potvrđena!\n\nVlasnik: ${ownerName}\n${ownerPhone ? `Telefon: ${ownerPhone}\n` : ''}Period: ${startDate} - ${endDate}\nUkupna cena: ${totalPrice} RSD\n\nKontaktirajte vlasnika putem poruka u aplikaciji da dogovorite preuzimanje.\n\nSrdačan pozdrav,\nVikendMajstor tim`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`[EMAIL] Booking confirmed email sent to ${renterEmail}`);
+    return true;
+  } catch (error) {
+    console.error(`[EMAIL] Failed to send booking confirmed email to ${renterEmail}:`, error);
+    return false;
+  }
+}
