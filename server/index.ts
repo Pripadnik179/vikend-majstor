@@ -1,3 +1,4 @@
+// Build timestamp: 2024-12-22T23:50:00Z - Force rebuild for landing page update
 import express from "express";
 import type { Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
