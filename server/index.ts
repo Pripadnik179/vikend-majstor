@@ -65,6 +65,12 @@ function setupCors(app: express.Application) {
   app.use((req, res, next) => {
     const origins = new Set<string>();
 
+    // Add custom production domains
+    origins.add('https://vikendmajstor.rs');
+    origins.add('https://www.vikendmajstor.rs');
+    origins.add('https://app.vikendmajstor.rs');
+    origins.add('https://api.vikendmajstor.rs');
+
     if (process.env.REPLIT_DEV_DOMAIN) {
       const baseDomain = process.env.REPLIT_DEV_DOMAIN;
       origins.add(`https://${baseDomain}`);
@@ -92,8 +98,8 @@ function setupCors(app: express.Application) {
     // Check if origin matches any allowed origin or is a Replit domain with port
     let isAllowed = origin && origins.has(origin);
     
-    // Also allow any Replit domain with port pattern
-    if (!isAllowed && origin && (origin.includes('.replit.dev') || origin.includes('.repl.co'))) {
+    // Also allow any Replit domain with port pattern or vikendmajstor.rs domains
+    if (!isAllowed && origin && (origin.includes('.replit.dev') || origin.includes('.repl.co') || origin.includes('vikendmajstor.rs'))) {
       isAllowed = true;
     }
 
