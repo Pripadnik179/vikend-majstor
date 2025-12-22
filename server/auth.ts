@@ -234,22 +234,29 @@ export function setupAuth(app: Express) {
 
   app.post("/api/auth/resend-verification", async (req, res) => {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: "Morate biti prijavljeni" });
-      }
+      let user;
       
-      if (req.user.emailVerified) {
-        return res.status(400).json({ error: "Email je već verifikovan" });
-      }
-      
-      const verificationToken = await storage.createVerificationToken(req.user.id, 'email');
-      const sent = await sendVerificationEmail(req.user.email, verificationToken.token, req.user.name);
-      
-      if (sent) {
-        res.json({ success: true, message: "Verifikacioni email je poslat" });
+      if (req.body.email) {
+        user = await storage.getUserByEmail(req.body.email);
+        if (!user) {
+          return res.json({ success: true, message: "Ako nalog postoji, verifikacioni email je poslat" });
+        }
+      } else if (req.user) {
+        user = req.user;
       } else {
-        res.status(500).json({ error: "Greška pri slanju emaila" });
+        return res.status(400).json({ error: "Email adresa je obavezna" });
       }
+      
+      if (user.emailVerified) {
+        return res.json({ success: true, message: "Ako nalog postoji, verifikacioni email je poslat" });
+      }
+      
+      const verificationToken = await storage.createVerificationToken(user.id, 'email');
+      const sent = await sendVerificationEmail(user.email, verificationToken.token, user.name);
+      
+      console.log(`[EMAIL] Resend verification to ${user.email}: ${sent ? 'SUCCESS' : 'FAILED'}`);
+      
+      res.json({ success: true, message: "Ako nalog postoji, verifikacioni email je poslat" });
     } catch (error) {
       console.error("Resend verification error:", error);
       res.status(500).json({ error: "Greška pri slanju emaila" });

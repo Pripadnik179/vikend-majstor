@@ -10,7 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWebLayout } from '@/hooks/useWebLayout';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
-import { apiRequest } from '@/lib/query-client';
+import { apiRequest, ApiError } from '@/lib/query-client';
 
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
@@ -31,7 +31,7 @@ if (Platform.OS === 'ios') {
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
-  const { login, register, loginWithGoogle, loginWithApple } = useAuth();
+  const { login, register, loginWithGoogle, loginWithApple, resendVerificationEmail } = useAuth();
   const { isDesktop, isTablet } = useWebLayout();
   
   const [isLogin, setIsLogin] = useState(true);
@@ -47,6 +47,8 @@ export default function AuthScreen() {
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   useEffect(() => {
     if (Platform.OS === 'ios' && AppleAuthentication) {
@@ -129,6 +131,7 @@ export default function AuthScreen() {
   const handleSubmit = async () => {
     setErrorMessage(null);
     setSuccessMessage(null);
+    setUnverifiedEmail(null);
     
     if (!email || !password || (!isLogin && !name)) {
       const msg = 'Sva polja su obavezna';
@@ -149,13 +152,38 @@ export default function AuthScreen() {
       }
       console.log('[Auth] Success');
     } catch (error: any) {
-      console.log('[Auth] Error:', error?.message || error);
-      const msg = error?.message || 'Došlo je do greške pri prijavi';
-      setErrorMessage(msg);
-      if (Platform.OS !== 'web') {
-        Alert.alert('Greška', msg);
+      console.log('[Auth] Error:', error?.message || error, 'Code:', error?.code);
+      
+      if (error instanceof ApiError && error.code === 'EMAIL_NOT_VERIFIED') {
+        setUnverifiedEmail(email);
+        setErrorMessage('Morate potvrditi email adresu pre prijave.');
+      } else {
+        const msg = error?.message || 'Došlo je do greške pri prijavi';
+        setErrorMessage(msg);
+        if (Platform.OS !== 'web') {
+          Alert.alert('Greška', msg);
+        }
       }
       setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail) return;
+    
+    setResendingVerification(true);
+    try {
+      const success = await resendVerificationEmail(unverifiedEmail);
+      if (success) {
+        setSuccessMessage('Verifikacioni email je poslat. Proverite inbox.');
+        setUnverifiedEmail(null);
+      } else {
+        setErrorMessage('Greška pri slanju emaila. Pokušajte ponovo.');
+      }
+    } catch (error) {
+      setErrorMessage('Greška pri slanju emaila. Pokušajte ponovo.');
+    } finally {
+      setResendingVerification(false);
     }
   };
 
@@ -322,6 +350,21 @@ export default function AuthScreen() {
                 <ThemedText type="small" style={styles.errorText}>
                   {errorMessage}
                 </ThemedText>
+                {unverifiedEmail ? (
+                  <Pressable 
+                    onPress={handleResendVerification} 
+                    disabled={resendingVerification}
+                    style={styles.resendButton}
+                  >
+                    {resendingVerification ? (
+                      <ActivityIndicator size="small" color={Colors.light.primary} />
+                    ) : (
+                      <ThemedText type="small" style={{ color: Colors.light.primary, fontWeight: '600' }}>
+                        Posalji ponovo verifikacioni email
+                      </ThemedText>
+                    )}
+                  </Pressable>
+                ) : null}
               </View>
             ) : null}
 
@@ -492,5 +535,9 @@ const styles = StyleSheet.create({
   successText: {
     color: '#22C55E',
     textAlign: 'center',
+  },
+  resendButton: {
+    marginTop: Spacing.sm,
+    alignItems: 'center',
   },
 });

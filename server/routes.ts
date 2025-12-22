@@ -81,13 +81,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/objects/:objectPath(*)", async (req, res) => {
     const objectStorageService = new ObjectStorageService();
+    console.log(`[OBJECTS] Requesting object: ${req.path}`);
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(
         req.path,
       );
+      console.log(`[OBJECTS] Found object: ${req.path}`);
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
-      console.error("Error checking object access:", error);
+      console.error(`[OBJECTS] Error for ${req.path}:`, error);
       if (error instanceof ObjectNotFoundError) {
         return res.sendStatus(404);
       }
@@ -112,6 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const userId = req.user!.id;
+    console.log(`[UPLOAD] Finalizing upload for user ${userId}, URL: ${req.body.uploadURL.substring(0, 100)}...`);
 
     try {
       const objectStorageService = new ObjectStorageService();
@@ -123,9 +126,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       );
 
+      console.log(`[UPLOAD] Finalized successfully, objectPath: ${objectPath}`);
       res.status(200).json({ objectPath });
     } catch (error) {
-      console.error("Error finalizing upload:", error);
+      console.error("[UPLOAD] Error finalizing upload:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

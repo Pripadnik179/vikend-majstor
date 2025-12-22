@@ -52,7 +52,7 @@ function getAuthHeaders(): Record<string, string> {
   return {};
 }
 
-class ApiError extends Error {
+export class ApiError extends Error {
   code?: string;
   status: number;
   
@@ -114,7 +114,10 @@ export async function apiRequest(
     return res;
   } catch (error: any) {
     console.log('[API] Request failed:', url.toString(), 'Error:', error?.message || error);
-    throw new Error(error?.message || 'Mrezna greska - proverite internet konekciju');
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(error?.message || 'Mrezna greska - proverite internet konekciju', 0);
   }
 }
 

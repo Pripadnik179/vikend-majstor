@@ -42,7 +42,7 @@ interface AuthContextType {
   loginWithApple: (identityToken: string, fullName?: { givenName?: string; familyName?: string } | null) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  resendVerificationEmail: () => Promise<boolean>;
+  resendVerificationEmail: (email?: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -202,9 +202,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
-  const resendVerificationEmail = async (): Promise<boolean> => {
+  const resendVerificationEmail = async (email?: string): Promise<boolean> => {
     try {
-      const response = await apiRequest('POST', '/api/auth/resend-verification');
+      const body = email ? { email } : undefined;
+      const response = await apiRequest('POST', '/api/auth/resend-verification', body);
       return response.ok;
     } catch (error) {
       console.error('Failed to resend verification email:', error);
