@@ -3,10 +3,12 @@ import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MailIcon, AppleIcon, EyeIcon, EyeOffIcon } from '@/components/icons/TabBarIcons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
+import { ResponsiveContainer } from '@/components/ResponsiveContainer';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/Button';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWebLayout } from '@/hooks/useWebLayout';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { apiRequest } from '@/lib/query-client';
 
@@ -30,6 +32,7 @@ export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
   const { login, register, loginWithGoogle, loginWithApple } = useAuth();
+  const { isDesktop, isTablet } = useWebLayout();
   
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -172,22 +175,28 @@ export default function AuthScreen() {
       style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
       contentContainerStyle={[
         styles.container,
-        { paddingTop: insets.top + Spacing['3xl'], paddingBottom: insets.bottom + Spacing.xl },
+        { 
+          paddingTop: insets.top + Spacing['3xl'], 
+          paddingBottom: insets.bottom + Spacing.xl,
+          justifyContent: (isDesktop || isTablet) ? 'center' : 'flex-start',
+          minHeight: (isDesktop || isTablet) ? '100%' : undefined,
+        },
       ]}
     >
-      <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/icon.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <ThemedText type="h1" style={styles.title}>VikendMajstor</ThemedText>
-        <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
-          Iznajmi alat od komšije
-        </ThemedText>
-      </View>
+      <ResponsiveContainer maxWidth="form" style={styles.responsiveWrapper}>
+        <View style={styles.header}>
+          <Image
+            source={require('../../assets/images/icon.png')}
+            style={[styles.logo, (isDesktop || isTablet) && styles.logoLarge]}
+            resizeMode="contain"
+          />
+          <ThemedText type="h1" style={styles.title}>VikendMajstor</ThemedText>
+          <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
+            Iznajmi alat od komšije
+          </ThemedText>
+        </View>
 
-      <View style={styles.form}>
+        <View style={[styles.form, (isDesktop || isTablet) && styles.formDesktop]}>
         <ThemedText type="h3" style={styles.formTitle}>
           {isLogin ? 'Prijava' : 'Registracija'}
         </ThemedText>
@@ -342,7 +351,8 @@ export default function AuthScreen() {
             </Pressable>
           </>
         )}
-      </View>
+        </View>
+      </ResponsiveContainer>
     </KeyboardAwareScrollViewCompat>
   );
 }
@@ -350,7 +360,9 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingHorizontal: Spacing.xl,
+  },
+  responsiveWrapper: {
+    flexGrow: 0,
   },
   header: {
     alignItems: 'center',
@@ -361,6 +373,10 @@ const styles = StyleSheet.create({
     height: 100,
     marginBottom: Spacing.lg,
   },
+  logoLarge: {
+    width: 120,
+    height: 120,
+  },
   title: {
     textAlign: 'center',
   },
@@ -370,6 +386,9 @@ const styles = StyleSheet.create({
   },
   form: {
     flex: 1,
+  },
+  formDesktop: {
+    flex: 0,
   },
   formTitle: {
     marginBottom: Spacing.xl,
