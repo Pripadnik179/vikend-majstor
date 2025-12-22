@@ -1,14 +1,13 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, useWindowDimensions, Platform } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { ImageIcon, StarIcon, MapPinIcon, ClockIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout } from '@/hooks/useWebLayout';
 import { getApiUrl } from '@/lib/query-client';
 import { Spacing, BorderRadius, Colors } from '@/constants/theme';
 import type { Item } from '@shared/schema';
-
-const isWeb = Platform.OS === 'web';
 
 interface ItemCardProps {
   item: Item & { isPremium?: boolean; distance?: number | null };
@@ -18,16 +17,7 @@ interface ItemCardProps {
 
 export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProps) {
   const { theme } = useTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = isWeb && width >= 768;
-  
-  // For mobile, use flex: 1 to let FlatList handle width in grid layout
-  // For desktop, calculate explicit width for more control
-  const numColumns = isDesktop ? (width >= 1200 ? 4 : width >= 992 ? 3 : 2) : 2;
-  const horizontalPadding = isDesktop ? Math.max(24, (width - 1400) / 2) : Spacing.lg;
-  const cardWidth = isDesktop 
-    ? (width - horizontalPadding * 2 - Spacing.md * (numColumns - 1)) / numColumns
-    : undefined; // Let flex handle mobile width
+  const { isDesktop, cardWidth } = useWebLayout();
 
   const getImageUrl = (path: string) => {
     if (path.startsWith('http')) return path;

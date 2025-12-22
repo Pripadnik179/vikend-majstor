@@ -40,7 +40,7 @@ export default function HomeScreen() {
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { isDesktop, contentPaddingTop, contentPaddingBottom, numColumns, width } = useWebLayout();
+  const { isDesktop, contentPaddingTop, contentPaddingBottom, numColumns, width, horizontalPadding } = useWebLayout();
   
   const tabBarHeight = isDesktop ? 0 : (Platform.OS === 'web' ? 0 : 80);
   const effectiveNumColumns = Math.max(1, numColumns);
@@ -210,8 +210,6 @@ export default function HomeScreen() {
   const paddingBottom = isDesktop 
     ? contentPaddingBottom + Spacing.xl 
     : tabBarHeight + Spacing.fabSize + Spacing.xl;
-
-  const horizontalPadding = isDesktop ? Math.max(24, (width - 1400) / 2) : Spacing.lg;
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.backgroundRoot }}>
