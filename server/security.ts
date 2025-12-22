@@ -159,6 +159,30 @@ export function logError(context: string, error: Error | unknown, req?: Request)
 }
 
 export function setupSecurity(app: Express) {
+  // CORS for cross-origin requests from app.vikendmajstor.rs to api.vikendmajstor.rs
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      'https://app.vikendmajstor.rs',
+      'https://vikendmajstor.rs',
+      'http://localhost:8081',
+      'http://localhost:5000',
+    ];
+    
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
+  
   app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
