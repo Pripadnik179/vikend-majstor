@@ -104,15 +104,15 @@ export default function ItemDetailScreen() {
             horizontal 
             pagingEnabled 
             showsHorizontalScrollIndicator={false}
-            style={[styles.imageGallery, { width: imageWidth }]}
+            style={[styles.imageGallery, { width: imageWidth, backgroundColor: theme.backgroundSecondary }]}
           >
             {item.images && item.images.length > 0 ? (
               item.images.map((image, index) => (
                 <Image
                   key={index}
                   source={{ uri: getImageUrl(image) }}
-                  style={[styles.image, { width: imageWidth }]}
-                  contentFit="cover"
+                  style={[styles.image, { width: imageWidth, aspectRatio: 4/3 }]}
+                  contentFit="contain"
                 />
               ))
             ) : (
@@ -253,10 +253,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   imageGallery: {
-    height: 300,
+    minHeight: 250,
   },
   image: {
-    height: 300,
+    minHeight: 250,
   },
   placeholderImage: {
     justifyContent: 'center',
