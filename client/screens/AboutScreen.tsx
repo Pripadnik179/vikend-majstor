@@ -8,6 +8,7 @@ import { DynamicIcon } from '@/components/icons/DynamicIcon';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -16,6 +17,7 @@ const APP_VERSION = '1.0.0';
 export default function AboutScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { isDesktop } = useWebLayout();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleContactPress = () => {
@@ -49,8 +51,10 @@ export default function AboutScreen() {
       contentContainerStyle={{
         padding: Spacing.lg,
         paddingBottom: insets.bottom + Spacing.xl,
+        alignItems: isDesktop ? 'center' : undefined,
       }}
     >
+      <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH }}>
       <Card style={styles.headerCard}>
         <View style={[styles.logoContainer, { backgroundColor: theme.primary }]}>
           <ToolIcon size={48} color="#000" />
@@ -143,6 +147,7 @@ export default function AboutScreen() {
         <ThemedText type="small" style={{ color: theme.textTertiary, textAlign: 'center', marginTop: Spacing.xs }}>
           Napravljeno sa ljubavlju u Srbiji
         </ThemedText>
+      </View>
       </View>
     </ScrollView>
   );

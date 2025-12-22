@@ -8,7 +8,7 @@ import { CalendarIcon } from '@/components/icons/TabBarIcons';
 import { BookingCard } from '@/components/BookingCard';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
-import { useWebLayout } from '@/hooks/useWebLayout';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Booking, Item, User } from '@shared/schema';
@@ -69,8 +69,8 @@ export default function BookingsScreen() {
   const paddingBottom = isDesktop ? contentPaddingBottom + Spacing.xl : tabBarHeight + Spacing.fabSize + Spacing.xl;
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.backgroundRoot, paddingTop }}>
-      <View style={[styles.tabContainer, { borderBottomColor: theme.border }]}>
+    <View style={{ flex: 1, backgroundColor: theme.backgroundRoot, paddingTop, alignItems: isDesktop ? 'center' : undefined }}>
+      <View style={[styles.tabContainer, { borderBottomColor: theme.border, maxWidth: MAX_CONTENT_WIDTH, width: '100%' }]}>
         <Pressable
           style={[
             styles.tab,
@@ -102,7 +102,7 @@ export default function BookingsScreen() {
       </View>
 
       <FlatList
-        style={{ flex: 1 }}
+        style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH }}
         contentContainerStyle={{
           paddingTop: Spacing.lg,
           paddingBottom,

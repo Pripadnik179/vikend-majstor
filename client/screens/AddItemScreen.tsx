@@ -16,6 +16,7 @@ import { Button } from '@/components/Button';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { UpgradeLimitModal } from '@/components/UpgradeLimitModal';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import { uploadFileToStorage, finalizeUpload } from '@/utils/objectStorageExpo';
@@ -31,6 +32,7 @@ export default function AddItemScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
+  const { isDesktop } = useWebLayout();
   const { user } = useAuth();
   const route = useRoute<RouteProp<RootStackParamList, 'EditItem'>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -267,9 +269,14 @@ export default function AddItemScreen() {
       style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
       contentContainerStyle={[
         styles.container,
-        { paddingTop: headerHeight + Spacing.lg, paddingBottom: insets.bottom + Spacing.xl },
+        { 
+          paddingTop: headerHeight + Spacing.lg, 
+          paddingBottom: insets.bottom + Spacing.xl,
+          alignItems: isDesktop ? 'center' : undefined,
+        },
       ]}
     >
+      <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH }}>
       <View style={styles.section}>
         <ThemedText type="h4" style={styles.label}>Tip oglasa</ThemedText>
         <View style={styles.adTypeRow}>
@@ -630,6 +637,7 @@ export default function AddItemScreen() {
       <Button onPress={handleSubmit} disabled={isLoading} style={styles.submitButton}>
         {isLoading ? <ActivityIndicator color="#FFFFFF" /> : (isEditing ? 'Sačuvaj izmene' : 'Dodaj stvar')}
       </Button>
+      </View>
     </KeyboardAwareScrollViewCompat>
     </>
   );

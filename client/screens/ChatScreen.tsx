@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageIcon, SendIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest } from '@/lib/query-client';
 import { Spacing, BorderRadius } from '@/constants/theme';
@@ -16,6 +17,7 @@ import type { Message } from '@shared/schema';
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { isDesktop } = useWebLayout();
   const { user } = useAuth();
   const route = useRoute<RouteProp<RootStackParamList, 'Chat'>>();
   const queryClient = useQueryClient();
@@ -87,7 +89,7 @@ export default function ChatScreen() {
             {item.content}
           </ThemedText>
           <ThemedText 
-            type="caption" 
+            type="small" 
             style={[styles.messageTime, { color: isOwn ? 'rgba(255,255,255,0.7)' : theme.textTertiary }]}
           >
             {formatTime(item.createdAt)}
@@ -116,13 +118,13 @@ export default function ChatScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
+      style={{ flex: 1, backgroundColor: theme.backgroundRoot, alignItems: isDesktop ? 'center' : undefined }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={100}
     >
       <FlatList
         ref={flatListRef}
-        style={{ flex: 1 }}
+        style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH }}
         contentContainerStyle={[styles.messagesList, { flexGrow: 1 }]}
         data={messages}
         renderItem={renderMessage}
@@ -135,6 +137,8 @@ export default function ChatScreen() {
         backgroundColor: theme.backgroundRoot, 
         borderTopColor: theme.border,
         paddingBottom: insets.bottom + Spacing.sm,
+        maxWidth: MAX_CONTENT_WIDTH,
+        width: '100%',
       }]}>
         <TextInput
           style={[styles.input, { 

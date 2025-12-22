@@ -9,6 +9,7 @@ import { ZapIcon, StarIcon, ImageIcon, ClockIcon, EditIcon, PlusIcon, AwardIcon,
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import { Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -31,6 +32,7 @@ interface AdStats {
 export default function MyItemsScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { isDesktop } = useWebLayout();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const queryClient = useQueryClient();
 
@@ -382,24 +384,26 @@ export default function MyItemsScreen() {
   }
 
   return (
-    <FlatList
-      style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
-      contentContainerStyle={{
-        paddingVertical: Spacing.lg,
-        paddingHorizontal: Spacing.lg,
-        paddingBottom: insets.bottom + Spacing.xl,
-        flexGrow: 1,
-      }}
-      scrollIndicatorInsets={{ bottom: insets.bottom }}
-      data={items}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      ListHeaderComponent={items.length > 0 ? renderHeader : undefined}
-      ListEmptyComponent={renderEmpty}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
-      }
-    />
+    <View style={{ flex: 1, backgroundColor: theme.backgroundRoot, alignItems: isDesktop ? 'center' : undefined }}>
+      <FlatList
+        style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH }}
+        contentContainerStyle={{
+          paddingVertical: Spacing.lg,
+          paddingHorizontal: Spacing.lg,
+          paddingBottom: insets.bottom + Spacing.xl,
+          flexGrow: 1,
+        }}
+        scrollIndicatorInsets={{ bottom: insets.bottom }}
+        data={items}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={items.length > 0 ? renderHeader : undefined}
+        ListEmptyComponent={renderEmpty}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+        }
+      />
+    </View>
   );
 }
 

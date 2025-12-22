@@ -5,6 +5,7 @@ import { ChevronUpIcon, ChevronDownIcon, MailIcon, InfoIcon } from '@/components
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 
 interface FAQItem {
@@ -42,6 +43,7 @@ const faqItems: FAQItem[] = [
 export default function HelpScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { isDesktop } = useWebLayout();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   const toggleExpand = (index: number) => {
@@ -58,8 +60,10 @@ export default function HelpScreen() {
       contentContainerStyle={{
         padding: Spacing.lg,
         paddingBottom: insets.bottom + Spacing.xl,
+        alignItems: isDesktop ? 'center' : undefined,
       }}
     >
+      <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH }}>
       <ThemedText type="h3" style={styles.sectionTitle}>Često postavljana pitanja</ThemedText>
 
       {faqItems.map((item, index) => (
@@ -122,6 +126,7 @@ export default function HelpScreen() {
           Pre iznajmljivanja uvek proverite profil korisnika, ocene i recenzije. Koristite chat za dogovor o detaljima preuzimanja.
         </ThemedText>
       </Card>
+      </View>
     </ScrollView>
   );
 }

@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { MessageIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
-import { useWebLayout } from '@/hooks/useWebLayout';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Conversation, Message, User } from '@shared/schema';
@@ -119,22 +119,24 @@ export default function MessagesScreen() {
   }
 
   return (
-    <FlatList
-      style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
-      contentContainerStyle={{
-        paddingTop,
-        paddingBottom,
-        flexGrow: 1,
-      }}
-      scrollIndicatorInsets={{ bottom: insets.bottom }}
-      data={conversations}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      ListEmptyComponent={renderEmpty}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
-      }
-    />
+    <View style={{ flex: 1, backgroundColor: theme.backgroundRoot, alignItems: isDesktop ? 'center' : undefined }}>
+      <FlatList
+        style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH }}
+        contentContainerStyle={{
+          paddingTop,
+          paddingBottom,
+          flexGrow: 1,
+        }}
+        scrollIndicatorInsets={{ bottom: insets.bottom }}
+        data={conversations}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        ListEmptyComponent={renderEmpty}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+        }
+      />
+    </View>
   );
 }
 

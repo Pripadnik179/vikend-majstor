@@ -10,7 +10,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { VerificationBanner } from '@/components/VerificationBanner';
 import { useTheme } from '@/hooks/useTheme';
-import { useWebLayout } from '@/hooks/useWebLayout';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
@@ -82,9 +82,11 @@ export default function ProfileScreen() {
         paddingTop,
         paddingBottom,
         paddingHorizontal: Spacing.lg,
+        alignItems: isDesktop ? 'center' : undefined,
       }}
       scrollIndicatorInsets={{ bottom: insets.bottom }}
     >
+      <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH }}>
       <VerificationBanner style={{ marginHorizontal: 0, marginBottom: Spacing.lg }} />
       <Card style={styles.profileCard}>
         <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
@@ -193,6 +195,7 @@ export default function ProfileScreen() {
           Odjavi se
         </ThemedText>
       </Pressable>
+      </View>
     </ScrollView>
   );
 }

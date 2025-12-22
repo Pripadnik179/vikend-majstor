@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Alert, ActivityIndicator, ScrollView } from 'react-native';
+import { View, StyleSheet, TextInput, Alert, ActivityIndicator, ScrollView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/Button';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest } from '@/lib/query-client';
 import { Spacing, BorderRadius } from '@/constants/theme';
@@ -13,6 +14,7 @@ import { Spacing, BorderRadius } from '@/constants/theme';
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { isDesktop, horizontalPadding } = useWebLayout();
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
 
@@ -54,8 +56,15 @@ export default function SettingsScreen() {
   return (
     <KeyboardAwareScrollViewCompat
       style={{ flex: 1, backgroundColor: theme.backgroundRoot }}
-      contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + Spacing.xl }]}
+      contentContainerStyle={[
+        styles.container, 
+        { 
+          paddingBottom: insets.bottom + Spacing.xl,
+          alignItems: isDesktop ? 'center' : undefined,
+        }
+      ]}
     >
+      <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH }}>
       <View style={styles.section}>
         <ThemedText type="h4" style={styles.label}>Ime i prezime *</ThemedText>
         <TextInput
@@ -118,6 +127,7 @@ export default function SettingsScreen() {
       <Button onPress={handleSave} disabled={isLoading} style={styles.saveButton}>
         {isLoading ? <ActivityIndicator color="#FFFFFF" /> : 'Sačuvaj promene'}
       </Button>
+      </View>
     </KeyboardAwareScrollViewCompat>
   );
 }

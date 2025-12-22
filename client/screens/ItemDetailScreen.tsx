@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet, Pressable, ActivityIndicator, Dimensions } from 'react-native';
+import { View, ScrollView, StyleSheet, Pressable, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { AvailabilityCalendar } from '@/components/AvailabilityCalendar';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import { Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
@@ -20,12 +21,15 @@ import type { Item, User, Review, Booking } from '@shared/schema';
 
 type ItemWithOwner = Item & { owner: User };
 
-const { width } = Dimensions.get('window');
-
 export default function ItemDetailScreen() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { theme } = useTheme();
+  const { isDesktop, horizontalPadding } = useWebLayout();
   const { user } = useAuth();
+  
+  const contentWidth = Math.min(width, MAX_CONTENT_WIDTH);
+  const imageWidth = isDesktop ? contentWidth : width;
   const route = useRoute<RouteProp<RootStackParamList, 'ItemDetail'>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const queryClient = useQueryClient();
@@ -83,32 +87,39 @@ export default function ItemDetailScreen() {
     <View style={{ flex: 1, backgroundColor: theme.backgroundRoot }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ 
+          paddingBottom: 100,
+          alignItems: isDesktop ? 'center' : undefined,
+        }}
         scrollIndicatorInsets={{ bottom: insets.bottom }}
       >
-        <ScrollView 
-          horizontal 
-          pagingEnabled 
-          showsHorizontalScrollIndicator={false}
-          style={styles.imageGallery}
-        >
-          {item.images && item.images.length > 0 ? (
-            item.images.map((image, index) => (
-              <Image
-                key={index}
-                source={{ uri: getImageUrl(image) }}
-                style={styles.image}
-                contentFit="cover"
-              />
-            ))
-          ) : (
-            <View style={[styles.image, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary }]}>
-              <ImageIcon size={48} color={theme.textTertiary} />
-            </View>
-          )}
-        </ScrollView>
+        <View style={{ 
+          width: isDesktop ? contentWidth : '100%',
+          maxWidth: MAX_CONTENT_WIDTH,
+        }}>
+          <ScrollView 
+            horizontal 
+            pagingEnabled 
+            showsHorizontalScrollIndicator={false}
+            style={[styles.imageGallery, { width: imageWidth }]}
+          >
+            {item.images && item.images.length > 0 ? (
+              item.images.map((image, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: getImageUrl(image) }}
+                  style={[styles.image, { width: imageWidth }]}
+                  contentFit="cover"
+                />
+              ))
+            ) : (
+              <View style={[styles.image, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary, width: imageWidth }]}>
+                <ImageIcon size={48} color={theme.textTertiary} />
+              </View>
+            )}
+          </ScrollView>
 
-        <View style={styles.content}>
+          <View style={[styles.content, { paddingHorizontal: isDesktop ? Spacing.xl : Spacing.lg }]}>
           <View style={styles.header}>
             <View style={styles.titleSection}>
               <ThemedText type="h2">{item.title}</ThemedText>
@@ -201,21 +212,31 @@ export default function ItemDetailScreen() {
               ))}
             </View>
           )}
+          </View>
         </View>
       </ScrollView>
 
       {!isOwner && (
-        <View style={[styles.footer, { backgroundColor: theme.backgroundRoot, borderTopColor: theme.border }]}>
-          <View style={styles.footerPrice}>
-            <ThemedText type="h3" style={{ color: theme.primary }}>{item.pricePerDay} RSD</ThemedText>
-            <ThemedText type="small" style={{ color: theme.textSecondary }}>po danu + {item.deposit} RSD depozit</ThemedText>
+        <View style={[
+          styles.footer, 
+          { 
+            backgroundColor: theme.backgroundRoot, 
+            borderTopColor: theme.border,
+            paddingHorizontal: isDesktop ? Math.max((width - contentWidth) / 2 + Spacing.lg, Spacing.lg) : Spacing.lg,
+          }
+        ]}>
+          <View style={[styles.footerInner, { maxWidth: MAX_CONTENT_WIDTH }]}>
+            <View style={styles.footerPrice}>
+              <ThemedText type="h3" style={{ color: theme.primary }}>{item.pricePerDay} RSD</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>po danu + {item.deposit} RSD depozit</ThemedText>
+            </View>
+            <Button
+              onPress={() => navigation.navigate('BookingFlow', { itemId: item.id })}
+              style={styles.bookButton}
+            >
+              Rezerviši
+            </Button>
           </View>
-          <Button
-            onPress={() => navigation.navigate('BookingFlow', { itemId: item.id })}
-            style={styles.bookButton}
-          >
-            Rezerviši
-          </Button>
         </View>
       )}
     </View>
@@ -232,7 +253,6 @@ const styles = StyleSheet.create({
     height: 300,
   },
   image: {
-    width: width,
     height: 300,
   },
   placeholderImage: {
@@ -240,7 +260,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-    padding: Spacing.lg,
+    paddingVertical: Spacing.lg,
   },
   header: {
     flexDirection: 'row',
@@ -313,13 +333,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     paddingBottom: 34,
     borderTopWidth: 1,
+  },
+  footerInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   footerPrice: {
     flex: 1,

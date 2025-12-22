@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import { apiRequest } from '@/lib/query-client';
 import type { RootStackParamList } from '@/navigation/types';
@@ -83,6 +84,7 @@ const PLANS = [
 ];
 
 export default function SubscriptionScreen() {
+  const { isDesktop } = useWebLayout();
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
@@ -188,9 +190,10 @@ export default function SubscriptionScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { alignItems: isDesktop ? 'center' : undefined }]}>
       <ScrollView 
         ref={scrollViewRef}
+        style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH }}
         contentContainerStyle={[styles.content, { paddingTop: headerHeight + Spacing.md, paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}
       >
