@@ -281,11 +281,16 @@ function formatDateShort(date: Date): string {
   return `${day}.${month}.`;
 }
 
+const MAX_CALENDAR_WIDTH = 400;
+
 const styles = StyleSheet.create({
   container: {
     borderWidth: 1,
     borderRadius: BorderRadius.md,
     padding: Spacing.sm,
+    maxWidth: MAX_CALENDAR_WIDTH,
+    alignSelf: 'center',
+    width: '100%',
   },
   header: {
     flexDirection: 'row',
@@ -310,10 +315,10 @@ const styles = StyleSheet.create({
   dayCell: {
     width: '14.28%',
     aspectRatio: 1,
-    maxHeight: 44,
+    maxHeight: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 2,
+    padding: 1,
   },
   dayContent: {
     width: '100%',

@@ -12,6 +12,7 @@ import type { RootStackParamList } from '@/navigation/types';
 import { XIcon, StarIcon, CheckCircleIcon } from '@/components/icons/TabBarIcons';
 
 const { width } = Dimensions.get('window');
+const MAX_MODAL_WIDTH = 400;
 
 export function BeVisibleModal() {
   const [visible, setVisible] = useState(false);
@@ -106,7 +107,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   content: {
-    width: width - Spacing.xl * 2,
+    width: Math.min(width - Spacing.xl * 2, MAX_MODAL_WIDTH),
+    maxWidth: MAX_MODAL_WIDTH,
     borderRadius: BorderRadius.xl,
     padding: Spacing.xl,
     alignItems: 'center',
@@ -142,12 +144,13 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   benefitsList: {
-    width: '100%',
+    alignSelf: 'center',
     marginBottom: Spacing.lg,
   },
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
     marginBottom: Spacing.sm,
   },
   benefitText: {
