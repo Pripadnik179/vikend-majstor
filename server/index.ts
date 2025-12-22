@@ -9,6 +9,12 @@ import * as fs from "fs";
 import * as path from "path";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+// ES module polyfill for __dirname and __filename
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const scryptAsync = promisify(scrypt);
 
