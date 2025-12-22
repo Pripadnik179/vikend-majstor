@@ -1,9 +1,10 @@
-// Build timestamp: 2024-12-22T23:50:00Z - Force rebuild for landing page update
+// Build timestamp: 2024-12-22T23:55:00Z - Embedded landing page template
 import express from "express";
 import type { Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { storage } from "./storage";
 import { setupSecurity } from "./security";
+import { LANDING_PAGE_TEMPLATE } from "./landing-page-template";
 import * as fs from "fs";
 import * as path from "path";
 import { scrypt, randomBytes } from "crypto";
@@ -223,19 +224,14 @@ function configureExpoAndLanding(app: express.Application) {
     "landing",
     "index.html",
   );
-  const templatePath = path.resolve(
-    process.cwd(),
-    "server",
-    "templates",
-    "landing-page.html",
-  );
   const adminPanelPath = path.resolve(
     process.cwd(),
     "server",
     "admin",
     "index.html",
   );
-  const landingPageTemplate = fs.readFileSync(templatePath, "utf-8");
+  // Use embedded template instead of reading from file system
+  const landingPageTemplate = LANDING_PAGE_TEMPLATE;
   const appName = getAppName();
   
   const hasCustomLanding = fs.existsSync(customLandingPath);

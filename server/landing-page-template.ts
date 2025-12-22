@@ -1,0 +1,829 @@
+export const LANDING_PAGE_TEMPLATE = `<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VikendMajstor - Platforma za iznajmljivanje alata</title>
+  <meta name="description" content="VikendMajstor je platforma za iznajmljivanje alata. Pronađite alat koji vam treba ili zaradite iznajmljivanjem svog alata.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <meta property="og:title" content="VikendMajstor - Platforma za iznajmljivanje alata">
+  <meta property="og:description" content="Pronađite alat koji vam treba ili zaradite iznajmljivanjem svog alata.">
+  <meta property="og:image" content="/favicon.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary: #FFCC00;
+      --primary-dark: #E6B800;
+      --dark: #1A1A1A;
+      --dark-secondary: #2A2A2A;
+      --text: #333333;
+      --text-secondary: #666666;
+      --text-light: #999999;
+      --background: #FFFFFF;
+      --background-secondary: #F5F5F5;
+      --success: #22C55E;
+      --border: #E5E5E5;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--background);
+    }
+    
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* Navigation */
+    .nav {
+      background: var(--dark);
+      padding: 16px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+    
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .nav-logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+    }
+    
+    .nav-logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    
+    .nav-links a {
+      color: #FFFFFF;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+    
+    .nav-cta {
+      background: var(--primary);
+      color: var(--dark);
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    
+    .nav-cta:hover {
+      background: var(--primary-dark);
+    }
+    
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: #FFFFFF;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, var(--dark) 0%, var(--dark-secondary) 100%);
+      padding: 140px 0 80px;
+      text-align: center;
+    }
+    
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 20px;
+    }
+    
+    .hero h1 span {
+      color: var(--primary);
+    }
+    
+    .hero p {
+      font-size: 20px;
+      color: #CCCCCC;
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+    
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: var(--dark);
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: #FFFFFF;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      border: 2px solid #FFFFFF;
+      transition: all 0.2s;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    /* App Download Section */
+    .qr-section {
+      padding: 60px 0;
+      background: var(--background-secondary);
+      text-align: center;
+    }
+    
+    .qr-section h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    
+    .store-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .store-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--dark);
+      color: #FFFFFF;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    
+    .store-btn:hover {
+      opacity: 0.9;
+    }
+    
+    .store-btn img {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .store-btn-disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .store-btn-disabled:hover {
+      opacity: 0.6;
+    }
+    
+    /* About Section */
+    .about {
+      padding: 80px 0;
+    }
+    
+    .section-title {
+      text-align: center;
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .section-subtitle {
+      text-align: center;
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 48px;
+    }
+    
+    .about-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    
+    .about-text p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+    
+    .eco-card {
+      background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+      border-radius: 16px;
+      padding: 32px;
+      border-left: 4px solid var(--success);
+    }
+    
+    .eco-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      color: var(--success);
+      margin-bottom: 16px;
+    }
+    
+    .eco-card ul {
+      list-style: none;
+    }
+    
+    .eco-card li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    
+    .eco-card li::before {
+      content: "✓";
+      color: var(--success);
+      font-weight: bold;
+    }
+    
+    /* How it Works */
+    .how-it-works {
+      padding: 80px 0;
+      background: var(--background-secondary);
+    }
+    
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+    
+    .step {
+      text-align: center;
+      padding: 32px;
+      background: #FFFFFF;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    
+    .step-number {
+      width: 60px;
+      height: 60px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--dark);
+      margin: 0 auto 20px;
+    }
+    
+    .step h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    
+    .step p {
+      color: var(--text-secondary);
+    }
+    
+    /* FAQ Section */
+    .faq {
+      padding: 80px 0;
+    }
+    
+    .faq-grid {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    
+    .faq-question {
+      padding: 20px 24px;
+      background: #FFFFFF;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    
+    .faq-question:hover {
+      background: var(--background-secondary);
+    }
+    
+    .faq-arrow {
+      transition: transform 0.3s;
+    }
+    
+    .faq-item.active .faq-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .faq-answer {
+      padding: 0 24px;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s;
+      background: var(--background-secondary);
+    }
+    
+    .faq-item.active .faq-answer {
+      padding: 20px 24px;
+      max-height: 200px;
+    }
+    
+    .faq-answer p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    
+    /* Contact Section */
+    .contact {
+      padding: 80px 0;
+      background: var(--dark);
+      color: #FFFFFF;
+    }
+    
+    .contact .section-title {
+      color: #FFFFFF;
+    }
+    
+    .contact .section-subtitle {
+      color: #CCCCCC;
+    }
+    
+    .contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    
+    .contact-item {
+      text-align: center;
+      padding: 32px;
+      background: var(--dark-secondary);
+      border-radius: 16px;
+      min-width: 280px;
+    }
+    
+    .contact-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 24px;
+    }
+    
+    .contact-item h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    
+    .contact-item a {
+      color: var(--primary);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .contact-item a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Footer */
+    .footer {
+      background: var(--dark);
+      padding: 48px 0 24px;
+      border-top: 1px solid #333;
+    }
+    
+    .footer-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+    
+    .footer-brand h3 {
+      color: var(--primary);
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    
+    .footer-brand p {
+      color: #999;
+      line-height: 1.7;
+    }
+    
+    .footer-links h4 {
+      color: #FFFFFF;
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .footer-links ul {
+      list-style: none;
+    }
+    
+    .footer-links li {
+      margin-bottom: 12px;
+    }
+    
+    .footer-links a {
+      color: #999;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+    
+    .footer-bottom {
+      text-align: center;
+      padding-top: 24px;
+      border-top: 1px solid #333;
+      color: #666;
+    }
+    
+    /* Mobile Styles */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      
+      .mobile-menu-btn {
+        display: block;
+      }
+      
+      .hero h1 {
+        font-size: 32px;
+      }
+      
+      .hero p {
+        font-size: 16px;
+      }
+      
+      .about-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .steps {
+        grid-template-columns: 1fr;
+      }
+      
+      .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      
+      .contact-info {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container nav-container">
+      <a href="#" class="nav-logo">
+        <img src="/favicon.png" alt="VikendMajstor">
+        <span class="nav-logo-text">VikendMajstor</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#app">Alati</a></li>
+        <li><a href="#o-nama">O nama</a></li>
+        <li><a href="#kako-radi">Kako radi</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#kontakt">Kontakt</a></li>
+      </ul>
+      <a href="https://app.vikendmajstor.rs" class="nav-cta">Otvori aplikaciju</a>
+      <button class="mobile-menu-btn">&#9776;</button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>Iznajmi alat od <span>komsije</span></h1>
+      <p>VikendMajstor je platforma za iznajmljivanje alata. Pronadji alat koji ti treba ili zaradi iznajmljivanjem svog alata.</p>
+      <div class="hero-buttons">
+        <a href="#app" class="btn-primary">Pregledaj alate</a>
+        <a href="#kako-radi" class="btn-secondary">Kako funkcionise</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- App Download Section -->
+  <section class="qr-section" id="app">
+    <div class="container">
+      <h2>Preuzmi aplikaciju</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 30px;">Dostupno uskoro na svim platformama</p>
+      <div class="store-buttons">
+        <a href="#" class="store-btn store-btn-disabled" onclick="event.preventDefault(); alert('App Store verzija ce uskoro biti dostupna!');">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          App Store (uskoro)
+        </a>
+        <a href="#" class="store-btn store-btn-disabled" onclick="event.preventDefault(); alert('Google Play verzija ce uskoro biti dostupna!');">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
+          Google Play (uskoro)
+        </a>
+      </div>
+      
+      <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border);">
+        <h3 style="font-size: 20px; margin-bottom: 16px;">Android korisnici</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">Preuzmi APK fajl direktno i instaliraj na svoj Android telefon</p>
+        <a href="/download/vikendmajstor.apk" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
+          Preuzmi APK
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about" id="o-nama">
+    <div class="container">
+      <h2 class="section-title">O nama</h2>
+      <p class="section-subtitle">Povezujemo ljude koji imaju alate sa onima kojima su potrebni</p>
+      
+      <div class="about-content">
+        <div class="about-text">
+          <p>
+            VikendMajstor je platforma za iznajmljivanje alata. Nas cilj je da korisnicima omogucimo lak pristup potrebnim alatima bez kupovine, da podstaknemo deljenje resursa i doprinesemo zastiti zivotne sredine kroz odgovorno koriscenje i ponovnu upotrebu.
+          </p>
+          <p>
+            Umesto da kupujete alat koji cete koristiti jednom ili dvaput godisnje, iznajmite ga od komsije po povoljnoj ceni. Tako stedite novac, prostor u garazi, a i pomažete planeti.
+          </p>
+        </div>
+        
+        <div class="eco-card">
+          <h3>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+            Ekoloska poruka
+          </h3>
+          <ul>
+            <li>Manje kupovine = manje proizvodnje = manje otpada</li>
+            <li>Deljenje resursa = racionalno koriscenje energije i materijala</li>
+            <li>Zajednica koja razmenjuje = zajednica koja stedi i cuva planetu</li>
+            <li>Produzavamo zivotni vek alata kroz zajednicko koriscenje</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it Works -->
+  <section class="how-it-works" id="kako-radi">
+    <div class="container">
+      <h2 class="section-title">Kako funkcionise</h2>
+      <p class="section-subtitle">Tri jednostavna koraka do alata koji vam treba</p>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Pronadji alat</h3>
+          <p>Pretrazite oglase u vasoj okolini i pronadjite alat koji vam treba po povoljnoj ceni.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Rezervisi</h3>
+          <p>Posaljite zahtev za rezervaciju, izaberite datume i sacekajte potvrdu od vlasnika.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Preuzmi i koristi</h3>
+          <p>Dogovorite se o preuzimanju, koristite alat i vratite ga u dogovorenom roku.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <h2 class="section-title">Cesta pitanja</h2>
+      <p class="section-subtitle">Odgovori na najcesde postavljana pitanja</p>
+      
+      <div class="faq-grid">
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako da dodam oglas?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Kliknite na "+" dugme u donjem meniju da biste dodali novi oglas. Popunite naslov, opis, kategoriju, cenu po danu i dodajte fotografije. Besplatni korisnici mogu dodati do 5 oglasa.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako funkcionise rezervacija?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Pronadjite stvar koju zelite da iznajmite, izaberite datume i posaljite zahtev za rezervaciju. Vlasnik ce primiti obavestenje i moze da prihvati ili odbije zahtev. Nakon potvrde, dogovorite se o preuzimanju.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako se vrsi placanje?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Placanje se vrsi direktno izmedju korisnika prilikom preuzimanja stvari. VikendMajstor trenutno ne procesira placanja kroz aplikaciju. Depozit se vraca nakon vracanja stvari u dobrom stanju.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Da li je moj novac siguran?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Preporucujemo da uvek trazite depozit kao garanciju. Fotografisite stvar pre i posle iznajmljivanja. U slucaju problema, kontaktirajte nasu podrsku.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Kako da postanem Premium korisnik?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Idjite na Profil > Pretplata i izaberite Premium plan. Premium korisnici imaju neogranicen broj oglasa, istaknute oglase na vrhu pretrage i premium znacku.</p>
+          </div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="faq-question">
+            Sta ako imam problem sa rezervacijom?
+            <span class="faq-arrow">&#9660;</span>
+          </div>
+          <div class="faq-answer">
+            <p>Koristite chat funkciju da komunicirate direktno sa drugom stranom. Ako ne mozete da resite problem, kontaktirajte nasu podrsku na podrska@vikendmajstor.rs</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="contact" id="kontakt">
+    <div class="container">
+      <h2 class="section-title">Kontaktirajte nas</h2>
+      <p class="section-subtitle">Imate pitanja? Rado cemo vam pomoci.</p>
+      
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">&#9993;</div>
+          <h3>Email podrska</h3>
+          <p style="color: #999; margin-bottom: 8px;">Odgovaramo u roku od 24 sata</p>
+          <a href="mailto:podrska@vikendmajstor.rs">podrska@vikendmajstor.rs</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <h3>VikendMajstor</h3>
+          <p>Platforma za iznajmljivanje alata i opreme. Povezujemo komsije i stedimo planetu kroz deljenje resursa.</p>
+        </div>
+        
+        <div class="footer-links">
+          <h4>Navigacija</h4>
+          <ul>
+            <li><a href="#app">Alati</a></li>
+            <li><a href="#o-nama">O nama</a></li>
+            <li><a href="#kako-radi">Kako radi</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-links">
+          <h4>Pravne informacije</h4>
+          <ul>
+            <li><a href="/uslovi-koriscenja">Uslovi koriscenja</a></li>
+            <li><a href="/politika-privatnosti">Politika privatnosti</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-links">
+          <h4>Kontakt</h4>
+          <ul>
+            <li><a href="mailto:podrska@vikendmajstor.rs">podrska@vikendmajstor.rs</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 VikendMajstor. Sva prava zadrzana.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // FAQ Accordion
+    document.querySelectorAll('.faq-question').forEach(question => {
+      question.addEventListener('click', () => {
+        const item = question.parentElement;
+        item.classList.toggle('active');
+      });
+    });
+    
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>`;
