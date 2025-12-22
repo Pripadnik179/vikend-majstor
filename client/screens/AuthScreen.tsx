@@ -42,6 +42,8 @@ export default function AuthScreen() {
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (Platform.OS === 'ios' && AppleAuthentication) {
@@ -122,21 +124,34 @@ export default function AuthScreen() {
   };
 
   const handleSubmit = async () => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    
     if (!email || !password || (!isLogin && !name)) {
-      Alert.alert('Greška', 'Sva polja su obavezna');
+      const msg = 'Sva polja su obavezna';
+      setErrorMessage(msg);
+      if (Platform.OS !== 'web') {
+        Alert.alert('Greška', msg);
+      }
       return;
     }
 
     setIsLoading(true);
     try {
+      console.log('[Auth] Starting', isLogin ? 'login' : 'register', 'for:', email);
       if (isLogin) {
         await login(email, password);
       } else {
         await register(email, password, name);
       }
+      console.log('[Auth] Success');
     } catch (error: any) {
-      console.log('Auth error:', error);
-      Alert.alert('Greška', error.message || 'Došlo je do greške');
+      console.log('[Auth] Error:', error?.message || error);
+      const msg = error?.message || 'Došlo je do greške pri prijavi';
+      setErrorMessage(msg);
+      if (Platform.OS !== 'web') {
+        Alert.alert('Greška', msg);
+      }
       setIsLoading(false);
     }
   };
@@ -293,6 +308,22 @@ export default function AuthScreen() {
               </Pressable>
             ) : null}
 
+            {errorMessage ? (
+              <View style={styles.errorContainer}>
+                <ThemedText type="small" style={styles.errorText}>
+                  {errorMessage}
+                </ThemedText>
+              </View>
+            ) : null}
+
+            {successMessage ? (
+              <View style={styles.successContainer}>
+                <ThemedText type="small" style={styles.successText}>
+                  {successMessage}
+                </ThemedText>
+              </View>
+            ) : null}
+
             <Button onPress={handleSubmit} disabled={isLoading} style={styles.button}>
               {isLoading ? (
                 <ActivityIndicator color="#FFFFFF" />
@@ -301,7 +332,7 @@ export default function AuthScreen() {
               )}
             </Button>
 
-            <Pressable onPress={() => setIsLogin(!isLogin)} style={styles.switchButton}>
+            <Pressable onPress={() => { setIsLogin(!isLogin); setErrorMessage(null); }} style={styles.switchButton}>
               <ThemedText type="body" style={{ color: theme.textSecondary }}>
                 {isLogin ? 'Nemas nalog? ' : 'Vec imas nalog? '}
                 <ThemedText type="link">
@@ -418,5 +449,29 @@ const styles = StyleSheet.create({
   forgotPassword: {
     alignSelf: 'flex-end',
     marginBottom: Spacing.md,
+  },
+  errorContainer: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: '#EF4444',
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  errorText: {
+    color: '#EF4444',
+    textAlign: 'center',
+  },
+  successContainer: {
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    borderWidth: 1,
+    borderColor: '#22C55E',
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  successText: {
+    color: '#22C55E',
+    textAlign: 'center',
   },
 });

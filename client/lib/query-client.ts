@@ -101,6 +101,7 @@ export async function apiRequest(
   };
 
   try {
+    console.log('[API]', method, url.toString());
     const res = await fetch(url.toString(), {
       method,
       headers,
@@ -108,11 +109,12 @@ export async function apiRequest(
       credentials: "include",
     });
 
+    console.log('[API] Response:', res.status, res.statusText);
     await throwIfResNotOk(res);
     return res;
   } catch (error: any) {
-    console.log('API Request failed:', url.toString(), error?.message || error);
-    throw new Error(error?.message || 'Network request failed');
+    console.log('[API] Request failed:', url.toString(), 'Error:', error?.message || error);
+    throw new Error(error?.message || 'Mrezna greska - proverite internet konekciju');
   }
 }
 
