@@ -160,6 +160,9 @@ export default function MyItemsScreen() {
 
   const getImageUrl = (path: string) => {
     if (path.startsWith('http')) return path;
+    if (path.startsWith('/objects/')) {
+      return `${getApiUrl()}/api${path}`;
+    }
     return `${getApiUrl()}${path}`;
   };
 
