@@ -302,16 +302,25 @@ function configureExpoAndLanding(app: express.Application) {
       return serveExpoManifest(platform, res);
     }
 
+    // Check hostname to determine what to serve
+    const hostname = req.hostname || req.headers.host?.split(':')[0] || '';
+    const isMainLandingDomain = hostname === 'vikendmajstor.rs' || hostname === 'www.vikendmajstor.rs';
+    
     if (req.path === "/") {
-      if (hasCustomLanding) {
-        return res.sendFile(customLandingPath);
+      // Only serve landing page on vikendmajstor.rs (not app.vikendmajstor.rs)
+      if (isMainLandingDomain) {
+        if (hasCustomLanding) {
+          return res.sendFile(customLandingPath);
+        }
+        return serveLandingPage({
+          req,
+          res,
+          landingPageTemplate,
+          appName,
+        });
       }
-      return serveLandingPage({
-        req,
-        res,
-        landingPageTemplate,
-        appName,
-      });
+      // For app.vikendmajstor.rs and other domains, let static-build (Expo) handle it
+      return next();
     }
 
     next();
