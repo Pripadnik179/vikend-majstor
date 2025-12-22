@@ -333,6 +333,27 @@ function configureExpoAndLanding(app: express.Application) {
   });
 
   app.use("/assets", express.static(path.resolve(process.cwd(), "assets")));
+  
+  // Serve Expo web build for app.vikendmajstor.rs
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const hostname = req.hostname || req.headers.host?.split(':')[0] || '';
+    const isAppSubdomain = hostname === 'app.vikendmajstor.rs' || hostname.includes('app.');
+    
+    if (isAppSubdomain) {
+      // Serve from static-build/web for the app subdomain
+      const webBuildPath = path.resolve(process.cwd(), "static-build", "web");
+      return express.static(webBuildPath)(req, res, () => {
+        // If file not found, serve index.html for SPA routing
+        const indexPath = path.join(webBuildPath, "index.html");
+        if (fs.existsSync(indexPath)) {
+          return res.sendFile(indexPath);
+        }
+        next();
+      });
+    }
+    next();
+  });
+  
   app.use(express.static(path.resolve(process.cwd(), "static-build")));
 
   log("Expo routing: Checking expo-platform header on / and /manifest");
