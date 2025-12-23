@@ -49,7 +49,7 @@ async function uploadImage(localPath: string, remoteName: string): Promise<strin
       visibility: "public",
     });
     
-    return `/public-objects/items/${remoteName}`;
+    return `/objects/public/items/${remoteName}`;
   } catch (error) {
     console.error(`Error uploading ${localPath}:`, error);
     return `https://via.placeholder.com/400x300?text=${encodeURIComponent(remoteName)}`;
