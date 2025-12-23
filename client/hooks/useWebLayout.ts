@@ -12,7 +12,8 @@ export const BREAKPOINTS = {
 };
 
 export const MAX_CONTENT_WIDTH = 600;
-export const MAX_WIDE_CONTENT_WIDTH = 1200;
+export const MAX_WIDE_CONTENT_WIDTH = 1280;
+export const MAX_ULTRAWIDE_CONTENT_WIDTH = 1440;
 export const GRID_GAP = 16;
 export const SECTION_PADDING = 24;
 
@@ -44,6 +45,7 @@ export function useWebLayout() {
   };
   
   const getContentMaxWidth = () => {
+    if (isUltraWide) return MAX_ULTRAWIDE_CONTENT_WIDTH;
     if (isWide) return MAX_WIDE_CONTENT_WIDTH;
     if (isDesktop) return MAX_CONTENT_WIDTH;
     return undefined;
@@ -54,9 +56,18 @@ export function useWebLayout() {
   };
   
   const numColumns = getNumColumns();
-  const effectiveMaxWidth = MAX_WIDE_CONTENT_WIDTH;
+  const effectiveMaxWidth = isUltraWide ? MAX_ULTRAWIDE_CONTENT_WIDTH : MAX_WIDE_CONTENT_WIDTH;
   const totalGapWidth = (numColumns - 1) * GRID_GAP;
   const availableWidth = Math.min(width - SECTION_PADDING * 2, effectiveMaxWidth);
+  
+  const getCenteredContainerStyle = () => {
+    if (!isDesktop) return {};
+    return {
+      maxWidth: effectiveMaxWidth,
+      marginHorizontal: 'auto' as const,
+      width: '100%' as const,
+    };
+  };
   
   return {
     isWeb,
@@ -72,10 +83,11 @@ export function useWebLayout() {
     numColumns,
     horizontalPadding: getHorizontalPadding(),
     contentMaxWidth: getContentMaxWidth(),
-    gridMaxWidth: MAX_WIDE_CONTENT_WIDTH,
+    gridMaxWidth: effectiveMaxWidth,
     gridGap: GRID_GAP,
     sectionPadding: SECTION_PADDING,
     formMaxWidth: getFormMaxWidth(),
     cardWidth: isDesktop ? Math.floor((availableWidth - totalGapWidth) / numColumns) : undefined,
+    centeredContainerStyle: getCenteredContainerStyle(),
   };
 }

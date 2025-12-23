@@ -2,6 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "@/screens/HomeScreen";
 import { HeaderTitle } from "@/components/HeaderTitle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import type { HomeStackParamList } from "./types";
 
@@ -17,6 +18,7 @@ export default function HomeStackNavigator() {
         component={HomeScreen}
         options={{
           headerTitle: () => <HeaderTitle title="VikendMajstor" />,
+          headerRight: () => <ThemeToggle />,
         }}
       />
     </Stack.Navigator>
