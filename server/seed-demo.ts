@@ -13,47 +13,57 @@ async function hashPassword(password: string): Promise<string> {
   return `${derivedKey.toString("hex")}.${salt}`;
 }
 
-// Demo slike - direktni Unsplash URL-ovi (pouzdani za produkciju)
+// Demo slike - specifični Unsplash URL-ovi za svaku kategoriju alata
 const DEMO_IMAGES = {
+  // Bušilice - akumulatorske i električne bušilice
   drill: [
-    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=600&h=400&fit=crop', // power drill
+    'https://images.unsplash.com/photo-1580901368919-7738efb0f87e?w=600&h=400&fit=crop', // cordless drill
   ],
+  // Brusilice - ugaone brusilice
   grinder: [
-    'https://images.unsplash.com/photo-1580901368919-7738efb0f87e?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop', // angle grinder sparks
+    'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&h=400&fit=crop', // metal grinding
   ],
+  // Testere - kružne i stolne testere
   saw: [
-    'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1590479773265-7464e5d48118?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop', // circular saw cutting
+    'https://images.unsplash.com/photo-1567361808960-dec9cb578182?w=600&h=400&fit=crop', // woodworking saw
   ],
+  // Mešalice - betonjerke
   mixer: [
-    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1541123603104-512919d6a96c?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop', // construction site
+    'https://images.unsplash.com/photo-1517581177682-a085bb7ffb15?w=600&h=400&fit=crop', // concrete work
   ],
+  // Perači pod pritiskom
   washer: [
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop', // pressure washer
+    'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&h=400&fit=crop', // cleaning equipment
   ],
+  // Kosilice - travnjak
   mower: [
-    'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1592417817098-8fd3d9eb14a5?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=600&h=400&fit=crop', // lawn mower
+    'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=400&fit=crop', // garden lawn
   ],
+  // Brusilice orbitalne
   sander: [
-    'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1580901368919-7738efb0f87e?w=600&h=400&fit=crop', // sanding tool
+    'https://images.unsplash.com/photo-1567361808960-dec9cb578182?w=600&h=400&fit=crop', // woodworking
   ],
+  // Čekić bušilice - SDS
   hammer: [
-    'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=600&h=400&fit=crop', // hammer drill
+    'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&h=400&fit=crop', // drilling concrete
   ],
+  // Lančane testere - motorne pile
   chainsaw: [
-    'https://images.unsplash.com/photo-1590479773265-7464e5d48118?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=600&h=400&fit=crop', // chainsaw wood
+    'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&h=400&fit=crop', // forest logging
   ],
+  // Skele i merdevine
   scaffold: [
-    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1541123603104-512919d6a96c?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop', // scaffolding construction
+    'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&h=400&fit=crop', // building scaffold
   ],
 };
 
