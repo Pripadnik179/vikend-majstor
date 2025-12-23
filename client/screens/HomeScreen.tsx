@@ -14,6 +14,7 @@ import { VerificationBanner } from '@/components/VerificationBanner';
 import { OnboardingGuide } from '@/components/OnboardingGuide';
 import { TrustBadges } from '@/components/TrustBadges';
 import { PopularToolsSection } from '@/components/PopularToolsSection';
+import { PremiumAdsSection } from '@/components/PremiumAdsSection';
 import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
@@ -188,6 +189,11 @@ export default function HomeScreen() {
       <PromoBanner
         premiumItems={homeData?.premiumItems || []}
         earlyAdopterSlotsRemaining={homeData?.remainingEarlyAdopterSlots || 0}
+      />
+      
+      <PremiumAdsSection
+        items={homeData?.premiumItems || []}
+        onSeeAll={handleBrowse}
       />
       
       <PopularToolsSection

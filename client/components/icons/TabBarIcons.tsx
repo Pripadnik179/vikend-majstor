@@ -522,3 +522,11 @@ export function UserCheckIcon({ size = 24, color = "#000" }: IconProps) {
     </Svg>
   );
 }
+
+export function CrownIcon({ size = 24, color = "#000" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M2 20h20M4 20V10l4 4 4-8 4 8 4-4v10" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
