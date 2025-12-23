@@ -142,7 +142,7 @@ function CategoryCard({
 export default function CategoriesScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const { isDesktop, contentPaddingTop, contentPaddingBottom } = useWebLayout();
+  const { isDesktop, contentPaddingTop, contentPaddingBottom, horizontalPadding, gridMaxWidth, sectionPadding } = useWebLayout();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [activeTab, setActiveTab] = useState<TabType>('project');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
@@ -176,105 +176,120 @@ export default function CategoriesScreen() {
   const paddingTop = isDesktop ? contentPaddingTop + Spacing.md : insets.top;
   const paddingBottom = isDesktop ? contentPaddingBottom + Spacing.xl : insets.bottom + 100;
 
+  const contentStyle = isDesktop ? {
+    maxWidth: gridMaxWidth,
+    width: '100%' as const,
+    alignSelf: 'center' as const,
+  } : undefined;
+
   return (
     <ThemedView style={[styles.container, { paddingTop }]}>
-      <View style={styles.header}>
-        <ThemedText type="h2">Kategorije</ThemedText>
-        <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: 4 }}>
-          Pronađi alat po delatnosti ili vrsti
-        </ThemedText>
-      </View>
-
-      <View style={styles.tabs}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.tab,
-            activeTab === 'project' && styles.activeTab,
-            activeTab === 'project' && { backgroundColor: theme.primary },
-            { 
-              borderColor: theme.primary,
-              opacity: pressed ? 0.9 : 1,
-            },
-          ]}
-          onPress={() => setActiveTab('project')}
-        >
-          <DynamicIcon 
-            name="briefcase" 
-            size={16} 
-            color={activeTab === 'project' ? '#FFFFFF' : theme.primary} 
-          />
-          <ThemedText 
-            type="body" 
-            style={[
-              styles.tabText,
-              { color: activeTab === 'project' ? '#FFFFFF' : theme.primary }
-            ]}
-          >
-            Po delatnosti
-          </ThemedText>
-        </Pressable>
-        <Pressable
-          style={({ pressed }) => [
-            styles.tab,
-            activeTab === 'toolType' && styles.activeTab,
-            activeTab === 'toolType' && { backgroundColor: theme.primary },
-            { 
-              borderColor: theme.primary,
-              opacity: pressed ? 0.9 : 1,
-            },
-          ]}
-          onPress={() => setActiveTab('toolType')}
-        >
-          <ToolIcon 
-            size={16} 
-            color={activeTab === 'toolType' ? '#FFFFFF' : theme.primary} 
-          />
-          <ThemedText 
-            type="body" 
-            style={[
-              styles.tabText,
-              { color: activeTab === 'toolType' ? '#FFFFFF' : theme.primary }
-            ]}
-          >
-            Po vrsti alata
-          </ThemedText>
-        </Pressable>
-      </View>
-
-      {isLoadingCounts && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={theme.primary} />
-        </View>
-      )}
-
       <ScrollView 
         style={styles.list}
-        contentContainerStyle={[styles.listContent, { paddingBottom }]}
+        contentContainerStyle={[
+          styles.listContent, 
+          { 
+            paddingBottom,
+            paddingHorizontal: horizontalPadding,
+          },
+          isDesktop && { alignItems: 'center' }
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        {Object.entries(categories).map(([key, category]) => {
-          const isExpanded = expandedCategory === key;
-          const itemCount = categoryCounts[category.name] || 0;
+        <View style={contentStyle}>
+          <View style={styles.header}>
+            <ThemedText type="h2">Kategorije</ThemedText>
+            <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: 4 }}>
+              Pronađi alat po delatnosti ili vrsti
+            </ThemedText>
+          </View>
 
-          return (
-            <CategoryCard
-              key={key}
-              categoryKey={key}
-              category={category}
-              isExpanded={isExpanded}
-              onPress={() => handleCategoryPress(key)}
-              onSubcategoryPress={handleSubcategoryPress}
-              onViewAllPress={handleViewAllPress}
-              itemCount={itemCount}
-              theme={theme}
-            />
-          );
-        })}
-        
-        <View style={[styles.statsFooter, { backgroundColor: theme.backgroundSecondary }]}>
-          <ThemedText type="small" style={{ color: theme.textSecondary, textAlign: 'center' }}>
-            Ukupno {Object.values(categoryCounts).reduce((a, b) => a + b, 0)} alata dostupno za iznajmljivanje
-          </ThemedText>
+          <View style={styles.tabs}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.tab,
+                activeTab === 'project' && styles.activeTab,
+                activeTab === 'project' && { backgroundColor: theme.primary },
+                { 
+                  borderColor: theme.primary,
+                  opacity: pressed ? 0.9 : 1,
+                },
+              ]}
+              onPress={() => setActiveTab('project')}
+            >
+              <DynamicIcon 
+                name="briefcase" 
+                size={16} 
+                color={activeTab === 'project' ? '#FFFFFF' : theme.primary} 
+              />
+              <ThemedText 
+                type="body" 
+                style={[
+                  styles.tabText,
+                  { color: activeTab === 'project' ? '#FFFFFF' : theme.primary }
+                ]}
+              >
+                Po delatnosti
+              </ThemedText>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.tab,
+                activeTab === 'toolType' && styles.activeTab,
+                activeTab === 'toolType' && { backgroundColor: theme.primary },
+                { 
+                  borderColor: theme.primary,
+                  opacity: pressed ? 0.9 : 1,
+                },
+              ]}
+              onPress={() => setActiveTab('toolType')}
+            >
+              <ToolIcon 
+                size={16} 
+                color={activeTab === 'toolType' ? '#FFFFFF' : theme.primary} 
+              />
+              <ThemedText 
+                type="body" 
+                style={[
+                  styles.tabText,
+                  { color: activeTab === 'toolType' ? '#FFFFFF' : theme.primary }
+                ]}
+              >
+                Po vrsti alata
+              </ThemedText>
+            </Pressable>
+          </View>
+
+          {isLoadingCounts ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={theme.primary} />
+            </View>
+          ) : null}
+
+          {Object.entries(categories).map(([key, category]) => {
+            const isExpanded = expandedCategory === key;
+            const itemCount = categoryCounts[category.name] || 0;
+
+            return (
+              <CategoryCard
+                key={key}
+                categoryKey={key}
+                category={category}
+                isExpanded={isExpanded}
+                onPress={() => handleCategoryPress(key)}
+                onSubcategoryPress={handleSubcategoryPress}
+                onViewAllPress={handleViewAllPress}
+                itemCount={itemCount}
+                theme={theme}
+              />
+            );
+          })}
+          
+          <View style={[styles.statsFooter, { backgroundColor: theme.backgroundSecondary }]}>
+            <ThemedText type="small" style={{ color: theme.textSecondary, textAlign: 'center' }}>
+              Ukupno {Object.values(categoryCounts).reduce((a, b) => a + b, 0)} alata dostupno za iznajmljivanje
+            </ThemedText>
+          </View>
         </View>
       </ScrollView>
     </ThemedView>
@@ -286,7 +301,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
   },
   loadingContainer: {
@@ -295,7 +309,6 @@ const styles = StyleSheet.create({
   },
   tabs: {
     flexDirection: 'row',
-    paddingHorizontal: Spacing.lg,
     gap: Spacing.sm,
     marginBottom: Spacing.md,
   },
@@ -317,7 +330,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: Spacing.lg,
+    flexGrow: 1,
   },
   categoryWrapper: {
     marginBottom: Spacing.md,
