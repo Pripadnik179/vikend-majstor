@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, Platform, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, withSpring, useSharedValue, withTiming } from 'react-native-reanimated';
-import { BlurView } from 'expo-blur';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
@@ -33,7 +32,7 @@ export function FloatingAddButton({ onPress }: FloatingAddButtonProps) {
   }));
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.9, { damping: 15, stiffness: 300 });
+    scale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
   };
 
   const handlePressOut = () => {
@@ -65,10 +64,7 @@ export function FloatingAddButton({ onPress }: FloatingAddButtonProps) {
       {showTooltip ? (
         <Animated.View style={[styles.tooltip, tooltipStyle, { backgroundColor: isDark ? '#333' : '#1A1A1A' }]}>
           <ThemedText type="small" style={styles.tooltipText}>
-            Dodaj alat
-          </ThemedText>
-          <ThemedText type="small" style={styles.tooltipSubtext}>
-            Zaradi od alata koji ti stoji
+            Zaradi od alata koji ti stoji u garazi
           </ThemedText>
         </Animated.View>
       ) : null}
@@ -80,7 +76,10 @@ export function FloatingAddButton({ onPress }: FloatingAddButtonProps) {
         onPressOut={handlePressOut}
         {...(Platform.OS === 'web' ? { onMouseEnter: handleHoverIn, onMouseLeave: handleHoverOut } : {})}
       >
-        <PlusIcon size={28} color="#FFFFFF" />
+        <PlusIcon size={20} color="#FFFFFF" />
+        <ThemedText type="body" style={styles.buttonText}>
+          Dodaj alat
+        </ThemedText>
       </AnimatedPressable>
     </View>
   );
@@ -94,30 +93,32 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   button: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
+    gap: Spacing.xs,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
   },
+  buttonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
   tooltip: {
     marginBottom: Spacing.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.sm,
+    maxWidth: 200,
   },
   tooltipText: {
     color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  tooltipSubtext: {
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
-    fontSize: 11,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });

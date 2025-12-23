@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
-import { ShieldIcon, UserCheckIcon, BanknoteIcon, StarIcon } from '@/components/icons/TabBarIcons';
+import { ShieldIcon, UserCheckIcon, BanknoteIcon, MapPinIcon, CheckCircleIcon } from '@/components/icons/TabBarIcons';
 
 interface TrustBadge {
   icon: React.ReactNode;
@@ -13,6 +13,8 @@ interface TrustBadge {
 
 export function TrustBadges() {
   const { theme, isDark } = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
 
   const badges: TrustBadge[] = [
     {
@@ -22,7 +24,7 @@ export function TrustBadges() {
     },
     {
       icon: <BanknoteIcon size={16} color={Colors.light.cta} />,
-      text: '0% provizije',
+      text: 'Placanje pri preuzimanju',
       color: Colors.light.cta,
     },
     {
@@ -30,10 +32,20 @@ export function TrustBadges() {
       text: 'Verifikovani korisnici',
       color: Colors.light.trust,
     },
+    {
+      icon: <CheckCircleIcon size={16} color={Colors.light.success} />,
+      text: '0% provizije',
+      color: Colors.light.success,
+    },
+    {
+      icon: <MapPinIcon size={16} color="#E53935" />,
+      text: 'Srpska platforma',
+      color: '#E53935',
+    },
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       {badges.map((badge, index) => (
         <View 
           key={index}
@@ -61,6 +73,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.sm,
     marginBottom: Spacing.lg,
+  },
+  containerDesktop: {
+    justifyContent: 'center',
   },
   badge: {
     flexDirection: 'row',

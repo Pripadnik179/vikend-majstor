@@ -15,6 +15,9 @@ import { OnboardingGuide } from '@/components/OnboardingGuide';
 import { TrustBadges } from '@/components/TrustBadges';
 import { PopularToolsSection } from '@/components/PopularToolsSection';
 import { PremiumAdsSection } from '@/components/PremiumAdsSection';
+import { EarningsSection } from '@/components/EarningsSection';
+import { EarlyAdopterBanner } from '@/components/EarlyAdopterBanner';
+import { FilterBar } from '@/components/FilterBar';
 import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
@@ -186,9 +189,9 @@ export default function HomeScreen() {
         onLearnMore={handleLearnMore}
       />
       
-      <PromoBanner
-        premiumItems={homeData?.premiumItems || []}
-        earlyAdopterSlotsRemaining={homeData?.remainingEarlyAdopterSlots || 0}
+      <EarlyAdopterBanner
+        remainingSlots={homeData?.remainingEarlyAdopterSlots || 0}
+        onPress={handleLearnMore}
       />
       
       <PremiumAdsSection
@@ -200,6 +203,10 @@ export default function HomeScreen() {
         items={items}
         onSeeAll={handleBrowse}
       />
+      
+      <EarningsSection onAddTool={handleAddTool} />
+      
+      <FilterBar />
       
       <View style={styles.allToolsHeader}>
         <ThemedText type="h3">Svi alati</ThemedText>

@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Pressable, Platform, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { ImageIcon, StarIcon, MapPinIcon, ClockIcon } from '@/components/icons/TabBarIcons';
+import Animated, { useAnimatedStyle, withSpring, useSharedValue, withTiming } from 'react-native-reanimated';
+import { ImageIcon, StarIcon, MapPinIcon, ClockIcon, ShieldIcon, TrendingUpIcon, ChevronRightIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout } from '@/hooks/useWebLayout';
@@ -10,14 +11,62 @@ import { Spacing, BorderRadius, Colors } from '@/constants/theme';
 import type { Item } from '@shared/schema';
 
 interface ItemCardProps {
-  item: Item & { isPremium?: boolean; distance?: number | null };
+  item: Item & { 
+    isPremium?: boolean; 
+    distance?: number | null;
+    isNew?: boolean;
+    isTopRenter?: boolean;
+    isVerified?: boolean;
+    rentalCount?: number;
+    rating?: number | string;
+    availableFrom?: string;
+  };
   onPress: () => void;
+  onReserve?: () => void;
   showExpiration?: boolean;
+  showReserveButton?: boolean;
 }
 
-export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProps) {
-  const { theme } = useTheme();
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+export function ItemCard({ item, onPress, onReserve, showExpiration = false, showReserveButton = true }: ItemCardProps) {
+  const { theme, isDark } = useTheme();
   const { isDesktop, cardWidth } = useWebLayout();
+  const { width } = useWindowDimensions();
+  const [showTooltip, setShowTooltip] = useState(false);
+  
+  const scale = useSharedValue(1);
+  const tooltipOpacity = useSharedValue(0);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const tooltipStyle = useAnimatedStyle(() => ({
+    opacity: tooltipOpacity.value,
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+  };
+
+  const handleHoverIn = () => {
+    if (Platform.OS === 'web') {
+      setShowTooltip(true);
+      tooltipOpacity.value = withTiming(1, { duration: 150 });
+    }
+  };
+
+  const handleHoverOut = () => {
+    if (Platform.OS === 'web') {
+      tooltipOpacity.value = withTiming(0, { duration: 150 });
+      setTimeout(() => setShowTooltip(false), 150);
+    }
+  };
 
   const getImageUrl = (path: string) => {
     if (path.startsWith('http')) return path;
@@ -40,20 +89,25 @@ export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProp
   };
 
   const daysRemaining = showExpiration ? getDaysRemaining() : null;
+  const rating = item.rating ? (typeof item.rating === 'string' ? parseFloat(item.rating) : item.rating) : null;
 
   return (
-    <Pressable
-      style={({ pressed }) => [
+    <AnimatedPressable
+      style={[
+        animatedStyle,
         styles.container,
         { 
           width: cardWidth,
-          flex: cardWidth ? undefined : 1, // Use flex: 1 for mobile grid
+          flex: cardWidth ? undefined : 1,
           backgroundColor: theme.backgroundDefault,
-          opacity: pressed ? 0.9 : 1,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
         },
+        item.isPremium && styles.premiumContainer,
+        item.isPremium && { borderColor: '#FFD700' },
       ]}
       onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      {...(Platform.OS === 'web' ? { onMouseEnter: handleHoverIn, onMouseLeave: handleHoverOut } : {})}
     >
       <View style={styles.imageContainer}>
         {item.images && item.images.length > 0 ? (
@@ -67,17 +121,64 @@ export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProp
             <ImageIcon size={32} color={theme.textTertiary} />
           </View>
         )}
-        {item.isPremium ? (
-          <View style={styles.premiumBadge}>
-            <StarIcon size={10} color={Colors.light.accent} />
-            <ThemedText style={styles.premiumText}>PREMIUM</ThemedText>
-          </View>
-        ) : null}
+        
+        <View style={styles.badgesContainer}>
+          {item.isPremium ? (
+            <View style={styles.premiumBadge}>
+              <StarIcon size={12} color="#1A1A1A" />
+              <ThemedText style={styles.premiumText}>PREMIUM</ThemedText>
+            </View>
+          ) : null}
+          
+          {item.isNew ? (
+            <View style={[styles.statusBadge, { backgroundColor: Colors.light.success }]}>
+              <ThemedText style={styles.statusText}>NOVO</ThemedText>
+            </View>
+          ) : null}
+          
+          {item.isTopRenter ? (
+            <View style={[styles.statusBadge, { backgroundColor: Colors.light.cta }]}>
+              <TrendingUpIcon size={10} color="#FFFFFF" />
+              <ThemedText style={[styles.statusText, { marginLeft: 2 }]}>TOP</ThemedText>
+            </View>
+          ) : null}
+          
+          {item.isVerified ? (
+            <View style={[styles.statusBadge, { backgroundColor: Colors.light.trust }]}>
+              <ShieldIcon size={10} color="#FFFFFF" />
+            </View>
+          ) : null}
+        </View>
       </View>
+      
+      {showTooltip && Platform.OS === 'web' ? (
+        <Animated.View style={[styles.tooltip, tooltipStyle, { backgroundColor: isDark ? '#333' : '#1A1A1A' }]}>
+          {item.rentalCount ? (
+            <ThemedText type="small" style={styles.tooltipText}>
+              Iznajmljen {item.rentalCount} puta
+            </ThemedText>
+          ) : null}
+          {rating ? (
+            <View style={styles.tooltipRow}>
+              <StarIcon size={12} color={Colors.light.primary} />
+              <ThemedText type="small" style={[styles.tooltipText, { marginLeft: 4 }]}>
+                Ocena {rating.toFixed(1)}
+              </ThemedText>
+            </View>
+          ) : null}
+          {item.availableFrom ? (
+            <ThemedText type="small" style={styles.tooltipText}>
+              Dostupan od {item.availableFrom}
+            </ThemedText>
+          ) : null}
+        </Animated.View>
+      ) : null}
+      
       <View style={styles.content}>
         <ThemedText type="body" style={styles.title} numberOfLines={1}>
           {item.title}
         </ThemedText>
+        
         <View style={styles.locationRow}>
           <MapPinIcon size={12} color={theme.textTertiary} />
           <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 4 }} numberOfLines={1}>
@@ -85,19 +186,53 @@ export function ItemCard({ item, onPress, showExpiration = false }: ItemCardProp
             {item.distance != null ? ` (${item.distance < 1 ? `${Math.round(item.distance * 1000)} m` : `${item.distance.toFixed(1)} km`})` : ''}
           </ThemedText>
         </View>
-        <ThemedText type="body" style={{ color: theme.primary, fontWeight: '700', marginTop: Spacing.xs }}>
-          {item.pricePerDay} RSD<ThemedText type="small" style={{ color: theme.textSecondary, fontWeight: '400' }}>/dan</ThemedText>
-        </ThemedText>
+        
+        {rating ? (
+          <View style={styles.ratingRow}>
+            <StarIcon size={12} color={Colors.light.primary} />
+            <ThemedText type="small" style={{ color: Colors.light.primary, fontWeight: '600', marginLeft: 4 }}>
+              {rating.toFixed(1)}
+            </ThemedText>
+            {item.rentalCount ? (
+              <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 4 }}>
+                ({item.rentalCount})
+              </ThemedText>
+            ) : null}
+          </View>
+        ) : null}
+        
+        <View style={styles.priceRow}>
+          <ThemedText type="body" style={{ color: theme.primary, fontWeight: '700' }}>
+            {item.pricePerDay} RSD
+            <ThemedText type="small" style={{ color: theme.textSecondary, fontWeight: '400' }}>/dan</ThemedText>
+          </ThemedText>
+        </View>
+        
         {daysRemaining !== null ? (
           <View style={[styles.expirationRow, { backgroundColor: daysRemaining <= 7 ? '#FFF3CD' : theme.backgroundSecondary }]}>
             <ClockIcon size={10} color={daysRemaining <= 7 ? '#856404' : theme.textSecondary} />
             <ThemedText type="small" style={{ color: daysRemaining <= 7 ? '#856404' : theme.textSecondary, marginLeft: 4 }}>
-              {daysRemaining === 0 ? 'Ističe danas' : `Ističe za ${daysRemaining} dana`}
+              {daysRemaining === 0 ? 'Istice danas' : `Istice za ${daysRemaining} dana`}
             </ThemedText>
           </View>
         ) : null}
+        
+        {showReserveButton ? (
+          <Pressable 
+            style={[styles.reserveButton, { backgroundColor: Colors.light.cta }]}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onReserve?.() || onPress();
+            }}
+          >
+            <ThemedText type="small" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+              Rezervisi
+            </ThemedText>
+            <ChevronRightIcon size={14} color="#FFFFFF" />
+          </Pressable>
+        ) : null}
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -105,6 +240,16 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: BorderRadius.md,
     overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      },
+    }),
+  },
+  premiumContainer: {
+    borderWidth: 2,
+    borderColor: '#FFD700',
   },
   imageContainer: {
     position: 'relative',
@@ -116,23 +261,60 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  premiumBadge: {
+  badgesContainer: {
     position: 'absolute',
     top: Spacing.xs,
     left: Spacing.xs,
+    right: Spacing.xs,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  premiumBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.light.primary,
+    backgroundColor: '#FFD700',
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: BorderRadius.sm,
     gap: 4,
   },
   premiumText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    letterSpacing: 0.5,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+  },
+  statusText: {
     fontSize: 9,
     fontWeight: '700',
-    color: Colors.light.accent,
+    color: '#FFFFFF',
     letterSpacing: 0.5,
+  },
+  tooltip: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -75 }, { translateY: -40 }],
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    minWidth: 150,
+    zIndex: 100,
+  },
+  tooltipText: {
+    color: '#FFFFFF',
+  },
+  tooltipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
   },
   content: {
     padding: Spacing.sm,
@@ -145,6 +327,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Spacing.xs,
   },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+  },
+  priceRow: {
+    marginTop: Spacing.xs,
+  },
   expirationRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -152,5 +342,14 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 6,
     borderRadius: BorderRadius.xs,
+  },
+  reserveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    gap: 4,
   },
 });
