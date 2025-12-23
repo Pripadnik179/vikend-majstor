@@ -101,7 +101,7 @@ export default function HomeScreen() {
   }, [navigation]);
 
   const handleLearnMore = useCallback(() => {
-    navigation.navigate('Subscription');
+    navigation.navigate('Earnings');
   }, [navigation]);
 
   const { data: items = [], isLoading, refetch } = useQuery<Item[]>({

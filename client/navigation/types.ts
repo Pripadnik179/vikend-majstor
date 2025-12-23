@@ -15,6 +15,7 @@ export type RootStackParamList = {
   MyItems: undefined;
   Search: { category?: string; subcategory?: string; toolType?: string; query?: string };
   Subscription: { scrollToFeature?: boolean } | undefined;
+  Earnings: undefined;
   Help: undefined;
   About: undefined;
   Legal: { section?: string } | undefined;
@@ -25,7 +26,6 @@ export type RootStackParamList = {
 export type MainTabParamList = {
   HomeTab: undefined;
   CategoriesTab: undefined;
-  EarningsTab: undefined;
   BookingsTab: undefined;
   MessagesTab: undefined;
   ProfileTab: undefined;

@@ -16,6 +16,7 @@ import SettingsScreen from "@/screens/SettingsScreen";
 import MyItemsScreen from "@/screens/MyItemsScreen";
 import SearchScreen from "@/screens/SearchScreen";
 import SubscriptionScreen from "@/screens/SubscriptionScreen";
+import EarningsScreen from "@/screens/EarningsScreen";
 import HelpScreen from "@/screens/HelpScreen";
 import AboutScreen from "@/screens/AboutScreen";
 import LegalScreen from "@/screens/LegalScreen";
@@ -153,6 +154,16 @@ export default function RootStackNavigator() {
             options={{ 
               presentation: "modal",
               headerTitle: "Pretplata",
+            }}
+          />
+          <Stack.Screen
+            name="Earnings"
+            component={EarningsScreen}
+            options={{ 
+              headerTitle: "Zaradi od alata",
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
             }}
           />
           <Stack.Screen
