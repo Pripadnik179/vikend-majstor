@@ -19,18 +19,42 @@ async function hashPassword(password: string): Promise<string> {
 
 const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
 
+const TOOL_IMAGES: Record<string, string> = {
+  'drill': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
+  'grinder': 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&h=300&fit=crop',
+  'saw': 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=400&h=300&fit=crop',
+  'mixer': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
+  'washer': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
+  'mower': 'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=400&h=300&fit=crop',
+  'sander': 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&h=300&fit=crop',
+  'hammer': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
+  'chainsaw': 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=400&h=300&fit=crop',
+  'scaffold': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&h=300&fit=crop',
+  'default': 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&h=300&fit=crop',
+};
+
+function getToolImageUrl(remoteName: string): string {
+  const nameLower = remoteName.toLowerCase();
+  for (const [key, url] of Object.entries(TOOL_IMAGES)) {
+    if (nameLower.includes(key)) {
+      return url;
+    }
+  }
+  return TOOL_IMAGES['default'];
+}
+
 async function uploadImage(localPath: string, remoteName: string): Promise<string> {
   if (!bucketId) {
-    console.log("No bucket ID, using placeholder URL");
-    return `https://via.placeholder.com/400x300?text=${encodeURIComponent(remoteName)}`;
+    console.log("No bucket ID, using Unsplash URL");
+    return getToolImageUrl(remoteName);
   }
   
   const destination = `public/items/${remoteName}`;
   
   try {
     if (!fs.existsSync(localPath)) {
-      console.log(`File not found: ${localPath}, using placeholder`);
-      return `https://via.placeholder.com/400x300?text=${encodeURIComponent(remoteName)}`;
+      console.log(`File not found: ${localPath}, using Unsplash URL`);
+      return getToolImageUrl(remoteName);
     }
     
     const bucket = objectStorageClient.bucket(bucketId);
@@ -52,7 +76,7 @@ async function uploadImage(localPath: string, remoteName: string): Promise<strin
     return `/objects/public/items/${remoteName}`;
   } catch (error) {
     console.error(`Error uploading ${localPath}:`, error);
-    return `https://via.placeholder.com/400x300?text=${encodeURIComponent(remoteName)}`;
+    return getToolImageUrl(remoteName);
   }
 }
 
