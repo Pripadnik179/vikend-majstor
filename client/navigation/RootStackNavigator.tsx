@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import MainTabNavigator from "@/navigation/MainTabNavigator";
 import WebNavigator from "@/navigation/WebNavigator";
 import AuthScreen from "@/screens/AuthScreen";
+import OnboardingScreen, { ONBOARDING_COMPLETE_KEY } from "@/screens/OnboardingScreen";
 import ItemDetailScreen from "@/screens/ItemDetailScreen";
 import AddItemScreen from "@/screens/AddItemScreen";
 import BookingFlowScreen from "@/screens/BookingFlowScreen";
@@ -31,8 +33,29 @@ export default function RootStackNavigator() {
   const screenOptions = useScreenOptions();
   const { user, isLoading } = useAuth();
   const { theme } = useTheme();
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
 
-  if (isLoading) {
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      try {
+        const value = await AsyncStorage.getItem(ONBOARDING_COMPLETE_KEY);
+        setHasCompletedOnboarding(value === 'true');
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+        setHasCompletedOnboarding(true);
+      }
+    };
+    
+    if (user) {
+      checkOnboardingStatus();
+    }
+  }, [user]);
+
+  const handleOnboardingComplete = useCallback(() => {
+    setHasCompletedOnboarding(true);
+  }, []);
+
+  if (isLoading || (user && hasCompletedOnboarding === null)) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.backgroundRoot }}>
         <ActivityIndicator size="large" color={theme.primary} />
@@ -43,12 +66,13 @@ export default function RootStackNavigator() {
   return (
     <Stack.Navigator screenOptions={screenOptions}>
       {user ? (
-        <>
-          <Stack.Screen
-            name="Main"
-            component={MainTabNavigator}
-            options={{ headerShown: false }}
-          />
+        hasCompletedOnboarding ? (
+          <>
+            <Stack.Screen
+              name="Main"
+              component={MainTabNavigator}
+              options={{ headerShown: false }}
+            />
           <Stack.Screen
             name="ItemDetail"
             component={ItemDetailScreen}
@@ -181,7 +205,15 @@ export default function RootStackNavigator() {
               contentStyle: { backgroundColor: theme.backgroundRoot },
             }}
           />
-        </>
+          </>
+        ) : (
+          <Stack.Screen
+            name="Onboarding"
+            options={{ headerShown: false }}
+          >
+            {() => <OnboardingScreen onComplete={handleOnboardingComplete} />}
+          </Stack.Screen>
+        )
       ) : (
         <Stack.Screen
           name="Auth"
