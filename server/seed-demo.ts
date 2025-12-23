@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { users, items } from "../shared/schema";
-import { eq, like, or } from "drizzle-orm";
+import { users, items, bookings, conversations, messages, reviews } from "../shared/schema";
+import { eq, like, or, inArray } from "drizzle-orm";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 import * as fs from "fs";
@@ -529,17 +529,74 @@ export async function deleteDemoData(): Promise<{ users: number; items: number }
     )
   );
   
-  let itemsDeleted = 0;
-  let usersDeleted = 0;
-  
-  for (const user of demoUsersList) {
-    const deletedItems = await db.delete(items).where(eq(items.ownerId, user.id)).returning();
-    itemsDeleted += deletedItems.length;
-    
-    await db.delete(users).where(eq(users.id, user.id));
-    usersDeleted++;
-    console.log(`[SEED] Deleted demo user: ${user.name} and ${deletedItems.length} items`);
+  if (demoUsersList.length === 0) {
+    console.log("[SEED] No demo users found to delete");
+    return { users: 0, items: 0 };
   }
+  
+  const demoUserIds = demoUsersList.map(u => u.id);
+  console.log(`[SEED] Found ${demoUserIds.length} demo users to delete`);
+  
+  // Get all items owned by demo users
+  const demoItems = await db.select().from(items).where(inArray(items.ownerId, demoUserIds));
+  const demoItemIds = demoItems.map(i => i.id);
+  console.log(`[SEED] Found ${demoItemIds.length} demo items to delete`);
+  
+  // 1. Delete reviews involving demo users or demo items
+  if (demoItemIds.length > 0) {
+    const deletedReviews = await db.delete(reviews).where(inArray(reviews.itemId, demoItemIds)).returning();
+    console.log(`[SEED] Deleted ${deletedReviews.length} reviews for demo items`);
+  }
+  const deletedReviewsByUser = await db.delete(reviews).where(
+    or(
+      inArray(reviews.reviewerId, demoUserIds),
+      inArray(reviews.revieweeId, demoUserIds)
+    )
+  ).returning();
+  console.log(`[SEED] Deleted ${deletedReviewsByUser.length} reviews by/for demo users`);
+  
+  // 2. Delete bookings involving demo users or demo items
+  if (demoItemIds.length > 0) {
+    const deletedBookings = await db.delete(bookings).where(inArray(bookings.itemId, demoItemIds)).returning();
+    console.log(`[SEED] Deleted ${deletedBookings.length} bookings for demo items`);
+  }
+  const deletedBookingsByUser = await db.delete(bookings).where(
+    or(
+      inArray(bookings.renterId, demoUserIds),
+      inArray(bookings.ownerId, demoUserIds)
+    )
+  ).returning();
+  console.log(`[SEED] Deleted ${deletedBookingsByUser.length} bookings by demo users`);
+  
+  // 3. Get conversations involving demo users, then delete messages and conversations
+  const demoConversations = await db.select().from(conversations).where(
+    or(
+      inArray(conversations.user1Id, demoUserIds),
+      inArray(conversations.user2Id, demoUserIds)
+    )
+  );
+  const demoConversationIds = demoConversations.map(c => c.id);
+  
+  if (demoConversationIds.length > 0) {
+    const deletedMessages = await db.delete(messages).where(inArray(messages.conversationId, demoConversationIds)).returning();
+    console.log(`[SEED] Deleted ${deletedMessages.length} messages from demo conversations`);
+    
+    const deletedConversations = await db.delete(conversations).where(inArray(conversations.id, demoConversationIds)).returning();
+    console.log(`[SEED] Deleted ${deletedConversations.length} conversations involving demo users`);
+  }
+  
+  // 4. Delete items owned by demo users
+  let itemsDeleted = 0;
+  if (demoItemIds.length > 0) {
+    const deletedItems = await db.delete(items).where(inArray(items.id, demoItemIds)).returning();
+    itemsDeleted = deletedItems.length;
+    console.log(`[SEED] Deleted ${itemsDeleted} demo items`);
+  }
+  
+  // 5. Finally delete demo users
+  const deletedUsers = await db.delete(users).where(inArray(users.id, demoUserIds)).returning();
+  const usersDeleted = deletedUsers.length;
+  console.log(`[SEED] Deleted ${usersDeleted} demo users`);
   
   console.log(`[SEED] Demo data deletion complete: ${usersDeleted} users, ${itemsDeleted} items`);
   return { users: usersDeleted, items: itemsDeleted };
