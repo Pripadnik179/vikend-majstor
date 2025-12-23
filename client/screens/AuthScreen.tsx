@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image, Platform } from 'react-native';
+import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image, Platform, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MailIcon, AppleIcon, EyeIcon, EyeOffIcon } from '@/components/icons/TabBarIcons';
+import { MailIcon, AppleIcon, EyeIcon, EyeOffIcon, ShieldIcon, LockIcon, CheckIcon } from '@/components/icons/TabBarIcons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ResponsiveContainer } from '@/components/ResponsiveContainer';
 import { ThemedText } from '@/components/ThemedText';
@@ -37,8 +37,11 @@ export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
@@ -49,12 +52,46 @@ export default function AuthScreen() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const [resendingVerification, setResendingVerification] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{name?: string; email?: string; password?: string; confirmPassword?: string}>({});
 
   useEffect(() => {
     if (Platform.OS === 'ios' && AppleAuthentication) {
       AppleAuthentication.isAvailableAsync().then(setIsAppleAvailable);
     }
   }, []);
+
+  const validateFields = (): boolean => {
+    const errors: typeof fieldErrors = {};
+    
+    if (!isLogin && !name.trim()) {
+      errors.name = 'Ime je obavezno';
+    } else if (!isLogin && name.trim().length < 2) {
+      errors.name = 'Ime mora imati najmanje 2 karaktera';
+    }
+    
+    if (!email.trim()) {
+      errors.email = 'Email je obavezan';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Unesite ispravan email format';
+    }
+    
+    if (!password) {
+      errors.password = 'Lozinka je obavezna';
+    } else if (!isLogin && password.length < 6) {
+      errors.password = 'Lozinka mora imati najmanje 6 karaktera';
+    }
+    
+    if (!isLogin) {
+      if (!confirmPassword) {
+        errors.confirmPassword = 'Potvrdite lozinku';
+      } else if (password !== confirmPassword) {
+        errors.confirmPassword = 'Lozinke se ne poklapaju';
+      }
+    }
+    
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleGoogleSignIn = async () => {
     if (!isGoogleConfigured) {
@@ -67,7 +104,7 @@ export default function AuthScreen() {
     
     Alert.alert(
       'Google prijava',
-      'Google OAuth kredencijali još nisu podešeni. Molimo koristite email prijavu.'
+      'Google OAuth kredencijali jos nisu podeseni. Molimo koristite email prijavu.'
     );
   };
 
@@ -91,13 +128,13 @@ export default function AuthScreen() {
           familyName: credential.fullName.familyName ?? undefined,
         } : null);
       } else {
-        Alert.alert('Greška', 'Nije moguće dobiti Apple token');
+        Alert.alert('Greska', 'Nije moguce dobiti Apple token');
       }
     } catch (error: any) {
       if (error.code === 'ERR_REQUEST_CANCELED') {
         return;
       }
-      Alert.alert('Greška', error.message || 'Greška pri Apple prijavi');
+      Alert.alert('Greska', error.message || 'Greska pri Apple prijavi');
     } finally {
       setIsAppleLoading(false);
     }
@@ -132,13 +169,9 @@ export default function AuthScreen() {
     setErrorMessage(null);
     setSuccessMessage(null);
     setUnverifiedEmail(null);
+    setFieldErrors({});
     
-    if (!email || !password || (!isLogin && !name)) {
-      const msg = 'Sva polja su obavezna';
-      setErrorMessage(msg);
-      if (Platform.OS !== 'web') {
-        Alert.alert('Greška', msg);
-      }
+    if (!validateFields()) {
       return;
     }
 
@@ -158,10 +191,10 @@ export default function AuthScreen() {
         setUnverifiedEmail(email);
         setErrorMessage('Morate potvrditi email adresu pre prijave.');
       } else {
-        const msg = error?.message || 'Došlo je do greške pri prijavi';
+        const msg = error?.message || 'Doslo je do greske pri prijavi';
         setErrorMessage(msg);
         if (Platform.OS !== 'web') {
-          Alert.alert('Greška', msg);
+          Alert.alert('Greska', msg);
         }
       }
       setIsLoading(false);
@@ -178,10 +211,10 @@ export default function AuthScreen() {
         setSuccessMessage('Verifikacioni email je poslat. Proverite inbox.');
         setUnverifiedEmail(null);
       } else {
-        setErrorMessage('Greška pri slanju emaila. Pokušajte ponovo.');
+        setErrorMessage('Greska pri slanju emaila. Pokusajte ponovo.');
       }
     } catch (error) {
-      setErrorMessage('Greška pri slanju emaila. Pokušajte ponovo.');
+      setErrorMessage('Greska pri slanju emaila. Pokusajte ponovo.');
     } finally {
       setResendingVerification(false);
     }
@@ -220,7 +253,7 @@ export default function AuthScreen() {
           />
           <ThemedText type="h1" style={styles.title}>VikendMajstor</ThemedText>
           <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
-            Iznajmi alat od komšije
+            Iznajmi alat od komsije
           </ThemedText>
         </View>
 
@@ -276,26 +309,36 @@ export default function AuthScreen() {
         </View>
 
         {!isLogin && (
-          <TextInput
-            style={inputStyle}
-            placeholder="Ime i prezime"
-            placeholderTextColor={theme.textTertiary}
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-          />
+          <View style={styles.fieldGroup}>
+            <TextInput
+              style={[inputStyle, fieldErrors.name ? styles.inputError : null]}
+              placeholder="Ime i prezime"
+              placeholderTextColor={theme.textTertiary}
+              value={name}
+              onChangeText={(text) => { setName(text); setFieldErrors(prev => ({ ...prev, name: undefined })); }}
+              autoCapitalize="words"
+            />
+            {fieldErrors.name ? (
+              <ThemedText type="small" style={styles.fieldError}>{fieldErrors.name}</ThemedText>
+            ) : null}
+          </View>
         )}
 
-        <TextInput
-          style={inputStyle}
-          placeholder="Email"
-          placeholderTextColor={theme.textTertiary}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-        />
+        <View style={styles.fieldGroup}>
+          <TextInput
+            style={[inputStyle, fieldErrors.email ? styles.inputError : null]}
+            placeholder="Email"
+            placeholderTextColor={theme.textTertiary}
+            value={email}
+            onChangeText={(text) => { setEmail(text); setFieldErrors(prev => ({ ...prev, email: undefined })); }}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+          />
+          {fieldErrors.email ? (
+            <ThemedText type="small" style={styles.fieldError}>{fieldErrors.email}</ThemedText>
+          ) : null}
+        </View>
 
         {isForgotPassword ? (
           <>
@@ -315,34 +358,93 @@ export default function AuthScreen() {
           </>
         ) : (
           <>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={[inputStyle, styles.passwordInput]}
-                placeholder="Lozinka"
-                placeholderTextColor={theme.textTertiary}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoComplete="password"
-              />
-              <Pressable
-                style={styles.eyeButton}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOffIcon size={22} color={theme.textSecondary} />
-                ) : (
-                  <EyeIcon size={22} color={theme.textSecondary} />
-                )}
-              </Pressable>
+            <View style={styles.fieldGroup}>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[inputStyle, styles.passwordInput, fieldErrors.password ? styles.inputError : null]}
+                  placeholder="Lozinka"
+                  placeholderTextColor={theme.textTertiary}
+                  value={password}
+                  onChangeText={(text) => { setPassword(text); setFieldErrors(prev => ({ ...prev, password: undefined })); }}
+                  secureTextEntry={!showPassword}
+                  autoComplete="password"
+                />
+                <Pressable
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOffIcon size={22} color={theme.textSecondary} />
+                  ) : (
+                    <EyeIcon size={22} color={theme.textSecondary} />
+                  )}
+                </Pressable>
+              </View>
+              {fieldErrors.password ? (
+                <ThemedText type="small" style={styles.fieldError}>{fieldErrors.password}</ThemedText>
+              ) : !isLogin ? (
+                <ThemedText type="small" style={[styles.fieldHint, { color: theme.textTertiary }]}>
+                  Lozinka mora imati najmanje 6 karaktera
+                </ThemedText>
+              ) : null}
             </View>
 
+            {!isLogin && (
+              <View style={styles.fieldGroup}>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={[inputStyle, styles.passwordInput, fieldErrors.confirmPassword ? styles.inputError : null]}
+                    placeholder="Potvrda lozinke"
+                    placeholderTextColor={theme.textTertiary}
+                    value={confirmPassword}
+                    onChangeText={(text) => { setConfirmPassword(text); setFieldErrors(prev => ({ ...prev, confirmPassword: undefined })); }}
+                    secureTextEntry={!showConfirmPassword}
+                    autoComplete="password"
+                  />
+                  <Pressable
+                    style={styles.eyeButton}
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOffIcon size={22} color={theme.textSecondary} />
+                    ) : (
+                      <EyeIcon size={22} color={theme.textSecondary} />
+                    )}
+                  </Pressable>
+                </View>
+                {fieldErrors.confirmPassword ? (
+                  <ThemedText type="small" style={styles.fieldError}>{fieldErrors.confirmPassword}</ThemedText>
+                ) : confirmPassword && password === confirmPassword ? (
+                  <View style={styles.matchIndicator}>
+                    <CheckIcon size={14} color={Colors.light.success} />
+                    <ThemedText type="small" style={[styles.fieldSuccess, { color: Colors.light.success }]}>
+                      Lozinke se poklapaju
+                    </ThemedText>
+                  </View>
+                ) : null}
+              </View>
+            )}
+
             {isLogin ? (
-              <Pressable onPress={() => setIsForgotPassword(true)} style={styles.forgotPassword}>
-                <ThemedText type="small" style={{ color: Colors.light.primary }}>
-                  Zaboravili ste lozinku?
-                </ThemedText>
-              </Pressable>
+              <View style={styles.loginOptions}>
+                <View style={styles.rememberMeContainer}>
+                  <Switch
+                    value={rememberMe}
+                    onValueChange={setRememberMe}
+                    trackColor={{ false: theme.border, true: Colors.light.cta }}
+                    thumbColor={rememberMe ? '#FFFFFF' : '#f4f3f4'}
+                    style={styles.rememberMeSwitch}
+                  />
+                  <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                    Zapamti me
+                  </ThemedText>
+                </View>
+                <Pressable onPress={() => setIsForgotPassword(true)}>
+                  <ThemedText type="small" style={{ color: Colors.light.cta }}>
+                    Zaboravili ste lozinku?
+                  </ThemedText>
+                </Pressable>
+              </View>
             ) : null}
 
             {errorMessage ? (
@@ -357,9 +459,9 @@ export default function AuthScreen() {
                     style={styles.resendButton}
                   >
                     {resendingVerification ? (
-                      <ActivityIndicator size="small" color={Colors.light.primary} />
+                      <ActivityIndicator size="small" color={Colors.light.cta} />
                     ) : (
-                      <ThemedText type="small" style={{ color: Colors.light.primary, fontWeight: '600' }}>
+                      <ThemedText type="small" style={{ color: Colors.light.cta, fontWeight: '600' }}>
                         Posalji ponovo verifikacioni email
                       </ThemedText>
                     )}
@@ -384,7 +486,22 @@ export default function AuthScreen() {
               )}
             </Button>
 
-            <Pressable onPress={() => { setIsLogin(!isLogin); setErrorMessage(null); }} style={styles.switchButton}>
+            <View style={styles.trustBadges}>
+              <View style={[styles.trustBadge, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.1)' }]}>
+                <ShieldIcon size={14} color={Colors.light.success} />
+                <ThemedText type="small" style={{ color: Colors.light.success, marginLeft: 4 }}>
+                  Bezbedno - scrypt enkripcija
+                </ThemedText>
+              </View>
+              <View style={[styles.trustBadge, { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)' }]}>
+                <LockIcon size={14} color={Colors.light.trust} />
+                <ThemedText type="small" style={{ color: Colors.light.trust, marginLeft: 4 }}>
+                  Email verifikacija
+                </ThemedText>
+              </View>
+            </View>
+
+            <Pressable onPress={() => { setIsLogin(!isLogin); setErrorMessage(null); setFieldErrors({}); }} style={styles.switchButton}>
               <ThemedText type="body" style={{ color: theme.textSecondary }}>
                 {isLogin ? 'Nemas nalog? ' : 'Vec imas nalog? '}
                 <ThemedText type="link">
@@ -477,13 +594,36 @@ const styles = StyleSheet.create({
   dividerText: {
     marginHorizontal: Spacing.md,
   },
+  fieldGroup: {
+    marginBottom: Spacing.md,
+  },
   input: {
     height: Spacing.inputHeight,
     borderWidth: 1,
     borderRadius: BorderRadius.sm,
     paddingHorizontal: Spacing.lg,
     fontSize: 16,
-    marginBottom: Spacing.md,
+  },
+  inputError: {
+    borderColor: Colors.light.error,
+  },
+  fieldError: {
+    color: Colors.light.error,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  fieldHint: {
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  fieldSuccess: {
+    marginLeft: 4,
+  },
+  matchIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    marginLeft: 4,
   },
   button: {
     marginTop: Spacing.md,
@@ -494,10 +634,8 @@ const styles = StyleSheet.create({
   },
   passwordContainer: {
     position: 'relative',
-    marginBottom: Spacing.md,
   },
   passwordInput: {
-    marginBottom: 0,
     paddingRight: 50,
   },
   eyeButton: {
@@ -508,9 +646,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
+  loginOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: Spacing.md,
+  },
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rememberMeSwitch: {
+    marginRight: Spacing.sm,
+    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
   },
   errorContainer: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -539,5 +687,19 @@ const styles = StyleSheet.create({
   resendButton: {
     marginTop: Spacing.sm,
     alignItems: 'center',
+  },
+  trustBadges: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginTop: Spacing.lg,
+  },
+  trustBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
   },
 });
