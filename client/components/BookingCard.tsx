@@ -25,6 +25,9 @@ export function BookingCard({ booking, viewType, onPress }: BookingCardProps) {
     if (path.startsWith('/objects/')) {
       return `${getApiUrl()}/api${path}`;
     }
+    if (path.startsWith('/public-objects/')) {
+      return `${getApiUrl()}/api/objects${path.replace('/public-objects/', '/public/')}`;
+    }
     return `${getApiUrl()}${path}`;
   };
 
