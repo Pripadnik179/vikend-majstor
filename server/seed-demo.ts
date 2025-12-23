@@ -13,58 +13,18 @@ async function hashPassword(password: string): Promise<string> {
   return `${derivedKey.toString("hex")}.${salt}`;
 }
 
-// Demo slike - specifični Unsplash URL-ovi za svaku kategoriju alata
+// Demo slike - AI generisane slike alata
 const DEMO_IMAGES = {
-  // Bušilice - akumulatorske i električne bušilice
-  drill: [
-    'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=600&h=400&fit=crop', // power drill
-    'https://images.unsplash.com/photo-1580901368919-7738efb0f87e?w=600&h=400&fit=crop', // cordless drill
-  ],
-  // Brusilice - ugaone brusilice
-  grinder: [
-    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop', // angle grinder sparks
-    'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&h=400&fit=crop', // metal grinding
-  ],
-  // Testere - kružne i stolne testere
-  saw: [
-    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop', // circular saw cutting
-    'https://images.unsplash.com/photo-1567361808960-dec9cb578182?w=600&h=400&fit=crop', // woodworking saw
-  ],
-  // Mešalice - betonjerke
-  mixer: [
-    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop', // construction site
-    'https://images.unsplash.com/photo-1517581177682-a085bb7ffb15?w=600&h=400&fit=crop', // concrete work
-  ],
-  // Perači pod pritiskom
-  washer: [
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop', // pressure washer
-    'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&h=400&fit=crop', // cleaning equipment
-  ],
-  // Kosilice - travnjak
-  mower: [
-    'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=600&h=400&fit=crop', // lawn mower
-    'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=400&fit=crop', // garden lawn
-  ],
-  // Brusilice orbitalne
-  sander: [
-    'https://images.unsplash.com/photo-1580901368919-7738efb0f87e?w=600&h=400&fit=crop', // sanding tool
-    'https://images.unsplash.com/photo-1567361808960-dec9cb578182?w=600&h=400&fit=crop', // woodworking
-  ],
-  // Čekić bušilice - SDS
-  hammer: [
-    'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=600&h=400&fit=crop', // hammer drill
-    'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&h=400&fit=crop', // drilling concrete
-  ],
-  // Lančane testere - motorne pile
-  chainsaw: [
-    'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=600&h=400&fit=crop', // chainsaw wood
-    'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&h=400&fit=crop', // forest logging
-  ],
-  // Skele i merdevine
-  scaffold: [
-    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop', // scaffolding construction
-    'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&h=400&fit=crop', // building scaffold
-  ],
+  drill: ['/demo-images/yellow_cordless_power_drill.png'],
+  grinder: ['/demo-images/yellow_angle_grinder_tool.png'],
+  saw: ['/demo-images/yellow_circular_saw_tool.png'],
+  mixer: ['/demo-images/yellow_concrete_mixer_machine.png'],
+  washer: ['/demo-images/yellow_pressure_washer_machine.png'],
+  mower: ['/demo-images/yellow_lawn_mower_machine.png'],
+  sander: ['/demo-images/yellow_orbital_sander_tool.png'],
+  hammer: ['/demo-images/yellow_hammer_drill_tool.png'],
+  chainsaw: ['/demo-images/yellow_orange_chainsaw_tool.png'],
+  scaffold: ['/demo-images/yellow_construction_scaffolding.png'],
 };
 
 const DEMO_EMAIL_SUFFIX = "@demo.vikendmajstor.rs";

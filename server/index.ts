@@ -339,6 +339,7 @@ function configureExpoAndLanding(app: express.Application) {
   });
 
   app.use("/assets", express.static(path.resolve(process.cwd(), "assets")));
+  app.use("/demo-images", express.static(path.resolve(process.cwd(), "server/public/demo-images")));
   
   // Serve Expo web build for app.vikendmajstor.rs
   app.use((req: Request, res: Response, next: NextFunction) => {
