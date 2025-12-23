@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, FlatList, TextInput, Pressable, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { View, StyleSheet, FlatList, TextInput, Pressable, ActivityIndicator, RefreshControl, Alert, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
@@ -58,54 +58,100 @@ export default function AdminScreen() {
     queryKey: ['/api/admin/demo-data'],
   });
 
+  const showSuccessMessage = (message: string) => {
+    if (Platform.OS === 'web') {
+      window.alert(message);
+    } else {
+      Alert.alert('Uspeh', message);
+    }
+  };
+
+  const showErrorMessage = (message: string) => {
+    if (Platform.OS === 'web') {
+      window.alert('Greška: ' + message);
+    } else {
+      Alert.alert('Greška', message);
+    }
+  };
+
   const seedDemoMutation = useMutation({
     mutationFn: async () => {
+      console.log('[ADMIN] seedDemoMutation mutationFn called');
       return apiRequest('POST', '/api/admin/demo-data/seed');
     },
     onSuccess: async (response) => {
+      console.log('[ADMIN] seedDemoMutation onSuccess');
       const data = await response.json();
       queryClient.invalidateQueries({ queryKey: ['/api/admin'] });
-      Alert.alert('Uspeh', data.message || 'Demo podaci su kreirani');
+      showSuccessMessage(data.message || 'Demo podaci su kreirani');
     },
     onError: (error: any) => {
-      Alert.alert('Greška', error.message || 'Greška pri kreiranju demo podataka');
+      console.log('[ADMIN] seedDemoMutation onError:', error);
+      showErrorMessage(error.message || 'Greška pri kreiranju demo podataka');
     },
   });
 
   const deleteDemoMutation = useMutation({
     mutationFn: async () => {
+      console.log('[ADMIN] deleteDemoMutation mutationFn called');
       return apiRequest('DELETE', '/api/admin/demo-data');
     },
     onSuccess: async (response) => {
+      console.log('[ADMIN] deleteDemoMutation onSuccess');
       const data = await response.json();
       queryClient.invalidateQueries({ queryKey: ['/api/admin'] });
-      Alert.alert('Uspeh', data.message || 'Demo podaci su obrisani');
+      showSuccessMessage(data.message || 'Demo podaci su obrisani');
     },
     onError: (error: any) => {
-      Alert.alert('Greška', error.message || 'Greška pri brisanju demo podataka');
+      console.log('[ADMIN] deleteDemoMutation onError:', error);
+      showErrorMessage(error.message || 'Greška pri brisanju demo podataka');
     },
   });
 
   const handleSeedDemo = () => {
-    Alert.alert(
-      'Potvrda',
-      'Da li želite da kreirate demo korisnike i oglase?',
-      [
-        { text: 'Odustani', style: 'cancel' },
-        { text: 'Kreiraj', onPress: () => seedDemoMutation.mutate() },
-      ]
-    );
+    console.log('[ADMIN] handleSeedDemo called');
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Da li želite da kreirate demo korisnike i oglase?');
+      if (confirmed) {
+        console.log('[ADMIN] Seeding demo data...');
+        seedDemoMutation.mutate();
+      }
+    } else {
+      Alert.alert(
+        'Potvrda',
+        'Da li želite da kreirate demo korisnike i oglase?',
+        [
+          { text: 'Odustani', style: 'cancel' },
+          { text: 'Kreiraj', onPress: () => {
+            console.log('[ADMIN] Seeding demo data...');
+            seedDemoMutation.mutate();
+          }},
+        ]
+      );
+    }
   };
 
   const handleDeleteDemo = () => {
-    Alert.alert(
-      'Potvrda',
-      'Da li ste sigurni da želite da obrišete SVE demo podatke?',
-      [
-        { text: 'Odustani', style: 'cancel' },
-        { text: 'Obriši', style: 'destructive', onPress: () => deleteDemoMutation.mutate() },
-      ]
-    );
+    console.log('[ADMIN] handleDeleteDemo called');
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Da li ste sigurni da želite da obrišete SVE demo podatke?');
+      if (confirmed) {
+        console.log('[ADMIN] Deleting demo data...');
+        deleteDemoMutation.mutate();
+      }
+    } else {
+      Alert.alert(
+        'Potvrda',
+        'Da li ste sigurni da želite da obrišete SVE demo podatke?',
+        [
+          { text: 'Odustani', style: 'cancel' },
+          { text: 'Obriši', style: 'destructive', onPress: () => {
+            console.log('[ADMIN] Deleting demo data...');
+            deleteDemoMutation.mutate();
+          }},
+        ]
+      );
+    }
   };
 
   const { data: users, isLoading, refetch, isRefetching } = useQuery<AdminUser[]>({
