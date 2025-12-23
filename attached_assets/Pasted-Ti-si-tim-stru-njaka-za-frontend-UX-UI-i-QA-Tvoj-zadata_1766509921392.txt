@@ -1,0 +1,48 @@
+Ti si tim stručnjaka za frontend, UX/UI i QA. Tvoj zadatak je da unaprediš web aplikaciju VikendMajstor.rs (https://app.vikendmajstor.rs/) tako da poveća poverenje, aktivaciju i konverziju korisnika. Fokus je na početnoj strani, onboarding vodiču, premijum oglasima, najpopularnijim alatima, dugmetu za dodavanje alata, kao i sekcijama rezervacija, poruke i profil.
+
+### Početna strana:
+- Dodaj onboarding vodič u 3 koraka, prilagođen mobilnim i desktop uređajima.
+  - Mobilni: vertikalni layout, ikonice iznad teksta.
+  - Desktop: horizontalni layout, hover efekti.
+  - CTA dugmad ispod svakog koraka.
+- Prikaži najpopularnije alate odmah (preview).
+- Dodaj CTA dugme “Dodaj svoj alat i počni da zarađuješ”.
+- Vizuelni storytelling (fotografije alata i korisnika).
+- Trust badges (“Bezbedno, bez provizije”, “Verifikovani korisnici”).
+
+### Premijum oglasi vs najpopularniji:
+- Dodaj sekciju “Premijum oglasi” sa zlatnim badge-om.
+- Sekcija “Najpopularniji alati” odmah ispod, sa filterom “Po broju iznajmljivanja”.
+- Algoritamski balans: 3–5 premijum oglasa + 5 najpopularnijih.
+- Ako premijum oglas ima i visoku popularnost → prikazati u obe sekcije.
+
+### Dugme za dodavanje alata:
+- Mobilni: floating dugme sa tooltipom “Dodaj alat”.
+- Desktop: dugme sa tekstom “+ Dodaj alat” u gornjem desnom uglu.
+- Mikro-copy ispod: “Zaradi od alata koji ti stoji u garaži”.
+
+### Rezervacije:
+- Statusne ikonice (“Na čekanju”, “Potvrđeno”, “Završeno”).
+- Timeline prikaz rezervacija.
+- Ocene i komentari nakon završetka.
+- Tooltip objašnjenja procesa.
+
+### Poruke:
+- Preview poslednje poruke u listi.
+- Status korisnika (“Online”, “Odgovara u roku od 1h”).
+- Banner sa sigurnosnim savetima (“Ne šalji novac unapred. Plaćanje pri preuzimanju.”).
+
+### Profil:
+- Badge sistem (“Verifikovan korisnik”, “Top iznajmljivač”).
+- Istorija aktivnosti (zarada, broj iznajmljivanja).
+- CTA za dodavanje više alata.
+- Vizuelni identitet (avatar, pozadina, brend boje).
+
+### QA checklist:
+- Testirati responsive prikaz onboarding vodiča.
+- Testirati prikaz premijum i popularnih oglasa.
+- Testirati dugme za dodavanje alata na svim uređajima.
+- Testirati rezervacije (status, timeline, ocene).
+- Testirati poruke (preview, status, sigurnosni banner).
+- Testirati profil (badge sistem, istorija aktivnosti, CTA).
+- Optimizovati sve sekcije za mobilne uređaje.

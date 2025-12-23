@@ -11,6 +11,10 @@ import { ItemCard } from '@/components/ItemCard';
 import { FilterModal, FilterState } from '@/components/FilterModal';
 import { PromoBanner } from '@/components/PromoBanner';
 import { VerificationBanner } from '@/components/VerificationBanner';
+import { OnboardingGuide } from '@/components/OnboardingGuide';
+import { TrustBadges } from '@/components/TrustBadges';
+import { PopularToolsSection } from '@/components/PopularToolsSection';
+import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout } from '@/hooks/useWebLayout';
@@ -88,6 +92,18 @@ export default function HomeScreen() {
     setAppliedSearch('');
   }, []);
 
+  const handleAddTool = useCallback(() => {
+    navigation.navigate('AddItem');
+  }, [navigation]);
+
+  const handleBrowse = useCallback(() => {
+    navigation.navigate('Search', {});
+  }, [navigation]);
+
+  const handleLearnMore = useCallback(() => {
+    navigation.navigate('Subscription');
+  }, [navigation]);
+
   const { data: items = [], isLoading, refetch } = useQuery<Item[]>({
     queryKey: ['/api/items'],
   });
@@ -133,17 +149,13 @@ export default function HomeScreen() {
       return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesRating && matchesDeposit && matchesCity && matchesDistance;
     });
     
-    // Sort: 1) Featured items first, 2) Premium users' items, 3) by creation date
     return filtered.sort((a, b) => {
       const aItem = a as any;
       const bItem = b as any;
-      // Featured items come first
       if (aItem.isFeatured && !bItem.isFeatured) return -1;
       if (!aItem.isFeatured && bItem.isFeatured) return 1;
-      // Then premium users' items
       if (aItem.isPremium && !bItem.isPremium) return -1;
       if (!aItem.isPremium && bItem.isPremium) return 1;
-      // Then sort by createdAt descending
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }, [items, appliedSearch, filters, userLat, userLng]);
@@ -164,22 +176,43 @@ export default function HomeScreen() {
   const listHeader = useMemo(() => (
     <View style={styles.header}>
       <VerificationBanner />
+      
+      <TrustBadges />
+      
+      <OnboardingGuide
+        onAddTool={handleAddTool}
+        onBrowse={handleBrowse}
+        onLearnMore={handleLearnMore}
+      />
+      
       <PromoBanner
         premiumItems={homeData?.premiumItems || []}
         earlyAdopterSlotsRemaining={homeData?.remainingEarlyAdopterSlots || 0}
       />
+      
+      <PopularToolsSection
+        items={items}
+        onSeeAll={handleBrowse}
+      />
+      
+      <View style={styles.allToolsHeader}>
+        <ThemedText type="h3">Svi alati</ThemedText>
+        <ThemedText type="small" style={{ color: theme.textSecondary }}>
+          {filteredItems.length} dostupno
+        </ThemedText>
+      </View>
     </View>
-  ), [homeData?.premiumItems, homeData?.remainingEarlyAdopterSlots]);
+  ), [homeData?.premiumItems, homeData?.remainingEarlyAdopterSlots, items, filteredItems.length, theme.textSecondary, handleAddTool, handleBrowse, handleLearnMore]);
 
   const renderEmpty = () => {
-    let emptyMessage = 'Budi prvi koji će dodati stvar';
+    let emptyMessage = 'Budi prvi koji ce dodati stvar';
     
     if (filters.maxDistance !== null && userLat === null) {
-      emptyMessage = 'Uključi GPS lokaciju za pretragu po udaljenosti';
+      emptyMessage = 'Ukljuci GPS lokaciju za pretragu po udaljenosti';
     } else if (filters.maxDistance !== null) {
-      emptyMessage = `Nema rezultata u krugu od ${filters.maxDistance} km. Probaj veću udaljenost.`;
+      emptyMessage = `Nema rezultata u krugu od ${filters.maxDistance} km. Probaj vecu udaljenost.`;
     } else if (appliedSearch || activeFilterCount > 0) {
-      emptyMessage = 'Pokušaj sa drugim filterima ili pretragom';
+      emptyMessage = 'Pokusaj sa drugim filterima ili pretragom';
     }
     
     return (
@@ -220,7 +253,7 @@ export default function HomeScreen() {
           </Pressable>
           <TextInput
             style={[styles.searchInput, { color: theme.text }]}
-            placeholder="Pretraži stvari..."
+            placeholder="Pretrazi stvari..."
             placeholderTextColor={theme.textTertiary}
             value={searchInput}
             onChangeText={setSearchInput}
@@ -279,6 +312,9 @@ export default function HomeScreen() {
         keyboardShouldPersistTaps="always"
         keyboardDismissMode="on-drag"
       />
+      
+      <FloatingAddButton onPress={handleAddTool} />
+      
       <FilterModal
         visible={showFilters}
         onClose={() => setShowFilters(false)}
@@ -291,6 +327,12 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   header: {
+    marginBottom: Spacing.md,
+  },
+  allToolsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: Spacing.md,
   },
   searchRowFixed: {
