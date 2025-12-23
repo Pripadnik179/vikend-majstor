@@ -1,0 +1,63 @@
+Ti si tim stručnjaka za frontend, UX/UI i QA. Tvoj zadatak je da unaprediš početnu stranu i sekciju “Iznajmi alat” u web aplikaciji VikendMajstor.rs (https://app.vikendmajstor.rs/), sa fokusom na jasnoću, konverziju i vizuelni identitet.
+
+### Početna strana:
+
+1. **Onboarding vodič (3 koraka)**:
+   - Prilagodi prikaz za mobilne i desktop uređaje.
+   - Mobilni: vertikalni layout, ikonice iznad teksta.
+   - Desktop: horizontalni layout, ravnomerno raspoređeni koraci.
+   - Dodaj CTA dugmad ispod svakog koraka (“Dodaj alat”, “Pogledaj kako funkcioniše”).
+
+2. **Dugme za dodavanje alata**:
+   - Zameniti “+” ikonu sa tekstom “+ Dodaj alat”.
+   - Tooltip: “Zaradi od alata koji ti stoji u garaži”.
+
+3. **Sekcija “Zaradi”**:
+   - Redizajnirati da ne vodi direktno na pretplatu.
+   - Prikazati edukativni sadržaj:
+     - Primeri korisnika koji su zaradili.
+     - Prosečna zarada po alatu.
+     - Kalkulator zarade (alat + broj dana).
+   - CTA dugme “Dodaj svoj alat” → vodi ka formi za oglas.
+   - Trust elementi: “Bez provizije”, “Plaćanje pri preuzimanju”, “Verifikovani korisnici”.
+
+4. **Program ranih usvojilaca**:
+   - Dodaj CTA dugme “Prijavi se” ili “Rezerviši mesto”.
+   - Prikaz broja preostalih mesta dinamički.
+
+5. **Trust badges**:
+   - Dodaj “Bezbedno – Plaćanje pri preuzimanju”.
+   - “Verifikovani korisnici”, “Srpska platforma”.
+
+---
+
+### Sekcija “Iznajmi alat”:
+
+1. **Grid prikaz za desktop**:
+   - Popraviti raspored kartica alata → ravnomerno poravnanje, padding, responsive layout.
+   - Dodati hover efekat na kartice.
+
+2. **Filter bar iznad grid-a**:
+   - “Grad”, “Cena”, “Kategorija”, “Dostupno danas”.
+
+3. **Vizuelne oznake**:
+   - “Novo”, “Top iznajmljivač”, “Verifikovan alat”.
+
+4. **Tooltip na hover**:
+   - “Iznajmljen X puta”, “Ocena X.X”, “Dostupan od petka”.
+
+5. **PREMIUM badge**:
+   - Zlatni okvir, ikonica zvezde, pozadina.
+
+6. **CTA dugme**:
+   - Dodaj dugme “Rezerviši” ispod svakog oglasa.
+
+---
+
+### QA checklist:
+- Testirati responsive prikaz onboarding vodiča.
+- Testirati dugme za dodavanje alata na svim uređajima.
+- Testirati prikaz premijum i popularnih oglasa.
+- Testirati trust badge prikaz i CTA dugmad.
+- Testirati grid raspored kartica alata na desktopu.
+- Testirati filtere i tooltipove u sekciji “Iznajmi alat”.
