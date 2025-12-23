@@ -69,8 +69,8 @@ export function EarningsSection({ onAddTool }: EarningsSectionProps) {
         </View>
       </View>
 
-      <View style={[styles.content, isDesktop && styles.contentDesktop]}>
-        <Card style={isDesktop ? { ...styles.calculatorCard, ...styles.calculatorCardDesktop } : styles.calculatorCard}>
+      <View style={[styles.content, isDesktop ? styles.contentDesktop : undefined]}>
+        <Card style={styles.calculatorCard}>
           <ThemedText type="h4" style={styles.cardTitle}>Kalkulator zarade</ThemedText>
           
           <View style={styles.inputRow}>
@@ -130,7 +130,7 @@ export function EarningsSection({ onAddTool }: EarningsSectionProps) {
           </AnimatedPressable>
         </Card>
 
-        <View style={[styles.examplesSection, isDesktop && styles.examplesSectionDesktop]}>
+        <View style={[styles.examplesSection, isDesktop ? styles.examplesSectionDesktop : undefined]}>
           <ThemedText type="h4" style={styles.cardTitle}>Primeri zarade korisnika</ThemedText>
           
           {examples.map((example, index) => (

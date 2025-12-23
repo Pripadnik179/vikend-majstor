@@ -39,7 +39,7 @@ export function EarlyAdopterBanner({ remainingSlots, onPress }: EarlyAdopterBann
       style={[
         animatedStyle,
         styles.container,
-        isDesktop && styles.containerDesktop,
+        isDesktop ? styles.containerDesktop : undefined,
         { 
           backgroundColor: isDark ? '#2A2A2A' : '#FFF9E6',
           borderColor: Colors.light.primary,

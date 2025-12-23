@@ -9,15 +9,11 @@ import * as Location from 'expo-location';
 import { SearchIcon, XIcon, SlidersIcon, BoxIcon } from '@/components/icons/TabBarIcons';
 import { ItemCard } from '@/components/ItemCard';
 import { FilterModal, FilterState } from '@/components/FilterModal';
-import { PromoBanner } from '@/components/PromoBanner';
 import { VerificationBanner } from '@/components/VerificationBanner';
 import { OnboardingGuide } from '@/components/OnboardingGuide';
 import { TrustBadges } from '@/components/TrustBadges';
 import { PopularToolsSection } from '@/components/PopularToolsSection';
 import { PremiumAdsSection } from '@/components/PremiumAdsSection';
-import { EarningsSection } from '@/components/EarningsSection';
-import { EarlyAdopterBanner } from '@/components/EarlyAdopterBanner';
-import { FilterBar } from '@/components/FilterBar';
 import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
@@ -189,11 +185,6 @@ export default function HomeScreen() {
         onLearnMore={handleLearnMore}
       />
       
-      <EarlyAdopterBanner
-        remainingSlots={homeData?.remainingEarlyAdopterSlots || 0}
-        onPress={handleLearnMore}
-      />
-      
       <PremiumAdsSection
         items={homeData?.premiumItems || []}
         onSeeAll={handleBrowse}
@@ -203,10 +194,6 @@ export default function HomeScreen() {
         items={items}
         onSeeAll={handleBrowse}
       />
-      
-      <EarningsSection onAddTool={handleAddTool} />
-      
-      <FilterBar />
       
       <View style={styles.allToolsHeader}>
         <ThemedText type="h3">Svi alati</ThemedText>
