@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { users, items } from "../shared/schema";
-import { eq, like } from "drizzle-orm";
+import { eq, like, or } from "drizzle-orm";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 import * as fs from "fs";
@@ -522,7 +522,12 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
 export async function deleteDemoData(): Promise<{ users: number; items: number }> {
   console.log("[SEED] Deleting demo data...");
   
-  const demoUsersList = await db.select().from(users).where(like(users.email, `%${DEMO_EMAIL_SUFFIX}`));
+  const demoUsersList = await db.select().from(users).where(
+    or(
+      like(users.email, `%${DEMO_EMAIL_SUFFIX}`),
+      like(users.email, `%@demo.com`)
+    )
+  );
   
   let itemsDeleted = 0;
   let usersDeleted = 0;
@@ -541,7 +546,12 @@ export async function deleteDemoData(): Promise<{ users: number; items: number }
 }
 
 export async function getDemoDataStats(): Promise<{ users: number; items: number }> {
-  const demoUsersList = await db.select().from(users).where(like(users.email, `%${DEMO_EMAIL_SUFFIX}`));
+  const demoUsersList = await db.select().from(users).where(
+    or(
+      like(users.email, `%${DEMO_EMAIL_SUFFIX}`),
+      like(users.email, `%@demo.com`)
+    )
+  );
   
   let totalItems = 0;
   for (const user of demoUsersList) {
