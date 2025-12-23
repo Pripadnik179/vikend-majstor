@@ -1,0 +1,62 @@
+Ti si tim stručnjaka za UX/UI dizajn, marketing i growth strategiju. Tvoj zadatak je da redizajniraš landing page VikendMajstor.rs tako da poveća poverenje, konverziju i broj preuzimanja aplikacije. 
+
+### Kontekst:
+- Android aplikacija dostupna za direktan download sa sajta.
+- iOS aplikacija u pripremi.
+- Google Play i Apple Store objave uskoro.
+- Stripe integracija dolazi kasnije (trenutno plaćanje direktno između korisnika).
+- Ciljna publika: obični ljudi koji žele da urade nešto kod kuće (hobi majstori) i vlasnici alata koji žele da zarade.
+
+### Ciljevi:
+1. Povećati trust score kroz recenzije, testimoniale i trust badges.
+2. Povećati conversion rate kroz jasnu vrednosnu propoziciju i optimizovane CTA dugmad.
+3. Povećati download rate kroz prominentan APK download i sticky CTA na mobilnim uređajima.
+4. Edukovati tržište kroz storytelling i kalkulator štednje/zarade.
+5. Optimizovati SEO za lokalne fraze i long-tail ključne reči.
+
+### Struktura stranice:
+1. Sticky NAV BAR sa CTA “Preuzmi aplikaciju”.
+2. HERO sekcija – jasna vrednosna propozicija (“Alat koji stoji = Novac koji radi”) + dual CTA (Preuzmi aplikaciju / Izračunaj zaradu).
+3. SOCIAL PROOF BAR – statistika (broj korisnika, broj alata) + interaktivna mapa pokrivenosti.
+4. ZA KOGA JE – dve sekcije (vlasnici alata / iznajmljivači).
+5. KAKO FUNKCIONIŠE – 3 koraka sa ilustracijama.
+6. KALKULATOR ŠTEDNJE/ZARADE – interaktivni element.
+7. STORYTELLING – video i tekstualne priče korisnika (Petar – vlasnik, Marko – iznajmljivač).
+8. TESTIMONIALI – carousel sa citatima, ocenama i slikama korisnika.
+9. APP DOWNLOAD – prominentna sekcija sa linkovima (APK sada, Play Store i App Store uskoro).
+10. ZAŠTO MI – prednosti platforme (ekonomija, ekologija, lokalna zajednica).
+11. FAQ – accordion format.
+12. KONTAKT + FOOTER – linkovi, pravne informacije, društvene mreže.
+
+### Vizuelni identitet:
+- **Boje:** 
+  - Žuta (#FFCC00) i crna (#1A1A1A) su snažne i industrijske, ali mogu delovati “tehnički” i hladno. 
+  - Preporuka: zadrži žutu kao brend boju, ali dodaj **narandžastu (#FF6B35)** za CTA (hitnost, energija) i **zelenu (#22C55E)** za ekološki aspekt. 
+  - Crno-žuta sama može podsećati na “opasnost” (Caterpillar vibe), pa je bolje ublažiti toplim akcentima (narandžasta, zelena, plava za poverenje).
+- **Tipografija:** Montserrat za naslove, Inter za tekst.
+- **Slike:** Fotografije stvarnih ljudi i alata (autentičnost).
+- **Ilustracije:** Flat linijske ilustracije za “Kako radi”.
+- **Ikonice:** Feather/Lucide set za konzistentnost.
+- **Animacije:** Subtle scroll animacije (modern feel).
+
+### Tekstualne poruke:
+- HERO headline: “Alat koji stoji = Novac koji radi.”
+- Podnaslov: 
+  - Za vlasnike: “Tvoja bušilica može da ti donese 5.000 din mesečno.”
+  - Za iznajmljivače: “Zašto kupovati bušilicu za 15.000 kad možeš iznajmiti za 500 din?”
+- CTA dugmad: “Preuzmi aplikaciju – BESPLATNO” / “Izračunaj koliko možeš zaraditi.”
+- Social proof: “Pridruži se 500+ komšija koji već štede i zarađuju.”
+- Testimoniali: “Šta kažu naši korisnici” + konkretne priče sa imenima i gradovima.
+- Download: “Počni da zarađuješ danas – besplatno preuzimanje, bez skrivenih troškova.”
+
+### SEO optimizacija:
+- Ključne reči: iznajmljivanje alata, renta alata, iznajmi bušilicu, zaradi od alata, deli alat, komšija alat.
+- Meta opis: “Bušilica ti treba za 1 dan? Iznajmi od komšije za 500 din. Ili zaradi iznajmljujući svoj alat. Besplatna aplikacija. 500+ korisnika u Srbiji.”
+- Structured data: Organization, LocalBusiness, FAQ, Review/Rating schema.
+- URL struktura: /kako-funkcionise, /za-vlasnike, /za-iznajmljivace, /blog/kako-zaraditi-od-alata.
+
+### Rizici i rešenja:
+- Plaćanje → jasno navesti: “Plaćanje direktno pri preuzimanju – bez provizije!” kao prednost.
+- Oštećenje alata → FAQ + sekcija o depozitu i fotografisanju.
+- Samo Android → “iOS uskoro!” + waitlist email forma.
+- Nepoznat brend → Social proof, testimoniali, “Srpska platforma” isticanje.
