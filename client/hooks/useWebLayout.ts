@@ -8,10 +8,13 @@ export const BREAKPOINTS = {
   tablet: 600,
   desktop: 900,
   wide: 1200,
+  ultraWide: 1440,
 };
 
 export const MAX_CONTENT_WIDTH = 600;
 export const MAX_WIDE_CONTENT_WIDTH = 1200;
+export const GRID_GAP = 16;
+export const SECTION_PADDING = 24;
 
 export function useWebLayout() {
   const { width, height } = useWindowDimensions();
@@ -20,11 +23,13 @@ export function useWebLayout() {
   const isTablet = width >= BREAKPOINTS.tablet && width < BREAKPOINTS.desktop;
   const isDesktop = width >= BREAKPOINTS.desktop;
   const isWide = width >= BREAKPOINTS.wide;
+  const isUltraWide = width >= BREAKPOINTS.ultraWide;
   
   const webHeaderHeight = 64;
   const mobileTabBarHeight = 80;
   
   const getNumColumns = () => {
+    if (width >= BREAKPOINTS.ultraWide) return 5;
     if (width >= BREAKPOINTS.wide) return 4;
     if (width >= BREAKPOINTS.desktop) return 3;
     if (width >= BREAKPOINTS.tablet) return 2;
@@ -32,7 +37,7 @@ export function useWebLayout() {
   };
   
   const getHorizontalPadding = () => {
-    if (isWide) return Spacing['3xl'];
+    if (isWide) return SECTION_PADDING;
     if (isDesktop) return Spacing['2xl'];
     if (isTablet) return Spacing.xl;
     return Spacing.lg;
@@ -48,20 +53,29 @@ export function useWebLayout() {
     return 480;
   };
   
+  const numColumns = getNumColumns();
+  const effectiveMaxWidth = MAX_WIDE_CONTENT_WIDTH;
+  const totalGapWidth = (numColumns - 1) * GRID_GAP;
+  const availableWidth = Math.min(width - SECTION_PADDING * 2, effectiveMaxWidth);
+  
   return {
     isWeb,
     isMobile,
     isTablet,
     isDesktop,
     isWide,
+    isUltraWide,
     width,
     height,
     contentPaddingTop: isDesktop ? webHeaderHeight + 16 : 0,
     contentPaddingBottom: isDesktop ? 16 : mobileTabBarHeight,
-    numColumns: getNumColumns(),
+    numColumns,
     horizontalPadding: getHorizontalPadding(),
     contentMaxWidth: getContentMaxWidth(),
+    gridMaxWidth: MAX_WIDE_CONTENT_WIDTH,
+    gridGap: GRID_GAP,
+    sectionPadding: SECTION_PADDING,
     formMaxWidth: getFormMaxWidth(),
-    cardWidth: isDesktop ? Math.floor((Math.min(width, MAX_WIDE_CONTENT_WIDTH) - 48 - (getNumColumns() - 1) * 16) / getNumColumns()) : undefined,
+    cardWidth: isDesktop ? Math.floor((availableWidth - totalGapWidth) / numColumns) : undefined,
   };
 }

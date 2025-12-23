@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Pressable, Text } from 'react-native';
+import { View, StyleSheet, ScrollView, Pressable, Text, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
@@ -7,14 +7,13 @@ import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-na
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
+import { useWebLayout } from '@/hooks/useWebLayout';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { CrownIcon, ChevronRightIcon, BoxIcon, StarIcon, MapPinIcon } from '@/components/icons/TabBarIcons';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
 
 const GOLD_COLOR = '#FFD700';
-const GOLD_GRADIENT_START = '#F5E6A0';
-const GOLD_GRADIENT_END = '#B8860B';
 
 interface PremiumAdsSectionProps {
   items: Item[];
@@ -23,8 +22,8 @@ interface PremiumAdsSectionProps {
 
 const AnimatedCard = Animated.createAnimatedComponent(View);
 
-function PremiumItemCard({ item, index }: { item: Item; index: number }) {
-  const { theme, isDark } = useTheme();
+function PremiumItemCard({ item, index, cardWidth }: { item: Item; index: number; cardWidth?: number }) {
+  const { theme } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const scale = useSharedValue(1);
 
@@ -44,10 +43,12 @@ function PremiumItemCard({ item, index }: { item: Item; index: number }) {
     navigation.navigate('ItemDetail', { itemId: item.id });
   };
 
+  const cardStyle = cardWidth ? { width: cardWidth, marginRight: 0 } : styles.itemCard;
+
   return (
     <AnimatedCard style={animatedStyle}>
       <Card
-        style={StyleSheet.flatten([styles.itemCard, { borderColor: GOLD_COLOR + '40' }])}
+        style={StyleSheet.flatten([cardStyle, styles.itemCardBase, { borderColor: GOLD_COLOR + '40' }])}
         onPress={handlePress}
       >
         <View style={styles.goldBadge}>
@@ -110,45 +111,69 @@ function PremiumItemCard({ item, index }: { item: Item; index: number }) {
 }
 
 export function PremiumAdsSection({ items, onSeeAll }: PremiumAdsSectionProps) {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
+  const { isDesktop, numColumns, gridMaxWidth, gridGap, sectionPadding, cardWidth } = useWebLayout();
 
   if (!items || items.length === 0) {
     return null;
   }
 
-  const premiumItems = items.slice(0, 5);
+  const premiumItems = items.slice(0, isDesktop ? numColumns : 5);
+
+  const renderDesktopGrid = () => (
+    <View style={[styles.gridContainer, { maxWidth: gridMaxWidth, gap: gridGap }]}>
+      {premiumItems.map((item, index) => (
+        <PremiumItemCard key={item.id} item={item} index={index} cardWidth={cardWidth} />
+      ))}
+    </View>
+  );
+
+  const renderMobileScroll = () => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}
+    >
+      {premiumItems.map((item, index) => (
+        <PremiumItemCard key={item.id} item={item} index={index} />
+      ))}
+    </ScrollView>
+  );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <View style={styles.titleRow}>
-          <View style={[styles.iconBadge, { backgroundColor: GOLD_COLOR + '20' }]}>
-            <CrownIcon size={18} color={GOLD_COLOR} />
+    <View style={[
+      styles.container, 
+      isDesktop ? { 
+        alignItems: 'center',
+        paddingHorizontal: sectionPadding,
+      } : undefined
+    ]}>
+      <View style={[
+        styles.sectionWrapper,
+        isDesktop ? { maxWidth: gridMaxWidth, width: '100%' } : undefined
+      ]}>
+        <View style={styles.headerRow}>
+          <View style={styles.titleRow}>
+            <View style={[styles.iconBadge, { backgroundColor: GOLD_COLOR + '20' }]}>
+              <CrownIcon size={18} color={GOLD_COLOR} />
+            </View>
+            <View>
+              <ThemedText type="h3">Premijum oglasi</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                Istaknuti alati nasih premium korisnika
+              </ThemedText>
+            </View>
           </View>
-          <View>
-            <ThemedText type="h3">Premijum oglasi</ThemedText>
-            <ThemedText type="small" style={{ color: theme.textSecondary }}>
-              Istaknuti alati nasih premium korisnika
+          <Pressable style={styles.seeAllButton} onPress={onSeeAll}>
+            <ThemedText type="small" style={{ color: GOLD_COLOR }}>
+              Vidi sve
             </ThemedText>
-          </View>
+            <ChevronRightIcon size={14} color={GOLD_COLOR} />
+          </Pressable>
         </View>
-        <Pressable style={styles.seeAllButton} onPress={onSeeAll}>
-          <ThemedText type="small" style={{ color: GOLD_COLOR }}>
-            Vidi sve
-          </ThemedText>
-          <ChevronRightIcon size={14} color={GOLD_COLOR} />
-        </Pressable>
-      </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {premiumItems.map((item, index) => (
-          <PremiumItemCard key={item.id} item={item} index={index} />
-        ))}
-      </ScrollView>
+        {isDesktop ? renderDesktopGrid() : renderMobileScroll()}
+      </View>
     </View>
   );
 }
@@ -156,6 +181,9 @@ export function PremiumAdsSection({ items, onSeeAll }: PremiumAdsSectionProps) {
 const styles = StyleSheet.create({
   container: {
     marginBottom: Spacing['2xl'],
+  },
+  sectionWrapper: {
+    width: '100%',
   },
   headerRow: {
     flexDirection: 'row',
@@ -184,9 +212,16 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingRight: Spacing.lg,
   },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: '100%',
+  },
   itemCard: {
     width: 180,
     marginRight: Spacing.md,
+  },
+  itemCardBase: {
     padding: 0,
     overflow: 'hidden',
     borderWidth: 2,
