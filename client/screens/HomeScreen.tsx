@@ -14,6 +14,7 @@ import { OnboardingGuide } from '@/components/OnboardingGuide';
 import { TrustBadges } from '@/components/TrustBadges';
 import { PopularToolsSection } from '@/components/PopularToolsSection';
 import { PremiumAdsSection } from '@/components/PremiumAdsSection';
+import { EarningsSection } from '@/components/EarningsSection';
 import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
@@ -194,6 +195,8 @@ export default function HomeScreen() {
         items={items}
         onSeeAll={handleBrowse}
       />
+      
+      <EarningsSection onAddTool={handleAddTool} />
       
       <View style={styles.allToolsHeader}>
         <ThemedText type="h3">Svi alati</ThemedText>

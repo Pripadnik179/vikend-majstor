@@ -122,7 +122,7 @@ export function EarningsSection({ onAddTool }: EarningsSectionProps) {
       </View>
 
       <View style={[styles.content, isDesktop ? styles.contentDesktop : undefined]}>
-        <Card style={[styles.calculatorCard, isDesktop ? styles.calculatorCardDesktop : undefined]}>
+        <Card style={isDesktop ? { ...styles.calculatorCard, ...styles.calculatorCardDesktop } : styles.calculatorCard}>
           <View style={styles.calculatorHeader}>
             <ToolIcon size={20} color={Colors.light.cta} />
             <ThemedText type="h4" style={{ marginLeft: Spacing.sm }}>Kalkulator zarade</ThemedText>

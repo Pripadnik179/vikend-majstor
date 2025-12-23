@@ -18,7 +18,6 @@ interface ItemCardProps {
     isTopRenter?: boolean;
     isVerified?: boolean;
     rentalCount?: number;
-    rating?: number | string;
     availableFrom?: string;
   };
   onPress: () => void;
