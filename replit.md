@@ -25,6 +25,13 @@ Key features include:
     - **Promotional Modals**: Modals for subscription upgrades and reaching ad limits.
 - **Admin Panel**: A web-based admin panel (`/admin`) and mobile admin screens, accessible only to users with `isAdmin=true`, offering user management (activation, subscription, duration) and statistics.
 - **UI/UX**: The UI is in Serbian (Latin script) with a Caterpillar-inspired black-yellow color palette, aiming for an iOS 26 Liquid Glass design aesthetic with a mobile-first responsive approach. Custom SVG icons are used throughout the application, replacing font-based icons to ensure consistent rendering across platforms.
+- **User Trust & Activation Features**:
+    - **Onboarding Screen**: 3-step visual onboarding (Dodaj alat, Iznajmi, Zaradi) shown after registration, stored in AsyncStorage.
+    - **Social Proof**: Statistics display showing 500+ users, 2000+ tools, 4.8 average rating on AuthScreen.
+    - **Feature Preview**: Real-time horizontal scroll of available items on AuthScreen before registration.
+    - **Testimonials Carousel**: Rotating testimonials from owners and renters with ratings and pagination.
+    - **StickyCTA**: Mobile-only sticky CTA button with blur effect for encouraging registration.
+    - **Trust Badges**: Security messaging ("scrypt enkripcija", "Email verifikacija", "0% provizije") on registration form.
 
 Security measures include rate limiting, IP blocking for failed login attempts, XSS protection, input validation, and secure authentication practices (scrypt for password hashing, secure session cookies, token-based mobile auth).
 
