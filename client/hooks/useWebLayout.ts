@@ -30,10 +30,10 @@ export function useWebLayout() {
   const mobileTabBarHeight = 80;
   
   const getNumColumns = () => {
-    if (width >= BREAKPOINTS.ultraWide) return 5;
-    if (width >= BREAKPOINTS.wide) return 4;
-    if (width >= BREAKPOINTS.desktop) return 3;
-    if (width >= BREAKPOINTS.tablet) return 2;
+    if (width >= BREAKPOINTS.wide) return 5;
+    if (width >= BREAKPOINTS.desktop) return 4;
+    if (width >= BREAKPOINTS.tablet) return 3;
+    if (width >= 480) return 2;
     return 1;
   };
   

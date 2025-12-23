@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { View, FlatList, StyleSheet, TextInput, Pressable, RefreshControl, ActivityIndicator, Platform } from 'react-native';
+import { View, StyleSheet, TextInput, Pressable, RefreshControl, ActivityIndicator, Platform, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useNavigation } from '@react-navigation/native';
@@ -7,13 +7,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import { SearchIcon, XIcon, SlidersIcon, BoxIcon } from '@/components/icons/TabBarIcons';
-import { ItemCard } from '@/components/ItemCard';
 import { FilterModal, FilterState } from '@/components/FilterModal';
 import { VerificationBanner } from '@/components/VerificationBanner';
 import { OnboardingGuide } from '@/components/OnboardingGuide';
 import { TrustBadges } from '@/components/TrustBadges';
 import { PopularToolsSection } from '@/components/PopularToolsSection';
 import { PremiumAdsSection } from '@/components/PremiumAdsSection';
+import { AllItemsSection } from '@/components/AllItemsSection';
 import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
@@ -44,10 +44,9 @@ export default function HomeScreen() {
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { isDesktop, contentPaddingTop, contentPaddingBottom, numColumns, width, horizontalPadding } = useWebLayout();
+  const { isDesktop, contentPaddingTop, contentPaddingBottom, horizontalPadding } = useWebLayout();
   
   const tabBarHeight = isDesktop ? 0 : (Platform.OS === 'web' ? 0 : 80);
-  const effectiveNumColumns = Math.max(1, numColumns);
 
   const [searchInput, setSearchInput] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
@@ -166,68 +165,6 @@ export default function HomeScreen() {
     setRefreshing(false);
   }, [refetch]);
 
-  const renderItem = ({ item }: { item: Item }) => (
-    <ItemCard
-      item={item}
-      onPress={() => navigation.navigate('ItemDetail', { itemId: item.id })}
-    />
-  );
-
-  const listHeader = useMemo(() => (
-    <View style={styles.header}>
-      <VerificationBanner />
-      
-      <TrustBadges />
-      
-      <OnboardingGuide
-        onAddTool={handleAddTool}
-        onBrowse={handleBrowse}
-        onLearnMore={handleLearnMore}
-      />
-      
-      <PremiumAdsSection
-        items={homeData?.premiumItems || []}
-        onSeeAll={handleBrowse}
-      />
-      
-      <PopularToolsSection
-        items={items}
-        onSeeAll={handleBrowse}
-      />
-      
-      <View style={styles.allToolsHeader}>
-        <ThemedText type="h3">Svi alati</ThemedText>
-        <ThemedText type="small" style={{ color: theme.textSecondary }}>
-          {filteredItems.length} dostupno
-        </ThemedText>
-      </View>
-    </View>
-  ), [homeData?.premiumItems, homeData?.remainingEarlyAdopterSlots, items, filteredItems.length, theme.textSecondary, handleAddTool, handleBrowse, handleLearnMore]);
-
-  const renderEmpty = () => {
-    let emptyMessage = 'Budi prvi koji ce dodati stvar';
-    
-    if (filters.maxDistance !== null && userLat === null) {
-      emptyMessage = 'Ukljuci GPS lokaciju za pretragu po udaljenosti';
-    } else if (filters.maxDistance !== null) {
-      emptyMessage = `Nema rezultata u krugu od ${filters.maxDistance} km. Probaj vecu udaljenost.`;
-    } else if (appliedSearch || activeFilterCount > 0) {
-      emptyMessage = 'Pokusaj sa drugim filterima ili pretragom';
-    }
-    
-    return (
-      <View style={styles.emptyContainer}>
-        <BoxIcon size={64} color={theme.textTertiary} />
-        <ThemedText type="h4" style={[styles.emptyTitle, { color: theme.textSecondary }]}>
-          Nema dostupnih stvari
-        </ThemedText>
-        <ThemedText type="body" style={[styles.emptyText, { color: theme.textTertiary }]}>
-          {emptyMessage}
-        </ThemedText>
-      </View>
-    );
-  };
-
   if (isLoading && !refreshing) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.backgroundRoot }]}>
@@ -290,8 +227,8 @@ export default function HomeScreen() {
           ) : null}
         </Pressable>
       </View>
-      <FlatList
-        key={`list-${effectiveNumColumns}`}
+      
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingBottom,
@@ -299,19 +236,38 @@ export default function HomeScreen() {
           flexGrow: 1,
         }}
         scrollIndicatorInsets={{ bottom: insets.bottom }}
-        data={filteredItems}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={effectiveNumColumns}
-        columnWrapperStyle={effectiveNumColumns > 1 ? styles.row : undefined}
-        ListHeaderComponent={listHeader}
-        ListEmptyComponent={renderEmpty}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
         }
         keyboardShouldPersistTaps="always"
         keyboardDismissMode="on-drag"
-      />
+      >
+        <VerificationBanner />
+        
+        <TrustBadges />
+        
+        <OnboardingGuide
+          onAddTool={handleAddTool}
+          onBrowse={handleBrowse}
+          onLearnMore={handleLearnMore}
+        />
+        
+        <PremiumAdsSection
+          items={homeData?.premiumItems || []}
+          onSeeAll={handleBrowse}
+        />
+        
+        <PopularToolsSection
+          items={items}
+          onSeeAll={handleBrowse}
+        />
+        
+        <AllItemsSection
+          items={filteredItems}
+          onSeeAll={handleBrowse}
+          isLoading={isLoading}
+        />
+      </ScrollView>
       
       <FloatingAddButton onPress={handleAddTool} />
       
@@ -326,15 +282,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    marginBottom: Spacing.md,
-  },
-  allToolsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-  },
   searchRowFixed: {
     flexDirection: 'row',
     gap: Spacing.sm,
@@ -378,27 +325,9 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
   },
-  row: {
-    justifyContent: 'space-between',
-    marginBottom: Spacing.md,
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: Spacing['3xl'],
-  },
-  emptyTitle: {
-    marginTop: Spacing.lg,
-    textAlign: 'center',
-  },
-  emptyText: {
-    marginTop: Spacing.sm,
-    textAlign: 'center',
   },
 });
