@@ -1022,15 +1022,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin middleware
+  // Admin middleware - supports both session and token authentication
   const isAdmin = async (req: any, res: any, next: any) => {
-    if (!req.session?.userId) {
+    let user = null;
+    
+    // Check token auth first (mobile app)
+    if (req.user) {
+      user = req.user;
+    } 
+    // Fall back to session auth (web)
+    else if (req.session?.userId) {
+      user = await storage.getUser(req.session.userId);
+    }
+    
+    if (!user) {
       return res.status(401).json({ error: "Niste prijavljeni" });
     }
-    const user = await storage.getUser(req.session.userId);
-    if (!user || !user.isAdmin) {
+    
+    if (!user.isAdmin) {
       return res.status(403).json({ error: "Nemate administratorska prava" });
     }
+    
     req.user = user;
     next();
   };
