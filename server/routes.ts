@@ -321,6 +321,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/items/category-counts", async (req, res) => {
+    try {
+      const allItems = await storage.getItems();
+      const activeItems = allItems.filter(item => item.isAvailable);
+      
+      const counts: Record<string, number> = {};
+      
+      activeItems.forEach(item => {
+        if (item.category) {
+          counts[item.category] = (counts[item.category] || 0) + 1;
+        }
+      });
+      
+      res.json(counts);
+    } catch (error) {
+      console.error("Error fetching category counts:", error);
+      res.status(500).json({ error: "Greška pri učitavanju broja alata po kategorijama" });
+    }
+  });
+
   app.get("/api/items/:id", async (req, res) => {
     try {
       const item = await storage.getItem(req.params.id);

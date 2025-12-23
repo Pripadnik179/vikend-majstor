@@ -160,6 +160,51 @@ export const CATEGORIES = [
   { id: "ostalo", label: "Ostalo", icon: "package" },
 ] as const;
 
+export const CATEGORY_COLORS: Record<string, { primary: string; secondary: string; accent: string }> = {
+  gradjevinarstvo: { primary: "#FFCC00", secondary: "#FFF9E6", accent: "#E6B800" },
+  basta: { primary: "#22C55E", secondary: "#DCFCE7", accent: "#16A34A" },
+  renoviranje: { primary: "#FF6B35", secondary: "#FFF0EB", accent: "#E55A2B" },
+  drvoprerađivanje: { primary: "#8B5A2B", secondary: "#FDF4EC", accent: "#6B4423" },
+  autoMehanika: { primary: "#3B82F6", secondary: "#EFF6FF", accent: "#2563EB" },
+  ciscenje: { primary: "#06B6D4", secondary: "#ECFEFF", accent: "#0891B2" },
+  elektricni: { primary: "#FFCC00", secondary: "#FFF9E6", accent: "#E6B800" },
+  akumulatorski: { primary: "#22C55E", secondary: "#DCFCE7", accent: "#16A34A" },
+  rucni: { primary: "#6B7280", secondary: "#F3F4F6", accent: "#4B5563" },
+  pneumatski: { primary: "#8B5CF6", secondary: "#F5F3FF", accent: "#7C3AED" },
+  gradevinskemasine: { primary: "#FF6B35", secondary: "#FFF0EB", accent: "#E55A2B" },
+  merniLaserski: { primary: "#EF4444", secondary: "#FEF2F2", accent: "#DC2626" },
+};
+
+export const CATEGORY_ICONS: Record<string, string> = {
+  gradjevinarstvo: "home",
+  basta: "sun",
+  renoviranje: "tool",
+  drvoprerađivanje: "layers",
+  autoMehanika: "truck",
+  ciscenje: "droplet",
+  elektricni: "zap",
+  akumulatorski: "battery-charging",
+  rucni: "edit-3",
+  pneumatski: "wind",
+  gradevinskemasine: "truck",
+  merniLaserski: "crosshair",
+};
+
+export const CATEGORY_SEO_NAMES: Record<string, string> = {
+  gradjevinarstvo: "Iznajmi građevinski alat",
+  basta: "Iznajmi baštenski alat",
+  renoviranje: "Iznajmi alat za renoviranje",
+  drvoprerađivanje: "Iznajmi alat za drvo",
+  autoMehanika: "Iznajmi auto alat",
+  ciscenje: "Iznajmi opremu za čišćenje",
+  elektricni: "Iznajmi električni alat",
+  akumulatorski: "Iznajmi akumulatorski alat",
+  rucni: "Iznajmi ručni alat",
+  pneumatski: "Iznajmi pneumatski alat",
+  gradevinskemasine: "Iznajmi građevinske mašine",
+  merniLaserski: "Iznajmi merne uređaje",
+};
+
 export const BOOKING_STATUSES = {
   pending: { label: "Na čekanju", color: "#FFCC00" },
   confirmed: { label: "Potvrđeno", color: "#22C55E" },
