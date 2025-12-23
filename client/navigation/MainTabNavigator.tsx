@@ -6,6 +6,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import HomeStackNavigator from "@/navigation/HomeStackNavigator";
 import CategoriesScreen from "@/screens/CategoriesScreen";
+import EarningsScreen from "@/screens/EarningsScreen";
 import BookingsStackNavigator from "@/navigation/BookingsStackNavigator";
 import MessagesStackNavigator from "@/navigation/MessagesStackNavigator";
 import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
@@ -14,7 +15,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
 import { Colors, Spacing, Shadows } from "@/constants/theme";
 import type { MainTabParamList, RootStackParamList } from "./types";
-import { HomeIcon, GridIcon, CalendarIcon, MessageIcon, UserIcon, PlusIcon } from "@/components/icons/TabBarIcons";
+import { HomeIcon, GridIcon, CalendarIcon, MessageIcon, UserIcon, PlusIcon, TrendingUpIcon } from "@/components/icons/TabBarIcons";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -156,6 +157,16 @@ export default function MainTabNavigator() {
             title: "Kategorije",
             tabBarIcon: ({ color, size }) => (
               <GridIcon size={size} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="EarningsTab"
+          component={EarningsScreen}
+          options={{
+            title: "Zaradi",
+            tabBarIcon: ({ color, size }) => (
+              <TrendingUpIcon size={size} color={color} />
             ),
           }}
         />
