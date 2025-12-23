@@ -3,10 +3,6 @@ import { users, items, bookings, conversations, messages, reviews } from "../sha
 import { eq, like, or, inArray } from "drizzle-orm";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
-import * as fs from "fs";
-import * as path from "path";
-import { objectStorageClient } from "./objectStorage";
-import { setObjectAclPolicy } from "./objectAcl";
 import { getCityCoordinates } from "../shared/cityCoordinates";
 
 const scryptAsync = promisify(scrypt);
@@ -17,104 +13,55 @@ async function hashPassword(password: string): Promise<string> {
   return `${derivedKey.toString("hex")}.${salt}`;
 }
 
-const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-
-const TOOL_IMAGES: Record<string, string> = {
-  'drill': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
-  'grinder': 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&h=300&fit=crop',
-  'saw': 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=400&h=300&fit=crop',
-  'mixer': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
-  'washer': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
-  'mower': 'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=400&h=300&fit=crop',
-  'sander': 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&h=300&fit=crop',
-  'hammer': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
-  'chainsaw': 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=400&h=300&fit=crop',
-  'scaffold': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&h=300&fit=crop',
-  'default': 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&h=300&fit=crop',
+// Demo slike - direktni Unsplash URL-ovi (pouzdani za produkciju)
+const DEMO_IMAGES = {
+  drill: [
+    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=600&h=400&fit=crop',
+  ],
+  grinder: [
+    'https://images.unsplash.com/photo-1580901368919-7738efb0f87e?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop',
+  ],
+  saw: [
+    'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1590479773265-7464e5d48118?w=600&h=400&fit=crop',
+  ],
+  mixer: [
+    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1541123603104-512919d6a96c?w=600&h=400&fit=crop',
+  ],
+  washer: [
+    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&h=400&fit=crop',
+  ],
+  mower: [
+    'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1592417817098-8fd3d9eb14a5?w=600&h=400&fit=crop',
+  ],
+  sander: [
+    'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop',
+  ],
+  hammer: [
+    'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&h=400&fit=crop',
+  ],
+  chainsaw: [
+    'https://images.unsplash.com/photo-1590479773265-7464e5d48118?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=600&h=400&fit=crop',
+  ],
+  scaffold: [
+    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1541123603104-512919d6a96c?w=600&h=400&fit=crop',
+  ],
 };
-
-function getToolImageUrl(remoteName: string): string {
-  const nameLower = remoteName.toLowerCase();
-  for (const [key, url] of Object.entries(TOOL_IMAGES)) {
-    if (nameLower.includes(key)) {
-      return url;
-    }
-  }
-  return TOOL_IMAGES['default'];
-}
-
-async function uploadImage(localPath: string, remoteName: string): Promise<string> {
-  if (!bucketId) {
-    console.log("No bucket ID, using Unsplash URL");
-    return getToolImageUrl(remoteName);
-  }
-  
-  const destination = `public/items/${remoteName}`;
-  
-  try {
-    if (!fs.existsSync(localPath)) {
-      console.log(`File not found: ${localPath}, using Unsplash URL`);
-      return getToolImageUrl(remoteName);
-    }
-    
-    const bucket = objectStorageClient.bucket(bucketId);
-    const file = bucket.file(destination);
-    
-    const fileBuffer = fs.readFileSync(localPath);
-    
-    const contentType = remoteName.endsWith('.png') ? 'image/png' : 'image/jpeg';
-    await file.save(fileBuffer, {
-      contentType,
-      resumable: false,
-    });
-    
-    await setObjectAclPolicy(file, {
-      owner: "system",
-      visibility: "public",
-    });
-    
-    return `/objects/public/items/${remoteName}`;
-  } catch (error) {
-    console.error(`Error uploading ${localPath}:`, error);
-    return getToolImageUrl(remoteName);
-  }
-}
 
 const DEMO_EMAIL_SUFFIX = "@demo.vikendmajstor.rs";
 
 export async function seedDemoData(): Promise<{ users: number; items: number }> {
   console.log("[SEED] Starting demo data seed...");
-  
-  const imageFiles = [
-    { local: "attached_assets/generated_images/cordless_power_drill_product_shot.png", remote: "demo-drill-1.png" },
-    { local: "attached_assets/generated_images/rotary_hammer_drill_photo.png", remote: "demo-drill-2.png" },
-    { local: "attached_assets/generated_images/angle_grinder_product_photo.png", remote: "demo-grinder-1.png" },
-    { local: "attached_assets/generated_images/impact_driver_product_photo.png", remote: "demo-grinder-2.png" },
-    { local: "attached_assets/generated_images/circular_saw_tool_product_photo.png", remote: "demo-saw-1.png" },
-    { local: "attached_assets/generated_images/table_saw_product_photo.png", remote: "demo-saw-2.png" },
-    { local: "attached_assets/generated_images/concrete_mixer_product_photo.png", remote: "demo-mixer-1.png" },
-    { local: "attached_assets/generated_images/air_compressor_product_photo.png", remote: "demo-mixer-2.png" },
-    { local: "attached_assets/generated_images/pressure_washer_product_photo.png", remote: "demo-washer-1.png" },
-    { local: "attached_assets/generated_images/leaf_blower_product_photo.png", remote: "demo-washer-2.png" },
-    { local: "attached_assets/generated_images/lawn_mower_product_photo.png", remote: "demo-mower-1.png" },
-    { local: "attached_assets/generated_images/hedge_trimmer_product_photo.png", remote: "demo-mower-2.png" },
-    { local: "attached_assets/generated_images/electric_sander_product_photo.png", remote: "demo-sander-1.png" },
-    { local: "attached_assets/generated_images/jigsaw_power_tool_photo.png", remote: "demo-sander-2.png" },
-    { local: "attached_assets/generated_images/rotary_hammer_drill_photo.png", remote: "demo-hammer-1.png" },
-    { local: "attached_assets/generated_images/welding_machine_product_photo.png", remote: "demo-hammer-2.png" },
-    { local: "attached_assets/generated_images/electric_chainsaw_product_photo.png", remote: "demo-chainsaw-1.png" },
-    { local: "attached_assets/generated_images/tile_cutter_product_photo.png", remote: "demo-chainsaw-2.png" },
-    { local: "attached_assets/generated_images/extension_ladder_product_photo.png", remote: "demo-scaffold-1.png" },
-    { local: "attached_assets/generated_images/portable_generator_product_photo.png", remote: "demo-scaffold-2.png" },
-  ];
-  
-  console.log("[SEED] Uploading images...");
-  const imageUrls: string[] = [];
-  for (const img of imageFiles) {
-    const url = await uploadImage(img.local, img.remote);
-    imageUrls.push(url);
-  }
-  console.log(`[SEED] Uploaded ${imageUrls.length} images`);
+  console.log("[SEED] Using external Unsplash URLs for demo images");
   
   console.log("[SEED] Creating demo users...");
   const hashedPassword = await hashPassword("demo123");
@@ -254,7 +201,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 650,
       pricePerDay: 800,
       deposit: 5000,
-      images: [imageUrls[0], imageUrls[1]],
+      images: DEMO_IMAGES.drill,
       isFeatured: true,
     },
     {
@@ -268,7 +215,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 2200,
       pricePerDay: 900,
       deposit: 6000,
-      images: [imageUrls[2], imageUrls[3]],
+      images: DEMO_IMAGES.grinder,
       isFeatured: false,
     },
     {
@@ -282,7 +229,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 1800,
       pricePerDay: 1200,
       deposit: 8000,
-      images: [imageUrls[4], imageUrls[5]],
+      images: DEMO_IMAGES.saw,
       isFeatured: true,
     },
     {
@@ -296,7 +243,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 650,
       pricePerDay: 1500,
       deposit: 10000,
-      images: [imageUrls[6], imageUrls[7]],
+      images: DEMO_IMAGES.mixer,
       isFeatured: false,
     },
     {
@@ -310,7 +257,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 2100,
       pricePerDay: 1500,
       deposit: 10000,
-      images: [imageUrls[8], imageUrls[9]],
+      images: DEMO_IMAGES.washer,
       isFeatured: true,
     },
     {
@@ -323,7 +270,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerSource: "Benzinski",
       pricePerDay: 1200,
       deposit: 8000,
-      images: [imageUrls[10], imageUrls[11]],
+      images: DEMO_IMAGES.mower,
       isFeatured: false,
     },
     {
@@ -337,7 +284,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 350,
       pricePerDay: 600,
       deposit: 4000,
-      images: [imageUrls[12], imageUrls[13]],
+      images: DEMO_IMAGES.sander,
       isFeatured: false,
     },
     {
@@ -351,7 +298,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 800,
       pricePerDay: 1100,
       deposit: 8000,
-      images: [imageUrls[14], imageUrls[15]],
+      images: DEMO_IMAGES.hammer,
       isFeatured: true,
     },
     {
@@ -364,7 +311,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerSource: "Benzinski",
       pricePerDay: 1800,
       deposit: 12000,
-      images: [imageUrls[16], imageUrls[17]],
+      images: DEMO_IMAGES.chainsaw,
       isFeatured: false,
     },
     {
@@ -377,7 +324,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerSource: "Ručni",
       pricePerDay: 2000,
       deposit: 15000,
-      images: [imageUrls[18], imageUrls[19]],
+      images: DEMO_IMAGES.scaffold,
       isFeatured: true,
     },
     {
@@ -391,7 +338,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 700,
       pricePerDay: 1000,
       deposit: 7000,
-      images: [imageUrls[0], imageUrls[1]],
+      images: DEMO_IMAGES.drill,
       isFeatured: false,
     },
     {
@@ -405,7 +352,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 1010,
       pricePerDay: 800,
       deposit: 5000,
-      images: [imageUrls[12], imageUrls[13]],
+      images: DEMO_IMAGES.sander,
       isFeatured: false,
     },
     {
@@ -419,7 +366,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 1100,
       pricePerDay: 700,
       deposit: 4000,
-      images: [imageUrls[8], imageUrls[9]],
+      images: DEMO_IMAGES.washer,
       isFeatured: false,
     },
     {
@@ -432,7 +379,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerSource: "Benzinski",
       pricePerDay: 2500,
       deposit: 20000,
-      images: [imageUrls[6], imageUrls[7]],
+      images: DEMO_IMAGES.mixer,
       isFeatured: true,
     },
     {
@@ -445,7 +392,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerSource: "Akumulator",
       pricePerDay: 900,
       deposit: 6000,
-      images: [imageUrls[14], imageUrls[15]],
+      images: DEMO_IMAGES.hammer,
       isFeatured: false,
     },
     {
@@ -459,7 +406,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 1200,
       pricePerDay: 700,
       deposit: 4500,
-      images: [imageUrls[4], imageUrls[5]],
+      images: DEMO_IMAGES.saw,
       isFeatured: false,
     },
     {
@@ -472,7 +419,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerSource: "Benzinski",
       pricePerDay: 2500,
       deposit: 20000,
-      images: [imageUrls[18], imageUrls[19]],
+      images: DEMO_IMAGES.scaffold,
       isFeatured: true,
     },
     {
@@ -486,7 +433,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 800,
       pricePerDay: 1200,
       deposit: 8000,
-      images: [imageUrls[2], imageUrls[3]],
+      images: DEMO_IMAGES.grinder,
       isFeatured: false,
     },
     {
@@ -500,7 +447,7 @@ export async function seedDemoData(): Promise<{ users: number; items: number }> 
       powerWatts: 1400,
       pricePerDay: 600,
       deposit: 4000,
-      images: [imageUrls[10], imageUrls[11]],
+      images: DEMO_IMAGES.mower,
       isFeatured: false,
     },
   ];
