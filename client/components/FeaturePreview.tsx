@@ -15,7 +15,7 @@ interface PreviewItem {
   title: string;
   description: string;
   pricePerDay: number;
-  imageUrls: string[];
+  images: string[];
   city?: string;
   category: string;
 }
@@ -86,9 +86,9 @@ export function FeaturePreview() {
               }
             ]}
           >
-            {item.imageUrls && item.imageUrls[0] ? (
+            {item.images && item.images[0] ? (
               <Image
-                source={{ uri: item.imageUrls[0] }}
+                source={{ uri: item.images[0] }}
                 style={styles.cardImage}
                 contentFit="cover"
               />
