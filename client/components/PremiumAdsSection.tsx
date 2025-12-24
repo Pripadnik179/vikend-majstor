@@ -63,6 +63,8 @@ function PremiumItemCard({ item, index, cardWidth }: { item: Item; index: number
             source={{ uri: item.images[0] }}
             style={styles.itemImage}
             contentFit="cover"
+            priority="high"
+            cachePolicy="memory-disk"
           />
         ) : (
           <View style={[styles.itemImage, styles.placeholderImage, { backgroundColor: theme.backgroundSecondary }]}>
