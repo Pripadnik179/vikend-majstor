@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Pressable, StyleSheet, Modal } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { DynamicIcon } from '@/components/icons/DynamicIcon';
 import { useTheme } from '@/hooks/useTheme';
 import { ThemedText } from '@/components/ThemedText';
 import { BorderRadius, Spacing } from '@/constants/theme';
@@ -9,7 +9,7 @@ import type { ThemeMode } from '@/contexts/ThemeContext';
 interface ThemeOption {
   mode: ThemeMode;
   label: string;
-  icon: keyof typeof Feather.glyphMap;
+  icon: string;
 }
 
 const themeOptions: ThemeOption[] = [
@@ -22,7 +22,7 @@ export function ThemeToggle() {
   const { theme, mode, setMode, isDark } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const getCurrentIcon = (): keyof typeof Feather.glyphMap => {
+  const getCurrentIcon = (): string => {
     if (mode === 'auto') return 'settings';
     return isDark ? 'moon' : 'sun';
   };
@@ -43,7 +43,7 @@ export function ThemeToggle() {
         accessibilityLabel="Promeni temu"
         accessibilityRole="button"
       >
-        <Feather name={getCurrentIcon()} size={22} color={theme.text} />
+        <DynamicIcon name={getCurrentIcon()} size={22} color={theme.text} />
       </Pressable>
 
       <Modal
@@ -70,7 +70,7 @@ export function ThemeToggle() {
                   },
                 ]}
               >
-                <Feather 
+                <DynamicIcon 
                   name={option.icon} 
                   size={20} 
                   color={mode === option.mode ? theme.primary : theme.text} 
@@ -83,9 +83,9 @@ export function ThemeToggle() {
                 >
                   {option.label}
                 </ThemedText>
-                {mode === option.mode && (
-                  <Feather name="check" size={18} color={theme.primary} />
-                )}
+                {mode === option.mode ? (
+                  <DynamicIcon name="check" size={18} color={theme.primary} />
+                ) : null}
               </Pressable>
             ))}
           </View>

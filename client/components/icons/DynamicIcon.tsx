@@ -8,7 +8,7 @@ import {
   SendIcon, ArrowLeftIcon, ArrowRightIcon, SlidersIcon, FilterIcon, CheckIcon,
   CheckCircleIcon, XCircleIcon, TrendingUpIcon, AwardIcon, MailIcon, ToolIcon,
   ImageIcon, RefreshCwIcon, MinusIcon, ExternalLinkIcon, TagIcon, DollarSignIcon,
-  ShieldIcon, BoxIcon, ZapIcon
+  ShieldIcon, BoxIcon, ZapIcon, SunIcon, MoonIcon
 } from "./TabBarIcons";
 
 interface DynamicIconProps {
@@ -74,6 +74,8 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; color?: strin
   box: BoxIcon,
   package: BoxIcon,
   zap: ZapIcon,
+  sun: SunIcon,
+  moon: MoonIcon,
   wrench: ToolIcon,
   hammer: ToolIcon,
   truck: BoxIcon,
