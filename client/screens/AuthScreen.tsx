@@ -448,62 +448,68 @@ export default function AuthScreen() {
           </ThemedText>
         </View>
 
-        <SocialProof />
-
-        <FeaturePreview />
-
-        <TestimonialsCarousel compact />
+        {Platform.OS !== 'android' ? (
+          <>
+            <SocialProof />
+            <FeaturePreview />
+            <TestimonialsCarousel compact />
+          </>
+        ) : null}
 
         <View style={[styles.form, (isDesktop || isTablet) && styles.formDesktop]}>
         <ThemedText type="h3" style={styles.formTitle}>
           {isLogin ? 'Prijava' : 'Registracija'}
         </ThemedText>
 
-        <Pressable
-          style={[styles.googleButton, { borderColor: theme.border, backgroundColor: theme.backgroundDefault }]}
-          onPress={handleGoogleSignIn}
-          disabled={isGoogleLoading}
-        >
-          {isGoogleLoading ? (
-            <ActivityIndicator color={Colors.light.primary} size="small" />
-          ) : (
-            <>
-              <View style={styles.googleIcon}>
-                <MailIcon size={20} color="#EA4335" />
-              </View>
-              <ThemedText type="body" style={styles.googleButtonText}>
-                {isLogin ? 'Prijavi se sa Google-om' : 'Registruj se sa Google-om'}
+        {Platform.OS !== 'android' ? (
+          <>
+            <Pressable
+              style={[styles.googleButton, { borderColor: theme.border, backgroundColor: theme.backgroundDefault }]}
+              onPress={handleGoogleSignIn}
+              disabled={isGoogleLoading}
+            >
+              {isGoogleLoading ? (
+                <ActivityIndicator color={Colors.light.primary} size="small" />
+              ) : (
+                <>
+                  <View style={styles.googleIcon}>
+                    <MailIcon size={20} color="#EA4335" />
+                  </View>
+                  <ThemedText type="body" style={styles.googleButtonText}>
+                    {isLogin ? 'Prijavi se sa Google-om' : 'Registruj se sa Google-om'}
+                  </ThemedText>
+                </>
+              )}
+            </Pressable>
+
+            {showAppleButton ? (
+              <Pressable
+                style={[styles.appleButton, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}
+                onPress={handleAppleSignIn}
+                disabled={isAppleLoading}
+              >
+                {isAppleLoading ? (
+                  <ActivityIndicator color={isDark ? '#000000' : '#FFFFFF'} size="small" />
+                ) : (
+                  <>
+                    <AppleIcon size={20} color={isDark ? '#000000' : '#FFFFFF'} />
+                    <ThemedText type="body" style={[styles.appleButtonText, { color: isDark ? '#000000' : '#FFFFFF' }]}>
+                      {isLogin ? 'Prijavi se sa Apple-om' : 'Registruj se sa Apple-om'}
+                    </ThemedText>
+                  </>
+                )}
+              </Pressable>
+            ) : null}
+
+            <View style={styles.divider}>
+              <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+              <ThemedText type="small" style={[styles.dividerText, { color: theme.textTertiary }]}>
+                ili
               </ThemedText>
-            </>
-          )}
-        </Pressable>
-
-        {showAppleButton ? (
-          <Pressable
-            style={[styles.appleButton, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}
-            onPress={handleAppleSignIn}
-            disabled={isAppleLoading}
-          >
-            {isAppleLoading ? (
-              <ActivityIndicator color={isDark ? '#000000' : '#FFFFFF'} size="small" />
-            ) : (
-              <>
-                <AppleIcon size={20} color={isDark ? '#000000' : '#FFFFFF'} />
-                <ThemedText type="body" style={[styles.appleButtonText, { color: isDark ? '#000000' : '#FFFFFF' }]}>
-                  {isLogin ? 'Prijavi se sa Apple-om' : 'Registruj se sa Apple-om'}
-                </ThemedText>
-              </>
-            )}
-          </Pressable>
+              <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+            </View>
+          </>
         ) : null}
-
-        <View style={styles.divider}>
-          <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
-          <ThemedText type="small" style={[styles.dividerText, { color: theme.textTertiary }]}>
-            ili
-          </ThemedText>
-          <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
-        </View>
 
         {!isLogin && (
           <View style={styles.fieldGroup}>
