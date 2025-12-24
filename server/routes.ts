@@ -64,6 +64,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect('/');
   });
 
+  app.get("/oauth/google/callback", (req, res) => {
+    res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VikendMajstor - Prijava</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #1a1a1a; color: white; }
+    .container { text-align: center; padding: 20px; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top-color: #FFCC00; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <p>Prijava u toku...</p>
+  </div>
+  <script>
+    (function() {
+      var hash = window.location.hash.substring(1);
+      var params = new URLSearchParams(hash);
+      var accessToken = params.get('access_token');
+      
+      if (accessToken) {
+        window.location.href = 'vikendmajstor://oauth?access_token=' + encodeURIComponent(accessToken);
+        setTimeout(function() {
+          document.querySelector('.container').innerHTML = '<p>Ako se aplikacija nije otvorila, <a href="vikendmajstor://oauth?access_token=' + encodeURIComponent(accessToken) + '" style="color: #FFCC00;">kliknite ovde</a></p>';
+        }, 2000);
+      } else {
+        document.querySelector('.container').innerHTML = '<p style="color: #ff4444;">Greska pri prijavi. Pokusajte ponovo.</p>';
+      }
+    })();
+  </script>
+</body>
+</html>
+    `);
+  });
+
   app.get("/public-objects/:filePath(*)", async (req, res) => {
     const filePath = req.params.filePath;
     const objectStorageService = new ObjectStorageService();
