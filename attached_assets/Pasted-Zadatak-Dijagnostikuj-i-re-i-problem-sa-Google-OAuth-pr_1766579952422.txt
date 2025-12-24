@@ -1,0 +1,39 @@
+Zadatak: Dijagnostikuj i reši problem sa Google OAuth prijavom u VikendMajstor aplikaciji. 
+Trenutno stanje: Klik na Google dugme ne pokreće prijavu, iako su OAuth kredencijali dodati u Google Cloud Console.
+
+Proveri sledeće korake:
+
+1. Google Cloud Console konfiguracija:
+   - Da li je OAuth consent screen podešen i objavljen u Production?
+   - Da li je tip aplikacije External?
+   - Da li su svi potrebni scope-ovi dodati (openid, email, profile)?
+   - Da li je tačan Client ID (Web) unet u aplikaciju?
+   - Da li su tačno dodati Authorized JavaScript origins i redirect URIs:
+     - https://9f702b16-782e-439c-b284-9b1bdfcdccac-00-u7xoyrlwccba.spock.replit.dev
+     - https://auth.expo.io/@vikendmajstor/vikendmajstor
+     - https://app.vikendmajstor.rs (za produkciju)
+
+2. Frontend implementacija:
+   - Da li se koristi ispravan Client ID u kodu?
+   - Da li je redirect URI u kodu identičan onome u Google Cloud Console?
+   - Da li se koristi response_type=code (PKCE) ili token? Ako je code, da li backend razmenjuje code za token?
+   - Da li je AuthSession ili Google Sign-In biblioteka pravilno inicijalizovana?
+
+3. Backend implementacija:
+   - Ako se koristi code exchange: da li backend pravilno poziva Google token endpoint?
+   - Da li se Client Secret koristi samo na backendu (nikad u frontendu)?
+   - Da li se id_token validira (signature, iss, aud, exp)?
+   - Da li se kreira korisnik u bazi i vraća session token?
+
+4. Debugging:
+   - Proveri konzolu browsera (DevTools) – da li ima grešaka pri kliku na dugme?
+   - Proveri network tab – da li se šalje zahtev ka Google auth endpointu?
+   - Proveri da li se vraća error parametar u redirect URI (npr. invalid_request, redirect_uri_mismatch).
+   - Proveri logove backend servera (ako postoji code exchange).
+
+5. Specifičnosti okruženja:
+   - Replit dev domen se menja – da li je ažuriran u Google Cloud Console?
+   - Da li je Expo redirect URI tačno unet (https://auth.expo.io/@vikendmajstor/vikendmajstor)?
+   - Da li su debug i production buildovi pokriveni različitim OAuth klijentima (Android/iOS)?
+
+Cilj: Identifikuj tačan uzrok zašto se prijava ne pokreće i obezbedi fix (ispravka konfiguracije ili koda).
