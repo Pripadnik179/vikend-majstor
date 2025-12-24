@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
-import { getApiUrl } from '@/lib/query-client';
+import { getImageUrl } from '@/lib/imageUtils';
 import { Spacing, BorderRadius, Colors } from '@/constants/theme';
 import type { Booking, Item, User } from '@shared/schema';
 
@@ -52,17 +52,6 @@ const STATUS_CONFIG = {
 
 export function BookingCard({ booking, viewType, onPress }: BookingCardProps) {
   const { theme, isDark } = useTheme();
-
-  const getImageUrl = (path: string) => {
-    if (path.startsWith('http')) return path;
-    if (path.startsWith('/objects/')) {
-      return `${getApiUrl()}/api${path}`;
-    }
-    if (path.startsWith('/public-objects/')) {
-      return `${getApiUrl()}/api/objects${path.replace('/public-objects/', '/public/')}`;
-    }
-    return `${getApiUrl()}${path}`;
-  };
 
   const formatDateRange = (start: Date | string, end: Date | string) => {
     const startDate = new Date(start);

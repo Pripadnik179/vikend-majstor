@@ -530,3 +530,4 @@ export function CrownIcon({ size = 24, color = "#000" }: IconProps) {
     </Svg>
   );
 }
+

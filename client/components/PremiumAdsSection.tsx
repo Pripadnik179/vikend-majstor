@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout } from '@/hooks/useWebLayout';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { CrownIcon, ChevronRightIcon, BoxIcon, StarIcon, MapPinIcon } from '@/components/icons/TabBarIcons';
+import { getImageUrl } from '@/lib/imageUtils';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
 
@@ -60,7 +61,7 @@ function PremiumItemCard({ item, index, cardWidth }: { item: Item; index: number
         
         {item.images && item.images.length > 0 ? (
           <Image
-            source={{ uri: item.images[0] }}
+            source={{ uri: getImageUrl(item.images[0]) }}
             style={styles.itemImage}
             contentFit="cover"
             priority="high"

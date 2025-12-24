@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
+import { getImageUrl } from '@/lib/imageUtils';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
 
@@ -93,7 +94,7 @@ export function PromoBanner({ premiumItems, earlyAdopterSlotsRemaining }: PromoB
             </View>
             {item.images && item.images.length > 0 ? (
               <Image
-                source={{ uri: item.images[0] }}
+                source={{ uri: getImageUrl(item.images[0]) }}
                 style={styles.premiumImage}
                 contentFit="cover"
               />

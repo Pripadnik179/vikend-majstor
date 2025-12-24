@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, Platform, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, { useAnimatedStyle, withSpring, useSharedValue, withTiming } from 'react-native-reanimated';
-import { ImageIcon, StarIcon, MapPinIcon, ClockIcon, ShieldIcon, TrendingUpIcon, ChevronRightIcon } from '@/components/icons/TabBarIcons';
+import { ImageIcon, StarIcon, MapPinIcon, ClockIcon, ShieldIcon, TrendingUpIcon, ChevronRightIcon, InfoIcon, CheckCircleIcon, XCircleIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
+import { ItemInfoModal } from '@/components/ItemInfoModal';
 import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout } from '@/hooks/useWebLayout';
-import { getApiUrl } from '@/lib/query-client';
+import { getImageUrl } from '@/lib/imageUtils';
 import { Spacing, BorderRadius, Colors } from '@/constants/theme';
 import type { Item } from '@shared/schema';
 
@@ -19,6 +20,8 @@ interface ItemCardProps {
     isVerified?: boolean;
     rentalCount?: number;
     availableFrom?: string;
+    availableToday?: boolean;
+    owner?: any;
   };
   onPress: () => void;
   onReserve?: () => void;
@@ -33,9 +36,12 @@ export function ItemCard({ item, onPress, onReserve, showExpiration = false, sho
   const { isDesktop, cardWidth } = useWebLayout();
   const { width } = useWindowDimensions();
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   
   const scale = useSharedValue(1);
   const tooltipOpacity = useSharedValue(0);
+  
+  const availableToday = item.availableToday !== undefined ? item.availableToday : item.isAvailable;
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -65,17 +71,6 @@ export function ItemCard({ item, onPress, onReserve, showExpiration = false, sho
       tooltipOpacity.value = withTiming(0, { duration: 150 });
       setTimeout(() => setShowTooltip(false), 150);
     }
-  };
-
-  const getImageUrl = (path: string) => {
-    if (path.startsWith('http')) return path;
-    if (path.startsWith('/objects/')) {
-      return `${getApiUrl()}/api${path}`;
-    }
-    if (path.startsWith('/public-objects/')) {
-      return `${getApiUrl()}/api/objects${path.replace('/public-objects/', '/public/')}`;
-    }
-    return `${getApiUrl()}${path}`;
   };
 
   const getDaysRemaining = () => {
@@ -148,6 +143,16 @@ export function ItemCard({ item, onPress, onReserve, showExpiration = false, sho
             </View>
           ) : null}
         </View>
+        
+        <Pressable 
+          style={[styles.infoButton, { backgroundColor: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.9)' }]}
+          onPress={(e) => {
+            e.stopPropagation?.();
+            setShowInfoModal(true);
+          }}
+        >
+          <InfoIcon size={18} color={theme.text} />
+        </Pressable>
       </View>
       
       {showTooltip && Platform.OS === 'web' ? (
@@ -207,6 +212,24 @@ export function ItemCard({ item, onPress, onReserve, showExpiration = false, sho
           </ThemedText>
         </View>
         
+        <View style={[styles.availabilityRow, { backgroundColor: availableToday ? '#4CAF5015' : '#F4433615' }]}>
+          {availableToday ? (
+            <>
+              <CheckCircleIcon size={14} color="#4CAF50" />
+              <ThemedText type="small" style={{ color: '#4CAF50', marginLeft: 4, fontWeight: '500' }}>
+                Dostupno danas
+              </ThemedText>
+            </>
+          ) : (
+            <>
+              <XCircleIcon size={14} color="#F44336" />
+              <ThemedText type="small" style={{ color: '#F44336', marginLeft: 4, fontWeight: '500' }}>
+                Nije dostupno danas
+              </ThemedText>
+            </>
+          )}
+        </View>
+        
         {daysRemaining !== null ? (
           <View style={[styles.expirationRow, { backgroundColor: daysRemaining <= 7 ? '#FFF3CD' : theme.backgroundSecondary }]}>
             <ClockIcon size={10} color={daysRemaining <= 7 ? '#856404' : theme.textSecondary} />
@@ -218,19 +241,31 @@ export function ItemCard({ item, onPress, onReserve, showExpiration = false, sho
         
         {showReserveButton ? (
           <Pressable 
-            style={[styles.reserveButton, { backgroundColor: Colors.light.cta }]}
+            style={[
+              styles.reserveButton, 
+              { backgroundColor: availableToday ? Colors.light.cta : theme.backgroundSecondary }
+            ]}
             onPress={(e) => {
               e.stopPropagation?.();
-              onReserve?.() || onPress();
+              if (availableToday) {
+                onReserve?.() || onPress();
+              }
             }}
+            disabled={!availableToday}
           >
-            <ThemedText type="small" style={{ color: '#FFFFFF', fontWeight: '600' }}>
-              Rezervisi
+            <ThemedText type="small" style={{ color: availableToday ? '#FFFFFF' : theme.textTertiary, fontWeight: '600' }}>
+              {availableToday ? 'Rezervisi' : 'Nije dostupan'}
             </ThemedText>
-            <ChevronRightIcon size={14} color="#FFFFFF" />
+            {availableToday ? <ChevronRightIcon size={14} color="#FFFFFF" /> : null}
           </Pressable>
         ) : null}
       </View>
+      
+      <ItemInfoModal 
+        visible={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+        item={item}
+      />
     </AnimatedPressable>
   );
 }
@@ -350,5 +385,24 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.sm,
     gap: 4,
+  },
+  infoButton: {
+    position: 'absolute',
+    top: Spacing.xs,
+    right: Spacing.xs,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  availabilityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: BorderRadius.xs,
+    alignSelf: 'flex-start',
   },
 });

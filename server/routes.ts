@@ -264,6 +264,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userLng = lng ? parseFloat(lng as string) : null;
       const maxDist = maxDistance ? parseFloat(maxDistance as string) : null;
       
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+      
       let itemsWithDistance = await Promise.all(
         items.map(async (item) => {
           const owner = await storage.getUser(item.ownerId);
@@ -281,7 +286,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             );
           }
           
-          return { ...item, isPremium: !!isPremium, distance };
+          const itemBookings = await storage.getItemBookings(item.id);
+          const hasBookingToday = itemBookings.some(booking => {
+            const bookingStart = new Date(booking.startDate);
+            const bookingEnd = new Date(booking.endDate);
+            return bookingStart <= todayEnd && bookingEnd >= todayStart;
+          });
+          const availableToday = item.isAvailable && !hasBookingToday;
+          
+          return { ...item, isPremium: !!isPremium, distance, availableToday };
         })
       );
       
@@ -349,7 +362,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const owner = await storage.getUser(item.ownerId);
-      res.json({ ...item, owner });
+      
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+      
+      const itemBookings = await storage.getItemBookings(item.id);
+      const hasBookingToday = itemBookings.some(booking => {
+        const bookingStart = new Date(booking.startDate);
+        const bookingEnd = new Date(booking.endDate);
+        return bookingStart <= todayEnd && bookingEnd >= todayStart;
+      });
+      const availableToday = item.isAvailable && !hasBookingToday;
+      
+      res.json({ ...item, owner, availableToday });
     } catch (error) {
       console.error("Error fetching item:", error);
       res.status(500).json({ error: "Greška pri učitavanju stvari" });
