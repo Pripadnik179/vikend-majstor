@@ -580,8 +580,11 @@ export function setupAuth(app: Express) {
       }
 
       let user = await storage.getUserByEmail(email);
+      let isNewUser = false;
+      let emailVerificationSent = false;
 
       if (!user) {
+        isNewUser = true;
         const earlyAdopterCount = await storage.getEarlyAdopterCount();
         const isEarlyAdopter = earlyAdopterCount < 100;
 
@@ -598,13 +601,28 @@ export function setupAuth(app: Express) {
           subscriptionStatus: isEarlyAdopter ? "active" : undefined,
           subscriptionEndDate: isEarlyAdopter ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null,
         });
+
+        // Automatically send verification email for new Google users
+        const verificationToken = await storage.createVerificationToken(user.id, 'email');
+        sendVerificationEmail(user.email, verificationToken.token, user.name).then(sent => {
+          emailVerificationSent = sent;
+          console.log(`[GOOGLE AUTH] Verification email ${sent ? 'sent' : 'failed'} to ${user!.email}`);
+        }).catch(err => {
+          console.error('[GOOGLE AUTH] Failed to send verification email:', err);
+        });
+        emailVerificationSent = true; // Assume success for immediate response
       }
 
       req.session.userId = user.id;
       
       const { password: _, ...userWithoutPassword } = user;
       const authToken = generateAuthToken(user.id, sessionSecret);
-      res.json({ ...userWithoutPassword, authToken });
+      res.json({ 
+        ...userWithoutPassword, 
+        authToken,
+        isNewUser,
+        emailVerificationSent: isNewUser ? emailVerificationSent : undefined
+      });
     } catch (error) {
       console.error("Google auth error:", error);
       res.status(500).json({ error: "Greška pri Google prijavi" });
@@ -640,8 +658,11 @@ export function setupAuth(app: Express) {
       const userEmail = email || `apple_${appleUserId}@privaterelay.appleid.com`;
 
       let user = await storage.getUserByEmail(userEmail);
+      let isNewUser = false;
+      let emailVerificationSent = false;
 
       if (!user) {
+        isNewUser = true;
         const earlyAdopterCount = await storage.getEarlyAdopterCount();
         const isEarlyAdopter = earlyAdopterCount < 100;
 
@@ -658,6 +679,17 @@ export function setupAuth(app: Express) {
           subscriptionStatus: isEarlyAdopter ? "active" : undefined,
           subscriptionEndDate: isEarlyAdopter ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null,
         });
+
+        // Automatically send verification email for new Apple users (if real email)
+        if (email && !userEmail.includes('privaterelay.appleid.com')) {
+          const verificationToken = await storage.createVerificationToken(user.id, 'email');
+          sendVerificationEmail(user.email, verificationToken.token, user.name).then(sent => {
+            console.log(`[APPLE AUTH] Verification email ${sent ? 'sent' : 'failed'} to ${user!.email}`);
+          }).catch(err => {
+            console.error('[APPLE AUTH] Failed to send verification email:', err);
+          });
+          emailVerificationSent = true;
+        }
       } else if (fullName && fullName.trim() && user.name === 'Apple User') {
         await storage.updateUser(user.id, { name: fullName.trim() });
         user = { ...user, name: fullName.trim() };
@@ -667,7 +699,12 @@ export function setupAuth(app: Express) {
       
       const { password: _, ...userWithoutPassword } = user;
       const authToken = generateAuthToken(user.id, sessionSecret);
-      res.json({ ...userWithoutPassword, authToken });
+      res.json({ 
+        ...userWithoutPassword, 
+        authToken,
+        isNewUser,
+        emailVerificationSent: isNewUser ? emailVerificationSent : undefined
+      });
     } catch (error) {
       console.error("Apple auth error:", error);
       res.status(500).json({ error: "Greška pri Apple prijavi" });
