@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image, Platform, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session';
+import * as Google from 'expo-auth-session/providers/google';
 import { MailIcon, AppleIcon, EyeIcon, EyeOffIcon, ShieldIcon, LockIcon, CheckIcon } from '@/components/icons/TabBarIcons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ResponsiveContainer } from '@/components/ResponsiveContainer';
@@ -34,6 +36,12 @@ export default function AuthScreen() {
   const { theme, isDark } = useTheme();
   const { login, register, loginWithGoogle, loginWithApple, resendVerificationEmail } = useAuth();
   const { isDesktop, isTablet } = useWebLayout();
+  
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+  });
   
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -76,6 +84,23 @@ export default function AuthScreen() {
       AppleAuthentication.isAvailableAsync().then(setIsAppleAvailable);
     }
   }, []);
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      if (authentication?.accessToken) {
+        console.log('[Google Auth] Got access token from expo-auth-session');
+        handleGoogleTokenReceived(authentication.accessToken);
+      }
+    } else if (response?.type === 'error') {
+      console.error('[Google Auth] Error:', response.error);
+      setErrorMessage('Greska pri Google prijavi');
+      setIsGoogleLoading(false);
+    } else if (response?.type === 'cancel' || response?.type === 'dismiss') {
+      console.log('[Google Auth] User cancelled');
+      setIsGoogleLoading(false);
+    }
+  }, [response, handleGoogleTokenReceived]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -215,8 +240,19 @@ export default function AuthScreen() {
         setIsGoogleLoading(false);
       }, 300000);
     } else {
-      setIsGoogleLoading(false);
-      Alert.alert('Info', 'Google prijava je dostupna samo na web platformi');
+      if (!request) {
+        setIsGoogleLoading(false);
+        setErrorMessage('Google prijava nije dostupna. Proverite konfiguraciju.');
+        return;
+      }
+      console.log('[Google Auth] Starting native auth flow');
+      try {
+        await promptAsync();
+      } catch (error: any) {
+        console.error('[Google Auth] Native auth error:', error);
+        setErrorMessage('Greska pri pokretanju Google prijave');
+        setIsGoogleLoading(false);
+      }
     }
   };
 
