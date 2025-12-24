@@ -327,6 +327,15 @@ function configureExpoAndLanding(app: express.Application) {
     }
   });
 
+  app.get("/auth/google/callback", (_req: Request, res: Response) => {
+    const callbackPath = path.resolve(process.cwd(), "server", "templates", "google-callback.html");
+    if (fs.existsSync(callbackPath)) {
+      res.sendFile(callbackPath);
+    } else {
+      res.status(404).send("Callback page not found");
+    }
+  });
+
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith("/api")) {
       return next();

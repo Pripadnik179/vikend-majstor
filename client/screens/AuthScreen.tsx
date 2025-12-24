@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image, Platform, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import { MailIcon, AppleIcon, EyeIcon, EyeOffIcon, ShieldIcon, LockIcon, CheckIcon } from '@/components/icons/TabBarIcons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
@@ -24,12 +23,6 @@ const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
 
 const isGoogleConfigured = Boolean(GOOGLE_WEB_CLIENT_ID);
-
-const discovery = {
-  authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-  tokenEndpoint: 'https://oauth2.googleapis.com/token',
-  revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
-};
 
 let AppleAuthentication: typeof import('expo-apple-authentication') | null = null;
 if (Platform.OS === 'ios') {
@@ -62,20 +55,6 @@ export default function AuthScreen() {
   const [resendingVerification, setResendingVerification] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{name?: string; email?: string; password?: string; confirmPassword?: string}>({});
 
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: 'com.vikendmajstor.app',
-  });
-
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: GOOGLE_WEB_CLIENT_ID || '',
-      scopes: ['openid', 'profile', 'email'],
-      responseType: AuthSession.ResponseType.Token,
-      redirectUri,
-    },
-    discovery
-  );
-
   useEffect(() => {
     if (Platform.OS === 'ios' && AppleAuthentication) {
       AppleAuthentication.isAvailableAsync().then(setIsAppleAvailable);
@@ -83,22 +62,25 @@ export default function AuthScreen() {
   }, []);
 
   useEffect(() => {
-    if (response?.type === 'success') {
-      const { access_token } = response.params;
-      if (access_token) {
-        handleGoogleTokenReceived(access_token);
-      }
-    } else if (response?.type === 'error') {
-      setIsGoogleLoading(false);
-      Alert.alert('Greska', response.error?.message || 'Greska pri Google prijavi');
+    if (Platform.OS === 'web') {
+      const handleMessage = (event: MessageEvent) => {
+        if (event.data?.type === 'google-auth-success' && event.data?.accessToken) {
+          handleGoogleTokenReceived(event.data.accessToken);
+        } else if (event.data?.type === 'google-auth-error') {
+          setIsGoogleLoading(false);
+          setErrorMessage(event.data?.error || 'Greska pri Google prijavi');
+        }
+      };
+      window.addEventListener('message', handleMessage);
+      return () => window.removeEventListener('message', handleMessage);
     }
-  }, [response]);
+  }, []);
 
   const handleGoogleTokenReceived = async (accessToken: string) => {
     try {
       await loginWithGoogle(accessToken);
     } catch (error: any) {
-      Alert.alert('Greska', error.message || 'Greska pri Google prijavi');
+      setErrorMessage(error.message || 'Greska pri Google prijavi');
     } finally {
       setIsGoogleLoading(false);
     }
@@ -138,7 +120,7 @@ export default function AuthScreen() {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!isGoogleConfigured || !request) {
+    if (!isGoogleConfigured) {
       Alert.alert(
         'Google prijava nije dostupna',
         'Google OAuth kredencijali nisu konfigurisani za ovu platformu.'
@@ -148,11 +130,66 @@ export default function AuthScreen() {
     
     setIsGoogleLoading(true);
     setErrorMessage(null);
-    try {
-      await promptAsync();
-    } catch (error: any) {
+    
+    if (Platform.OS === 'web') {
+      const redirectUri = window.location.origin + '/auth/google/callback';
+      const scope = encodeURIComponent('openid profile email');
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_WEB_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}&prompt=select_account`;
+      
+      const width = 500;
+      const height = 600;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      
+      const popup = window.open(
+        authUrl,
+        'Google Sign In',
+        `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`
+      );
+      
+      if (!popup) {
+        setIsGoogleLoading(false);
+        setErrorMessage('Popup blokiran. Dozvolite popup prozore za ovu stranicu.');
+        return;
+      }
+      
+      const checkPopup = setInterval(() => {
+        try {
+          if (popup.closed) {
+            clearInterval(checkPopup);
+            setIsGoogleLoading(false);
+            return;
+          }
+          
+          const popupUrl = popup.location.href;
+          if (popupUrl.includes('access_token=')) {
+            clearInterval(checkPopup);
+            const hash = popup.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const accessToken = params.get('access_token');
+            popup.close();
+            
+            if (accessToken) {
+              handleGoogleTokenReceived(accessToken);
+            } else {
+              setIsGoogleLoading(false);
+              setErrorMessage('Nije moguce dobiti access token');
+            }
+          } else if (popupUrl.includes('error=')) {
+            clearInterval(checkPopup);
+            const hash = popup.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const error = params.get('error_description') || params.get('error') || 'Greska pri prijavi';
+            popup.close();
+            setIsGoogleLoading(false);
+            setErrorMessage(decodeURIComponent(error));
+          }
+        } catch (e) {
+        }
+      }, 500);
+    } else {
       setIsGoogleLoading(false);
-      Alert.alert('Greska', error.message || 'Greska pri pokretanju Google prijave');
+      Alert.alert('Info', 'Google prijava je dostupna samo na web platformi');
     }
   };
 
