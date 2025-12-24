@@ -58,26 +58,38 @@
   </div>
   <script>
     (function() {
+      console.log('[Google Callback] Page loaded, hash:', window.location.hash);
+      
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
       const accessToken = params.get('access_token');
       const error = params.get('error');
       const errorDescription = params.get('error_description');
 
+      console.log('[Google Callback] accessToken exists:', !!accessToken, 'error:', error);
+
       if (accessToken) {
         document.getElementById('message').textContent = 'Uspesna prijava!';
         document.getElementById('submessage').textContent = 'Prozor ce se zatvoriti...';
         
+        console.log('[Google Callback] Sending success message to opener');
         if (window.opener) {
-          window.opener.postMessage({
-            type: 'google-auth-success',
-            accessToken: accessToken
-          }, '*');
+          try {
+            window.opener.postMessage({
+              type: 'google-auth-success',
+              accessToken: accessToken
+            }, '*');
+            console.log('[Google Callback] Message sent successfully');
+          } catch (e) {
+            console.error('[Google Callback] Failed to send message:', e);
+          }
+        } else {
+          console.log('[Google Callback] No opener window found');
         }
         
         setTimeout(function() {
           window.close();
-        }, 1000);
+        }, 1500);
       } else if (error) {
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('message').textContent = 'Greska pri prijavi';
@@ -97,6 +109,7 @@
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('message').textContent = 'Nema podataka';
         document.getElementById('submessage').textContent = 'Zatvorite ovaj prozor';
+        console.log('[Google Callback] No token or error found in URL');
       }
     })();
   </script>
