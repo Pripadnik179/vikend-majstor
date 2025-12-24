@@ -22,11 +22,10 @@ export function getApiUrl(): string {
   }
   
   // For mobile (React Native), use the configured domain
-  const host = process.env.EXPO_PUBLIC_DOMAIN;
-
-  if (!host) {
-    throw new Error("EXPO_PUBLIC_DOMAIN is not set");
-  }
+  // Fallback to production domain if not set
+  const host = process.env.EXPO_PUBLIC_DOMAIN || 'vikendmajstor.rs';
+  
+  console.log('[API] Using host:', host);
 
   // For production domains (like vikendmajstor.rs), don't add port - Replit handles routing
   // For development domains with :5000, keep as-is
