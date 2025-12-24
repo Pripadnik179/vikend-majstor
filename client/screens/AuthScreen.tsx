@@ -18,11 +18,11 @@ import { apiRequest, ApiError } from '@/lib/query-client';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const GOOGLE_WEB_CLIENT_ID = '45722118252-g4la4n5j2ne1hlb8idmk11mb0brph55f.apps.googleusercontent.com';
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
 
-const isGoogleConfigured = Boolean(GOOGLE_WEB_CLIENT_ID);
+const isGoogleConfigured = true;
 
 let AppleAuthentication: typeof import('expo-apple-authentication') | null = null;
 if (Platform.OS === 'ios') {
