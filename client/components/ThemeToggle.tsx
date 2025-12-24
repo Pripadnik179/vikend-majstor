@@ -13,7 +13,7 @@ interface ThemeOption {
 }
 
 const themeOptions: ThemeOption[] = [
-  { mode: 'auto', label: 'Automatski', icon: 'smartphone' },
+  { mode: 'auto', label: 'Automatski', icon: 'settings' },
   { mode: 'light', label: 'Svetli', icon: 'sun' },
   { mode: 'dark', label: 'Tamni', icon: 'moon' },
 ];
@@ -23,7 +23,7 @@ export function ThemeToggle() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const getCurrentIcon = (): keyof typeof Feather.glyphMap => {
-    if (mode === 'auto') return 'smartphone';
+    if (mode === 'auto') return 'settings';
     return isDark ? 'moon' : 'sun';
   };
 
