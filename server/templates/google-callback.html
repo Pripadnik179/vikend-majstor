@@ -58,7 +58,9 @@
   </div>
   <script>
     (function() {
-      console.log('[Google Callback] Page loaded, hash:', window.location.hash);
+      console.log('[Google Callback] Page loaded');
+      console.log('[Google Callback] Full URL:', window.location.href);
+      console.log('[Google Callback] Hash:', window.location.hash);
       
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
@@ -72,19 +74,29 @@
         document.getElementById('message').textContent = 'Uspesna prijava!';
         document.getElementById('submessage').textContent = 'Prozor ce se zatvoriti...';
         
-        console.log('[Google Callback] Sending success message to opener');
-        if (window.opener) {
+        var messageSent = false;
+        
+        // Try postMessage first
+        console.log('[Google Callback] Attempting postMessage, opener exists:', !!window.opener);
+        if (window.opener && !window.opener.closed) {
           try {
             window.opener.postMessage({
               type: 'google-auth-success',
               accessToken: accessToken
             }, '*');
-            console.log('[Google Callback] Message sent successfully');
+            console.log('[Google Callback] postMessage sent');
+            messageSent = true;
           } catch (e) {
-            console.error('[Google Callback] Failed to send message:', e);
+            console.error('[Google Callback] postMessage failed:', e);
           }
-        } else {
-          console.log('[Google Callback] No opener window found');
+        }
+        
+        // Also save to localStorage as fallback
+        try {
+          localStorage.setItem('google_auth_token', accessToken);
+          console.log('[Google Callback] Token saved to localStorage');
+        } catch (e) {
+          console.error('[Google Callback] localStorage failed:', e);
         }
         
         setTimeout(function() {
@@ -95,12 +107,23 @@
         document.getElementById('message').textContent = 'Greska pri prijavi';
         document.getElementById('submessage').innerHTML = '<span class="error">' + (errorDescription || error) + '</span>';
         
-        if (window.opener) {
-          window.opener.postMessage({
-            type: 'google-auth-error',
-            error: errorDescription || error
-          }, '*');
+        var errorMsg = errorDescription || error;
+        
+        if (window.opener && !window.opener.closed) {
+          try {
+            window.opener.postMessage({
+              type: 'google-auth-error',
+              error: errorMsg
+            }, '*');
+          } catch (e) {
+            console.error('[Google Callback] postMessage error failed:', e);
+          }
         }
+        
+        // Save error to localStorage as fallback
+        try {
+          localStorage.setItem('google_auth_error', errorMsg);
+        } catch (e) {}
         
         setTimeout(function() {
           window.close();

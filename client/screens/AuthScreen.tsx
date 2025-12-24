@@ -55,6 +55,19 @@ export default function AuthScreen() {
   const [resendingVerification, setResendingVerification] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{name?: string; email?: string; password?: string; confirmPassword?: string}>({});
 
+  const handleGoogleTokenReceived = useCallback(async (accessToken: string) => {
+    console.log('[Google Auth] Processing token...');
+    try {
+      await loginWithGoogle(accessToken);
+      console.log('[Google Auth] Login successful!');
+    } catch (error: any) {
+      console.error('[Google Auth] Login failed:', error);
+      setErrorMessage(error.message || 'Greska pri Google prijavi');
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  }, [loginWithGoogle]);
+
   useEffect(() => {
     if (Platform.OS === 'ios' && AppleAuthentication) {
       AppleAuthentication.isAvailableAsync().then(setIsAppleAvailable);
@@ -62,36 +75,53 @@ export default function AuthScreen() {
   }, []);
 
   useEffect(() => {
-    if (Platform.OS === 'web') {
-      const handleMessage = (event: MessageEvent) => {
-        console.log('[Google Auth] Received message:', event.data);
-        if (event.data?.type === 'google-auth-success' && event.data?.accessToken) {
-          console.log('[Google Auth] Got access token, logging in...');
-          handleGoogleTokenReceived(event.data.accessToken);
-        } else if (event.data?.type === 'google-auth-error') {
-          console.log('[Google Auth] Got error:', event.data?.error);
-          setIsGoogleLoading(false);
-          setErrorMessage(event.data?.error || 'Greska pri Google prijavi');
-        }
-      };
-      window.addEventListener('message', handleMessage);
-      console.log('[Google Auth] Message listener registered');
-      return () => {
-        window.removeEventListener('message', handleMessage);
-        console.log('[Google Auth] Message listener removed');
-      };
-    }
-  }, []);
+    if (Platform.OS !== 'web') return;
 
-  const handleGoogleTokenReceived = async (accessToken: string) => {
-    try {
-      await loginWithGoogle(accessToken);
-    } catch (error: any) {
-      setErrorMessage(error.message || 'Greska pri Google prijavi');
-    } finally {
-      setIsGoogleLoading(false);
-    }
-  };
+    console.log('[Google Auth] Setting up message listener and storage check...');
+
+    const handleMessage = (event: MessageEvent) => {
+      console.log('[Google Auth] Received message:', event.data?.type);
+      if (event.data?.type === 'google-auth-success' && event.data?.accessToken) {
+        console.log('[Google Auth] Got access token via postMessage');
+        handleGoogleTokenReceived(event.data.accessToken);
+      } else if (event.data?.type === 'google-auth-error') {
+        console.log('[Google Auth] Got error:', event.data?.error);
+        setIsGoogleLoading(false);
+        setErrorMessage(event.data?.error || 'Greska pri Google prijavi');
+      }
+    };
+
+    // Also check localStorage as fallback (for cross-origin cases)
+    const checkLocalStorage = () => {
+      try {
+        const token = localStorage.getItem('google_auth_token');
+        if (token) {
+          console.log('[Google Auth] Found token in localStorage');
+          localStorage.removeItem('google_auth_token');
+          handleGoogleTokenReceived(token);
+        }
+        const error = localStorage.getItem('google_auth_error');
+        if (error) {
+          console.log('[Google Auth] Found error in localStorage:', error);
+          localStorage.removeItem('google_auth_error');
+          setIsGoogleLoading(false);
+          setErrorMessage(error);
+        }
+      } catch (e) {
+        // localStorage might not be available
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    
+    // Check localStorage periodically for fallback
+    const storageInterval = setInterval(checkLocalStorage, 500);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      clearInterval(storageInterval);
+    };
+  }, [handleGoogleTokenReceived]);
 
   const validateFields = (): boolean => {
     const errors: typeof fieldErrors = {};
