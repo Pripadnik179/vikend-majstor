@@ -300,6 +300,33 @@ function configureExpoAndLanding(app: express.Application) {
     }
   });
 
+  app.get("/terms-of-service", (_req: Request, res: Response) => {
+    const termsPath = path.resolve(process.cwd(), "server", "templates", "terms.html");
+    if (fs.existsSync(termsPath)) {
+      res.sendFile(termsPath);
+    } else {
+      res.status(404).send("Page not found");
+    }
+  });
+
+  app.get("/privacy-policy", (_req: Request, res: Response) => {
+    const privacyPath = path.resolve(process.cwd(), "server", "templates", "privacy.html");
+    if (fs.existsSync(privacyPath)) {
+      res.sendFile(privacyPath);
+    } else {
+      res.status(404).send("Page not found");
+    }
+  });
+
+  app.get("/legal", (_req: Request, res: Response) => {
+    const legalPath = path.resolve(process.cwd(), "server", "templates", "legal.html");
+    if (fs.existsSync(legalPath)) {
+      res.sendFile(legalPath);
+    } else {
+      res.status(404).send("Page not found");
+    }
+  });
+
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith("/api")) {
       return next();
