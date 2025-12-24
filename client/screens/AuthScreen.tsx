@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator, Image, Platform, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
 import { MailIcon, AppleIcon, EyeIcon, EyeOffIcon, ShieldIcon, LockIcon, CheckIcon } from '@/components/icons/TabBarIcons';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { ResponsiveContainer } from '@/components/ResponsiveContainer';
@@ -15,16 +17,19 @@ import { useWebLayout } from '@/hooks/useWebLayout';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { apiRequest, ApiError } from '@/lib/query-client';
 
+WebBrowser.maybeCompleteAuthSession();
+
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
 
-const isGoogleConfigured = Boolean(
-  GOOGLE_WEB_CLIENT_ID && 
-  (Platform.OS === 'web' || 
-   (Platform.OS === 'ios' && GOOGLE_IOS_CLIENT_ID) || 
-   (Platform.OS === 'android' && GOOGLE_ANDROID_CLIENT_ID))
-);
+const isGoogleConfigured = Boolean(GOOGLE_WEB_CLIENT_ID);
+
+const discovery = {
+  authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+  tokenEndpoint: 'https://oauth2.googleapis.com/token',
+  revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
+};
 
 let AppleAuthentication: typeof import('expo-apple-authentication') | null = null;
 if (Platform.OS === 'ios') {
@@ -57,11 +62,47 @@ export default function AuthScreen() {
   const [resendingVerification, setResendingVerification] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{name?: string; email?: string; password?: string; confirmPassword?: string}>({});
 
+  const redirectUri = AuthSession.makeRedirectUri({
+    scheme: 'com.vikendmajstor.app',
+  });
+
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId: GOOGLE_WEB_CLIENT_ID || '',
+      scopes: ['openid', 'profile', 'email'],
+      responseType: AuthSession.ResponseType.Token,
+      redirectUri,
+    },
+    discovery
+  );
+
   useEffect(() => {
     if (Platform.OS === 'ios' && AppleAuthentication) {
       AppleAuthentication.isAvailableAsync().then(setIsAppleAvailable);
     }
   }, []);
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { access_token } = response.params;
+      if (access_token) {
+        handleGoogleTokenReceived(access_token);
+      }
+    } else if (response?.type === 'error') {
+      setIsGoogleLoading(false);
+      Alert.alert('Greska', response.error?.message || 'Greska pri Google prijavi');
+    }
+  }, [response]);
+
+  const handleGoogleTokenReceived = async (accessToken: string) => {
+    try {
+      await loginWithGoogle(accessToken);
+    } catch (error: any) {
+      Alert.alert('Greska', error.message || 'Greska pri Google prijavi');
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
   const validateFields = (): boolean => {
     const errors: typeof fieldErrors = {};
@@ -97,7 +138,7 @@ export default function AuthScreen() {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!isGoogleConfigured) {
+    if (!isGoogleConfigured || !request) {
       Alert.alert(
         'Google prijava nije dostupna',
         'Google OAuth kredencijali nisu konfigurisani za ovu platformu.'
@@ -105,10 +146,14 @@ export default function AuthScreen() {
       return;
     }
     
-    Alert.alert(
-      'Google prijava',
-      'Google OAuth kredencijali jos nisu podeseni. Molimo koristite email prijavu.'
-    );
+    setIsGoogleLoading(true);
+    setErrorMessage(null);
+    try {
+      await promptAsync();
+    } catch (error: any) {
+      setIsGoogleLoading(false);
+      Alert.alert('Greska', error.message || 'Greska pri pokretanju Google prijave');
+    }
   };
 
   const handleAppleSignIn = async () => {
