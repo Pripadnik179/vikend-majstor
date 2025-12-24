@@ -58,8 +58,11 @@ export default function AuthScreen() {
   const handleGoogleTokenReceived = useCallback(async (accessToken: string) => {
     console.log('[Google Auth] Processing token...');
     try {
-      await loginWithGoogle(accessToken);
-      console.log('[Google Auth] Login successful!');
+      const result = await loginWithGoogle(accessToken);
+      console.log('[Google Auth] Login successful!', result);
+      if (result.isNewUser && result.emailVerificationSent) {
+        setSuccessMessage('Dobrodosli! Poslali smo vam email za potvrdu. Molimo proverite inbox.');
+      }
     } catch (error: any) {
       console.error('[Google Auth] Login failed:', error);
       setErrorMessage(error.message || 'Greska pri Google prijavi');
@@ -232,10 +235,13 @@ export default function AuthScreen() {
       });
       
       if (credential.identityToken) {
-        await loginWithApple(credential.identityToken, credential.fullName ? {
+        const result = await loginWithApple(credential.identityToken, credential.fullName ? {
           givenName: credential.fullName.givenName ?? undefined,
           familyName: credential.fullName.familyName ?? undefined,
         } : null);
+        if (result.isNewUser && result.emailVerificationSent) {
+          setSuccessMessage('Dobrodosli! Poslali smo vam email za potvrdu. Molimo proverite inbox.');
+        }
       } else {
         Alert.alert('Greska', 'Nije moguce dobiti Apple token');
       }

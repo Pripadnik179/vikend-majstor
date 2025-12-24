@@ -32,14 +32,19 @@ const setupNotifications = async () => {
 
 type AuthUser = Omit<User, 'password'>;
 
+interface OAuthResult {
+  isNewUser: boolean;
+  emailVerificationSent: boolean;
+}
+
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   isVerified: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, role?: string) => Promise<void>;
-  loginWithGoogle: (accessToken: string) => Promise<void>;
-  loginWithApple: (identityToken: string, fullName?: { givenName?: string; familyName?: string } | null) => Promise<void>;
+  loginWithGoogle: (accessToken: string) => Promise<OAuthResult>;
+  loginWithApple: (identityToken: string, fullName?: { givenName?: string; familyName?: string } | null) => Promise<OAuthResult>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   resendVerificationEmail: (email?: string) => Promise<boolean>;
@@ -163,16 +168,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(userData);
   };
 
-  const loginWithGoogle = async (accessToken: string) => {
+  const loginWithGoogle = async (accessToken: string): Promise<OAuthResult> => {
     const response = await apiRequest('POST', '/api/auth/google', { accessToken });
     const userData = await response.json();
     if (userData.authToken) {
       await saveAuthToken(userData.authToken);
     }
     setUser(userData);
+    return {
+      isNewUser: userData.isNewUser || false,
+      emailVerificationSent: userData.emailVerificationSent || false,
+    };
   };
 
-  const loginWithApple = async (identityToken: string, fullName?: { givenName?: string; familyName?: string } | null) => {
+  const loginWithApple = async (identityToken: string, fullName?: { givenName?: string; familyName?: string } | null): Promise<OAuthResult> => {
     const response = await apiRequest('POST', '/api/auth/apple', { 
       identityToken,
       fullName: fullName ? `${fullName.givenName || ''} ${fullName.familyName || ''}`.trim() : undefined,
@@ -182,6 +191,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await saveAuthToken(userData.authToken);
     }
     setUser(userData);
+    return {
+      isNewUser: userData.isNewUser || false,
+      emailVerificationSent: userData.emailVerificationSent || false,
+    };
   };
 
   const logout = async () => {
