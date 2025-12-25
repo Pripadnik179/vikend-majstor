@@ -22,8 +22,9 @@ WebBrowser.maybeCompleteAuthSession();
 
 const GOOGLE_WEB_CLIENT_ID = '45722118252-g4la4n5j2ne1hlb8idmk11mb0brph55f.apps.googleusercontent.com';
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+const GOOGLE_ANDROID_CLIENT_ID = 'disabled-on-android';
 
-const isGoogleConfigured = true;
+const isGoogleConfigured = Platform.OS !== 'android';
 
 const getRedirectUri = () => {
   if (Platform.OS === 'web') {
@@ -51,6 +52,7 @@ export default function AuthScreen() {
   const [request, response, promptAsync] = Google.useAuthRequest({
     webClientId: GOOGLE_WEB_CLIENT_ID,
     iosClientId: GOOGLE_IOS_CLIENT_ID,
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
     redirectUri,
   });
   
