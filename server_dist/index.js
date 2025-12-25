@@ -719,9 +719,9 @@ var DatabaseStorage = class {
   async markFreeFeatureUsed(userId) {
     await db.update(users).set({ freeFeatureUsed: true }).where(eq(users.id, userId));
   }
-  async createVerificationToken(userId, type = "email") {
-    const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1e3);
+  async createVerificationToken(userId, type = "email", customToken, customExpiresAt) {
+    const token = customToken || crypto.randomUUID();
+    const expiresAt = customExpiresAt || new Date(Date.now() + 24 * 60 * 60 * 1e3);
     await db.delete(verificationTokens).where(
       and(eq(verificationTokens.userId, userId), eq(verificationTokens.type, type))
     );
@@ -790,6 +790,46 @@ var DatabaseStorage = class {
     }
     const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
     return user || void 0;
+  }
+  async deleteUserWithData(id) {
+    const userItems = await db.select({ id: items.id }).from(items).where(eq(items.ownerId, id));
+    const itemIds = userItems.map((i) => i.id);
+    let deletedBookings = 0;
+    if (itemIds.length > 0) {
+      const bookingResult = await db.delete(bookings).where(
+        or(
+          eq(bookings.renterId, id),
+          inArray(bookings.itemId, itemIds)
+        )
+      );
+      deletedBookings = bookingResult.rowCount || 0;
+    } else {
+      const bookingResult = await db.delete(bookings).where(eq(bookings.renterId, id));
+      deletedBookings = bookingResult.rowCount || 0;
+    }
+    const messageResult = await db.delete(messages).where(eq(messages.senderId, id));
+    const deletedMessages = messageResult.rowCount || 0;
+    await db.delete(conversations).where(
+      or(
+        eq(conversations.user1Id, id),
+        eq(conversations.user2Id, id)
+      )
+    );
+    const reviewResult = await db.delete(reviews).where(
+      or(
+        eq(reviews.reviewerId, id),
+        eq(reviews.revieweeId, id)
+      )
+    );
+    const deletedReviews = reviewResult.rowCount || 0;
+    let deletedItems = 0;
+    if (itemIds.length > 0) {
+      const itemResult = await db.delete(items).where(eq(items.ownerId, id));
+      deletedItems = itemResult.rowCount || 0;
+    }
+    await db.delete(verificationTokens).where(eq(verificationTokens.userId, id));
+    await db.delete(users).where(eq(users.id, id));
+    return { deletedItems, deletedBookings, deletedMessages, deletedReviews };
   }
   async getUserStats() {
     const now = /* @__PURE__ */ new Date();
@@ -1357,7 +1397,7 @@ function sanitizeObject(obj) {
 }
 function xssProtection(req, res, next) {
   if (req.body && typeof req.body === "object") {
-    const skipFields = ["password", "email"];
+    const skipFields = ["password", "email", "images", "uploadURL"];
     const sanitizedBody = {};
     for (const key of Object.keys(req.body)) {
       if (skipFields.includes(key)) {
@@ -1379,6 +1419,25 @@ var loginBlockCheck = (req, res, next) => {
   next();
 };
 function setupSecurity(app2) {
+  app2.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      "https://app.vikendmajstor.rs",
+      "https://vikendmajstor.rs",
+      "http://localhost:8081",
+      "http://localhost:5000"
+    ];
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(200);
+    }
+    next();
+  });
   app2.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
@@ -1491,16 +1550,20 @@ function setupAuth(app2) {
   if (!sessionSecret) {
     throw new Error("SESSION_SECRET must be set");
   }
+  const replitDomains = process.env.REPLIT_DOMAINS || "";
+  const isProduction = process.env.NODE_ENV === "production" || replitDomains.includes("vikendmajstor.rs") || process.env.REPLIT_DEPLOYMENT === "1";
+  console.log(`[AUTH] Session config: isProduction=${isProduction}, NODE_ENV=${process.env.NODE_ENV}`);
   app2.use(
     session({
       secret: sessionSecret,
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: process.env.NODE_ENV === "production",
+        secure: isProduction,
         httpOnly: true,
         maxAge: 7 * 24 * 60 * 60 * 1e3,
-        sameSite: "lax"
+        sameSite: isProduction ? "none" : "lax",
+        domain: isProduction ? ".vikendmajstor.rs" : void 0
       }
     })
   );
@@ -1588,19 +1651,24 @@ function setupAuth(app2) {
   });
   app2.post("/api/auth/resend-verification", async (req, res) => {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: "Morate biti prijavljeni" });
-      }
-      if (req.user.emailVerified) {
-        return res.status(400).json({ error: "Email je ve\u0107 verifikovan" });
-      }
-      const verificationToken = await storage.createVerificationToken(req.user.id, "email");
-      const sent = await sendVerificationEmail(req.user.email, verificationToken.token, req.user.name);
-      if (sent) {
-        res.json({ success: true, message: "Verifikacioni email je poslat" });
+      let user;
+      if (req.body.email) {
+        user = await storage.getUserByEmail(req.body.email);
+        if (!user) {
+          return res.json({ success: true, message: "Ako nalog postoji, verifikacioni email je poslat" });
+        }
+      } else if (req.user) {
+        user = req.user;
       } else {
-        res.status(500).json({ error: "Gre\u0161ka pri slanju emaila" });
+        return res.status(400).json({ error: "Email adresa je obavezna" });
       }
+      if (user.emailVerified) {
+        return res.json({ success: true, message: "Ako nalog postoji, verifikacioni email je poslat" });
+      }
+      const verificationToken = await storage.createVerificationToken(user.id, "email");
+      const sent = await sendVerificationEmail(user.email, verificationToken.token, user.name);
+      console.log(`[EMAIL] Resend verification to ${user.email}: ${sent ? "SUCCESS" : "FAILED"}`);
+      res.json({ success: true, message: "Ako nalog postoji, verifikacioni email je poslat" });
     } catch (error) {
       console.error("Resend verification error:", error);
       res.status(500).json({ error: "Gre\u0161ka pri slanju emaila" });
@@ -1886,7 +1954,10 @@ function setupAuth(app2) {
         return res.status(400).json({ error: "Nije mogu\u0107e dobiti email sa Google naloga" });
       }
       let user = await storage.getUserByEmail(email);
+      let isNewUser = false;
+      let emailVerificationSent = false;
       if (!user) {
+        isNewUser = true;
         const earlyAdopterCount = await storage.getEarlyAdopterCount();
         const isEarlyAdopter = earlyAdopterCount < 100;
         const randomPassword = randomBytes(32).toString("hex");
@@ -1902,11 +1973,24 @@ function setupAuth(app2) {
           subscriptionStatus: isEarlyAdopter ? "active" : void 0,
           subscriptionEndDate: isEarlyAdopter ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3) : null
         });
+        const verificationToken = await storage.createVerificationToken(user.id, "email");
+        sendVerificationEmail(user.email, verificationToken.token, user.name).then((sent) => {
+          emailVerificationSent = sent;
+          console.log(`[GOOGLE AUTH] Verification email ${sent ? "sent" : "failed"} to ${user.email}`);
+        }).catch((err) => {
+          console.error("[GOOGLE AUTH] Failed to send verification email:", err);
+        });
+        emailVerificationSent = true;
       }
       req.session.userId = user.id;
       const { password: _, ...userWithoutPassword } = user;
       const authToken = generateAuthToken(user.id, sessionSecret);
-      res.json({ ...userWithoutPassword, authToken });
+      res.json({
+        ...userWithoutPassword,
+        authToken,
+        isNewUser,
+        emailVerificationSent: isNewUser ? emailVerificationSent : void 0
+      });
     } catch (error) {
       console.error("Google auth error:", error);
       res.status(500).json({ error: "Gre\u0161ka pri Google prijavi" });
@@ -1935,7 +2019,10 @@ function setupAuth(app2) {
       }
       const userEmail = email || `apple_${appleUserId}@privaterelay.appleid.com`;
       let user = await storage.getUserByEmail(userEmail);
+      let isNewUser = false;
+      let emailVerificationSent = false;
       if (!user) {
+        isNewUser = true;
         const earlyAdopterCount = await storage.getEarlyAdopterCount();
         const isEarlyAdopter = earlyAdopterCount < 100;
         const randomPassword = randomBytes(32).toString("hex");
@@ -1951,6 +2038,15 @@ function setupAuth(app2) {
           subscriptionStatus: isEarlyAdopter ? "active" : void 0,
           subscriptionEndDate: isEarlyAdopter ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3) : null
         });
+        if (email && !userEmail.includes("privaterelay.appleid.com")) {
+          const verificationToken = await storage.createVerificationToken(user.id, "email");
+          sendVerificationEmail(user.email, verificationToken.token, user.name).then((sent) => {
+            console.log(`[APPLE AUTH] Verification email ${sent ? "sent" : "failed"} to ${user.email}`);
+          }).catch((err) => {
+            console.error("[APPLE AUTH] Failed to send verification email:", err);
+          });
+          emailVerificationSent = true;
+        }
       } else if (fullName && fullName.trim() && user.name === "Apple User") {
         await storage.updateUser(user.id, { name: fullName.trim() });
         user = { ...user, name: fullName.trim() };
@@ -1958,7 +2054,12 @@ function setupAuth(app2) {
       req.session.userId = user.id;
       const { password: _, ...userWithoutPassword } = user;
       const authToken = generateAuthToken(user.id, sessionSecret);
-      res.json({ ...userWithoutPassword, authToken });
+      res.json({
+        ...userWithoutPassword,
+        authToken,
+        isNewUser,
+        emailVerificationSent: isNewUser ? emailVerificationSent : void 0
+      });
     } catch (error) {
       console.error("Apple auth error:", error);
       res.status(500).json({ error: "Gre\u0161ka pri Apple prijavi" });
@@ -2050,6 +2151,9 @@ async function canAccessObject({
 
 // server/objectStorage.ts
 var REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
+function decodeHtmlEntities(str) {
+  return str.replace(/&amp;/g, "&").replace(/&#x2F;/g, "/").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
+}
 var objectStorageClient = new Storage({
   credentials: {
     audience: "replit",
@@ -2179,10 +2283,11 @@ var ObjectStorageService = class {
     return objectFile;
   }
   normalizeObjectEntityPath(rawPath) {
-    if (!rawPath.startsWith("https://storage.googleapis.com/")) {
-      return rawPath;
+    let decodedPath = decodeHtmlEntities(rawPath);
+    if (!decodedPath.startsWith("https://storage.googleapis.com/")) {
+      return decodedPath;
     }
-    const url = new URL(rawPath);
+    const url = new URL(decodedPath);
     const rawObjectPath = url.pathname;
     let objectEntityDir = this.getPrivateObjectDir();
     if (!objectEntityDir.endsWith("/")) {
@@ -2328,10 +2433,9 @@ async function sendBookingCancelledNotification(userId, itemTitle, bookingId) {
 
 // server/seed-demo.ts
 init_schema();
-import { eq as eq2, like } from "drizzle-orm";
+import { eq as eq2, like, or as or2, inArray as inArray2 } from "drizzle-orm";
 import { scrypt as scrypt2, randomBytes as randomBytes2 } from "crypto";
 import { promisify as promisify2 } from "util";
-import * as fs from "fs";
 
 // shared/cityCoordinates.ts
 var CITY_COORDINATES = {
@@ -2392,68 +2496,22 @@ async function hashPassword2(password) {
   const derivedKey = await scryptAsync2(password, salt, 64);
   return `${derivedKey.toString("hex")}.${salt}`;
 }
-var bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-async function uploadImage(localPath, remoteName) {
-  if (!bucketId) {
-    console.log("No bucket ID, using placeholder URL");
-    return `https://via.placeholder.com/400x300?text=${encodeURIComponent(remoteName)}`;
-  }
-  const destination = `public/items/${remoteName}`;
-  try {
-    if (!fs.existsSync(localPath)) {
-      console.log(`File not found: ${localPath}, using placeholder`);
-      return `https://via.placeholder.com/400x300?text=${encodeURIComponent(remoteName)}`;
-    }
-    const bucket = objectStorageClient.bucket(bucketId);
-    const file = bucket.file(destination);
-    const fileBuffer = fs.readFileSync(localPath);
-    const contentType = remoteName.endsWith(".png") ? "image/png" : "image/jpeg";
-    await file.save(fileBuffer, {
-      contentType,
-      resumable: false
-    });
-    await setObjectAclPolicy(file, {
-      owner: "system",
-      visibility: "public"
-    });
-    return `/public-objects/items/${remoteName}`;
-  } catch (error) {
-    console.error(`Error uploading ${localPath}:`, error);
-    return `https://via.placeholder.com/400x300?text=${encodeURIComponent(remoteName)}`;
-  }
-}
+var DEMO_IMAGES = {
+  busilica: ["/demo-images/busilica_makita.png"],
+  brusilica: ["/demo-images/brusilica_villager.png"],
+  ubodnaTesera: ["/demo-images/ubodna_testera_villager.png"],
+  cirkularMetabo: ["/demo-images/cirkular_metabo.png"],
+  mesalica: ["/demo-images/mesalica_beton_ingco.png"],
+  sekac: ["/demo-images/sekac_husqvarna.png"],
+  rende: ["/demo-images/rende_makita.png"],
+  vibrator: ["/demo-images/vibrator_beton_raider.png"],
+  glodalica: ["/demo-images/glodalica_bosch.png"],
+  cirkularBosch: ["/demo-images/cirkular_bosch.png"]
+};
 var DEMO_EMAIL_SUFFIX = "@demo.vikendmajstor.rs";
 async function seedDemoData() {
   console.log("[SEED] Starting demo data seed...");
-  const imageFiles = [
-    { local: "attached_assets/stock_images/power_drill_construc_aab87253.jpg", remote: "demo-drill-1.jpg" },
-    { local: "attached_assets/stock_images/power_drill_construc_88d24ac2.jpg", remote: "demo-drill-2.jpg" },
-    { local: "attached_assets/stock_images/angle_grinder_power__67fea1d6.jpg", remote: "demo-grinder-1.jpg" },
-    { local: "attached_assets/stock_images/angle_grinder_power__fa5044c9.jpg", remote: "demo-grinder-2.jpg" },
-    { local: "attached_assets/stock_images/circular_saw_wood_cu_782311cf.jpg", remote: "demo-saw-1.jpg" },
-    { local: "attached_assets/stock_images/circular_saw_wood_cu_f8a54218.jpg", remote: "demo-saw-2.jpg" },
-    { local: "attached_assets/stock_images/concrete_mixer_const_eb48124d.jpg", remote: "demo-mixer-1.jpg" },
-    { local: "attached_assets/stock_images/concrete_mixer_const_70c4cfbb.jpg", remote: "demo-mixer-2.jpg" },
-    { local: "attached_assets/stock_images/pressure_washer_clea_e6a0f759.jpg", remote: "demo-washer-1.jpg" },
-    { local: "attached_assets/stock_images/pressure_washer_clea_acfb4285.jpg", remote: "demo-washer-2.jpg" },
-    { local: "attached_assets/stock_images/lawn_mower_garden_fb0c4911.jpg", remote: "demo-mower-1.jpg" },
-    { local: "attached_assets/stock_images/lawn_mower_garden_483255de.jpg", remote: "demo-mower-2.jpg" },
-    { local: "attached_assets/stock_images/electric_sander_wood_5ea4579b.jpg", remote: "demo-sander-1.jpg" },
-    { local: "attached_assets/stock_images/electric_sander_wood_20677c0e.jpg", remote: "demo-sander-2.jpg" },
-    { local: "attached_assets/stock_images/hammer_drill_profess_982f972f.jpg", remote: "demo-hammer-1.jpg" },
-    { local: "attached_assets/stock_images/hammer_drill_profess_5caf5550.jpg", remote: "demo-hammer-2.jpg" },
-    { local: "attached_assets/stock_images/chainsaw_cutting_woo_69813d2f.jpg", remote: "demo-chainsaw-1.jpg" },
-    { local: "attached_assets/stock_images/chainsaw_cutting_woo_2663231f.jpg", remote: "demo-chainsaw-2.jpg" },
-    { local: "attached_assets/stock_images/scaffolding_construc_b8f2d01c.jpg", remote: "demo-scaffold-1.jpg" },
-    { local: "attached_assets/stock_images/scaffolding_construc_b7700a42.jpg", remote: "demo-scaffold-2.jpg" }
-  ];
-  console.log("[SEED] Uploading images...");
-  const imageUrls = [];
-  for (const img of imageFiles) {
-    const url = await uploadImage(img.local, img.remote);
-    imageUrls.push(url);
-  }
-  console.log(`[SEED] Uploaded ${imageUrls.length} images`);
+  console.log("[SEED] Using external Unsplash URLs for demo images");
   console.log("[SEED] Creating demo users...");
   const hashedPassword = await hashPassword2("demo123");
   const demoUsers = [
@@ -2573,263 +2631,143 @@ async function seedDemoData() {
   const demoItems = [
     {
       ownerIndex: 0,
-      title: "Bosch profesionalna bu\u0161ilica GSB 18V",
-      description: "Profesionalna akumulatorska bu\u0161ilica Bosch sa dva akumulatora. Idealna za bu\u0161enje u betonu, drvu i metalu. Uklju\u010Dena torba za no\u0161enje i set burgija.",
+      title: "Elektri\u010Dna bu\u0161ilica Makita DP4011",
+      description: "Profesionalna elektri\u010Dna bu\u0161ilica Makita DP4011. Snaga 720W, podesiva brzina, ergonomska dr\u0161ka. Idealna za bu\u0161enje u drvu i metalu.",
       category: "Elektri\u010Dni alati",
       subCategory: "Bu\u0161ilice",
-      brand: "Bosch",
-      powerSource: "Akumulator",
-      powerWatts: 650,
+      brand: "Makita",
+      powerSource: "Elektri\u010Dni (struja)",
+      powerWatts: 720,
       pricePerDay: 800,
       deposit: 5e3,
-      images: [imageUrls[0], imageUrls[1]],
+      images: DEMO_IMAGES.busilica,
       isFeatured: true
     },
     {
       ownerIndex: 0,
-      title: "DeWalt ugaona brusilica 230mm",
-      description: "Profesionalna ugaona brusilica za se\u010Denje i bru\u0161enje metala i kamena. Snaga 2200W. Uklju\u010Deni za\u0161titni poklopac i ru\u010Dka.",
+      title: "VLN 433 ugaona brusilica Villager",
+      description: "Ugaona brusilica Villager VLN 433. Sna\u017Ena i izdr\u017Eljiva, idealna za se\u010Denje i bru\u0161enje metala. Uklju\u010Deni za\u0161titni poklopac i ru\u010Dka.",
       category: "Elektri\u010Dni alati",
       subCategory: "Brusilice",
-      brand: "DeWalt",
+      brand: "Villager",
       powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 2200,
-      pricePerDay: 900,
-      deposit: 6e3,
-      images: [imageUrls[2], imageUrls[3]],
-      isFeatured: false
-    },
-    {
-      ownerIndex: 1,
-      title: "Makita kru\u017Ena testera 190mm",
-      description: "Sna\u017Ena elektri\u010Dna kru\u017Ena testera za precizno se\u010Denje drva. Dubina reza do 66mm. Laser za precizno vo\u0111enje.",
-      category: "Elektri\u010Dni alati",
-      subCategory: "Testere",
-      brand: "Makita",
-      powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 1800,
-      pricePerDay: 1200,
-      deposit: 8e3,
-      images: [imageUrls[4], imageUrls[5]],
-      isFeatured: true
-    },
-    {
-      ownerIndex: 1,
-      title: "Betonijer me\u0161alica 160L",
-      description: "Elektri\u010Dna me\u0161alica za beton kapaciteta 160 litara. Idealna za manje gra\u0111evinske radove. To\u010Dkovi za lako preme\u0161tanje.",
-      category: "Gra\u0111evinske ma\u0161ine",
-      subCategory: "Me\u0161alice",
-      brand: "Lescha",
-      powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 650,
-      pricePerDay: 1500,
-      deposit: 1e4,
-      images: [imageUrls[6], imageUrls[7]],
-      isFeatured: false
-    },
-    {
-      ownerIndex: 2,
-      title: "K\xE4rcher pera\u010D pod pritiskom K5",
-      description: "Profesionalni pera\u010D pod pritiskom za \u010Di\u0161\u0107enje dvori\u0161ta, automobila, fasada. Pritisak do 145 bara. Uklju\u010Deno crevo od 8m.",
-      category: "Oprema za \u010Di\u0161\u0107enje",
-      subCategory: "Pera\u010Di pod pritiskom",
-      brand: "K\xE4rcher",
-      powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 2100,
-      pricePerDay: 1500,
-      deposit: 1e4,
-      images: [imageUrls[8], imageUrls[9]],
-      isFeatured: true
-    },
-    {
-      ownerIndex: 2,
-      title: "Husqvarna motorna kosilica",
-      description: "Profesionalna benzinska kosilica za travu. \u0160irina ko\u0161enja 53cm. Kanta za sakupljanje trave 70L.",
-      category: "Ba\u0161ta",
-      subCategory: "Ko\u0161enje",
-      brand: "Husqvarna",
-      powerSource: "Benzinski",
-      pricePerDay: 1200,
-      deposit: 8e3,
-      images: [imageUrls[10], imageUrls[11]],
-      isFeatured: false
-    },
-    {
-      ownerIndex: 3,
-      title: "Bosch orbitalna brusilica GEX 125",
-      description: "Profesionalna orbitalna brusilica za finu obradu drveta. Pre\u010Dnik plo\u010De 125mm. Priklju\u010Dak za usisavanje pra\u0161ine.",
-      category: "Elektri\u010Dni alati",
-      subCategory: "Brusilice",
-      brand: "Bosch",
-      powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 350,
+      powerWatts: 850,
       pricePerDay: 600,
       deposit: 4e3,
-      images: [imageUrls[12], imageUrls[13]],
+      images: DEMO_IMAGES.brusilica,
+      isFeatured: false
+    },
+    {
+      ownerIndex: 1,
+      title: "Elektri\u010Dna ubodna testera Villager",
+      description: "Elektri\u010Dna ubodna testera Villager za precizno se\u010Denje drva, plastike i tankog metala. Podesiv ugao se\u010Denja, jednostavna zamena lista.",
+      category: "Elektri\u010Dni alati",
+      subCategory: "Testere",
+      brand: "Villager",
+      powerSource: "Elektri\u010Dni (struja)",
+      powerWatts: 650,
+      pricePerDay: 500,
+      deposit: 3e3,
+      images: DEMO_IMAGES.ubodnaTesera,
+      isFeatured: false
+    },
+    {
+      ownerIndex: 1,
+      title: "Ru\u010Dni cirkular KS 55 FS Metabo",
+      description: "Profesionalni ru\u010Dni cirkular Metabo KS 55 FS. Dubina reza do 55mm, vo\u0111ica za precizno se\u010Denje. Snaga 1200W.",
+      category: "Elektri\u010Dni alati",
+      subCategory: "Testere",
+      brand: "Metabo",
+      powerSource: "Elektri\u010Dni (struja)",
+      powerWatts: 1200,
+      pricePerDay: 900,
+      deposit: 6e3,
+      images: DEMO_IMAGES.cirkularMetabo,
+      isFeatured: true
+    },
+    {
+      ownerIndex: 2,
+      title: "Me\u0161alica za beton 200L INGCO",
+      description: "Elektri\u010Dna me\u0161alica za beton INGCO kapaciteta 200 litara. Snaga 850W, \u010Deli\u010Dni bubanj, to\u010Dkovi za lako preme\u0161tanje. Idealna za gra\u0111evinske radove.",
+      category: "Gra\u0111evinske ma\u0161ine",
+      subCategory: "Me\u0161alice",
+      brand: "INGCO",
+      powerSource: "Elektri\u010Dni (struja)",
+      powerWatts: 850,
+      pricePerDay: 1500,
+      deposit: 1e4,
+      images: DEMO_IMAGES.mesalica,
+      isFeatured: true
+    },
+    {
+      ownerIndex: 2,
+      title: "Husqvarna elektri\u010Dni seka\u010D za beton",
+      description: "Profesionalni Husqvarna elektri\u010Dni ru\u010Dni seka\u010D za beton i asfalt. Dijamantski disk, vodeno hla\u0111enje. Idealan za gra\u0111evinske i renovacijske radove.",
+      category: "Gra\u0111evinske ma\u0161ine",
+      subCategory: "Seka\u010Di",
+      brand: "Husqvarna",
+      powerSource: "Elektri\u010Dni (struja)",
+      powerWatts: 2200,
+      pricePerDay: 2e3,
+      deposit: 15e3,
+      images: DEMO_IMAGES.sekac,
+      isFeatured: true
+    },
+    {
+      ownerIndex: 3,
+      title: "Elektri\u010Dno ru\u010Dno rende Makita",
+      description: "Elektri\u010Dno ru\u010Dno rende za drvo Makita. \u0160irina rendisanja 82mm, podesiva dubina. Idealno za obradu drvenih povr\u0161ina i uklanjanje vi\u0161ka materijala.",
+      category: "Elektri\u010Dni alati",
+      subCategory: "Rendisalice",
+      brand: "Makita",
+      powerSource: "Elektri\u010Dni (struja)",
+      powerWatts: 620,
+      pricePerDay: 700,
+      deposit: 5e3,
+      images: DEMO_IMAGES.rende,
       isFeatured: false
     },
     {
       ownerIndex: 3,
-      title: "Hilti TE 7-C SDS-Plus \u010Deki\u0107 bu\u0161ilica",
-      description: "Profesionalni \u010Deki\u0107 za bu\u0161enje u betonu i zidariji. Energija udara 2.6J. Uklju\u010Den kofer sa setom burgija.",
-      category: "Elektri\u010Dni alati",
-      subCategory: "Bu\u0161ilice",
-      brand: "Hilti",
+      title: "Vibrator za beton Raider",
+      description: "Vibrator za beton Raider sa fleksibilnom iglom. Idealan za vibriranje betona i uklanjanje mehuri\u0107a vazduha. Snaga 1350W.",
+      category: "Gra\u0111evinske ma\u0161ine",
+      subCategory: "Vibratori",
+      brand: "Raider",
       powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 800,
-      pricePerDay: 1100,
-      deposit: 8e3,
-      images: [imageUrls[14], imageUrls[15]],
-      isFeatured: true
+      powerWatts: 1350,
+      pricePerDay: 1e3,
+      deposit: 7e3,
+      images: DEMO_IMAGES.vibrator,
+      isFeatured: false
     },
     {
       ownerIndex: 4,
-      title: "Stihl benzinska lan\u010Dana testera MS 250",
-      description: "Profesionalna benzinska lan\u010Dana testera za se\u010Denje drve\u0107a i ogreva. Du\u017Eina ma\u010Da 40cm. Automatsko podmazivanje lanca.",
-      category: "Ba\u0161ta",
-      subCategory: "Orezivanje",
-      brand: "Stihl",
-      powerSource: "Benzinski",
-      pricePerDay: 1800,
-      deposit: 12e3,
-      images: [imageUrls[16], imageUrls[17]],
-      isFeatured: false
-    },
-    {
-      ownerIndex: 5,
-      title: "Gra\u0111evinska skela set 8m",
-      description: "Komplet gra\u0111evinske skele visine do 8 metara. Aluminijumska konstrukcija, lagana za monta\u017Eu. Uklju\u010Dene sigurnosne ograde.",
-      category: "Gra\u0111evinske ma\u0161ine",
-      subCategory: "Skele",
-      brand: "Generic",
-      powerSource: "Ru\u010Dni",
-      pricePerDay: 2e3,
-      deposit: 15e3,
-      images: [imageUrls[18], imageUrls[19]],
-      isFeatured: true
-    },
-    {
-      ownerIndex: 5,
-      title: "Milwaukee akumulatorska bu\u0161ilica M18",
-      description: "Sna\u017Ena akumulatorska udarna bu\u0161ilica Milwaukee. Dva akumulatora od 5Ah, punja\u010D i kofer u kompletu.",
-      category: "Akumulatorski alati",
-      subCategory: "Bu\u0161ilice",
-      brand: "Milwaukee",
-      powerSource: "Akumulator",
-      powerWatts: 700,
-      pricePerDay: 1e3,
-      deposit: 7e3,
-      images: [imageUrls[0], imageUrls[1]],
-      isFeatured: false
-    },
-    {
-      ownerIndex: 6,
-      title: "Festool tra\u010Dna brusilica BS 75",
-      description: "Profesionalna tra\u010Dna brusilica za bru\u0161enje velikih povr\u0161ina. \u0160irina trake 75mm. Uklju\u010Den set brusnih traka.",
-      category: "Elektri\u010Dni alati",
-      subCategory: "Brusilice",
-      brand: "Festool",
-      powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 1010,
-      pricePerDay: 800,
-      deposit: 5e3,
-      images: [imageUrls[12], imageUrls[13]],
-      isFeatured: false
-    },
-    {
-      ownerIndex: 6,
-      title: "Metabo potapaju\u0107a pumpa za prljavu vodu",
-      description: "Sna\u017Ena potapaju\u0107a pumpa kapaciteta 18000L/h. Idealna za ispumpavanje podruma, bazena. Mo\u017Ee da pre\u010Disti \u010Destice do 30mm.",
-      category: "Gra\u0111evinske ma\u0161ine",
-      subCategory: "Pumpe",
-      brand: "Metabo",
-      powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 1100,
-      pricePerDay: 700,
-      deposit: 4e3,
-      images: [imageUrls[8], imageUrls[9]],
-      isFeatured: false
-    },
-    {
-      ownerIndex: 7,
-      title: "Vibroploca za sabijanje zemlje 90kg",
-      description: "Profesionalna vibroploca za sabijanje tla i peska. Te\u017Eina 90kg, benzinski motor. Idealna za pripremu terena.",
-      category: "Gra\u0111evinske ma\u0161ine",
-      subCategory: "Vibroploci",
-      brand: "Wacker Neuson",
-      powerSource: "Benzinski",
-      pricePerDay: 2500,
-      deposit: 2e4,
-      images: [imageUrls[6], imageUrls[7]],
-      isFeatured: true
-    },
-    {
-      ownerIndex: 7,
-      title: "Bosch laser nivelir GLL 3-80",
-      description: "Profesionalni linijski laser sa 3 linije od 360 stepeni. Domet do 30m. Stativ i torbica u kompletu.",
-      category: "Merni/laserski",
-      subCategory: "Laseri",
-      brand: "Bosch",
-      powerSource: "Akumulator",
-      pricePerDay: 900,
-      deposit: 6e3,
-      images: [imageUrls[14], imageUrls[15]],
-      isFeatured: false
-    },
-    {
-      ownerIndex: 8,
-      title: "Einhell elektri\u010Dna \u0161rafciger glodalica",
-      description: "Vi\u0161enamenska elektri\u010Dna alatka za glodanje drva. Uklju\u010Den set glodala razli\u010Ditih oblika.",
+      title: "Elektri\u010Dna glodalica Bosch POF 1400 ACE",
+      description: "Elektri\u010Dna glodalica za drvo Bosch POF 1400 ACE. Snaga 1400W, elektronska regulacija brzine, sistem za usisavanje pra\u0161ine. Idealna za precizne radove u drvetu.",
       category: "Elektri\u010Dni alati",
       subCategory: "Glodalice",
-      brand: "Einhell",
+      brand: "Bosch",
       powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 1200,
-      pricePerDay: 700,
-      deposit: 4500,
-      images: [imageUrls[4], imageUrls[5]],
-      isFeatured: false
-    },
-    {
-      ownerIndex: 8,
-      title: "Honda agregat EU 22i",
-      description: "Tihi inverterski agregat snage 2.2kW. Idealan za kampovanje, gradili\u0161te ili rezervno napajanje.",
-      category: "Gra\u0111evinske ma\u0161ine",
-      subCategory: "Agregati",
-      brand: "Honda",
-      powerSource: "Benzinski",
-      pricePerDay: 2500,
-      deposit: 2e4,
-      images: [imageUrls[18], imageUrls[19]],
+      powerWatts: 1400,
+      pricePerDay: 1200,
+      deposit: 8e3,
+      images: DEMO_IMAGES.glodalica,
       isFeatured: true
     },
     {
-      ownerIndex: 9,
-      title: "Rubi ma\u0161ina za se\u010Denje plo\u010Dica TX-900",
-      description: "Profesionalna ma\u0161ina za se\u010Denje kerami\u010Dkih plo\u010Dica do 90cm. Dijamantski disk i sistem vodenog hla\u0111enja.",
-      category: "Gra\u0111evinske ma\u0161ine",
-      subCategory: "Ma\u0161ine za se\u010Denje",
-      brand: "Rubi",
+      ownerIndex: 5,
+      title: "Bosch klatna testera GCM 8 SJL",
+      description: "Profesionalna klatna testera Bosch za precizno se\u010Denje drva pod uglom. \u0160irina reza do 312mm, laserska vo\u0111ica. Idealna za stolare i podopolaga\u010De.",
+      category: "Elektri\u010Dni alati",
+      subCategory: "Testere",
+      brand: "Bosch",
       powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 800,
-      pricePerDay: 1200,
-      deposit: 8e3,
-      images: [imageUrls[2], imageUrls[3]],
-      isFeatured: false
-    },
-    {
-      ownerIndex: 9,
-      title: "Black+Decker elektri\u010Dna kosa\u010Dica",
-      description: "Elektri\u010Dna kosa\u010Dica za travnjake do 400m2. \u0160irina ko\u0161enja 38cm, kanta 45L.",
-      category: "Ba\u0161ta",
-      subCategory: "Ko\u0161enje",
-      brand: "Black+Decker",
-      powerSource: "Elektri\u010Dni (struja)",
-      powerWatts: 1400,
-      pricePerDay: 600,
-      deposit: 4e3,
-      images: [imageUrls[10], imageUrls[11]],
-      isFeatured: false
+      powerWatts: 1600,
+      pricePerDay: 1500,
+      deposit: 12e3,
+      images: DEMO_IMAGES.cirkularBosch,
+      isFeatured: true
     }
   ];
   let itemsCreated = 0;
@@ -2866,21 +2804,75 @@ async function seedDemoData() {
 }
 async function deleteDemoData() {
   console.log("[SEED] Deleting demo data...");
-  const demoUsersList = await db.select().from(users).where(like(users.email, `%${DEMO_EMAIL_SUFFIX}`));
-  let itemsDeleted = 0;
-  let usersDeleted = 0;
-  for (const user of demoUsersList) {
-    const deletedItems = await db.delete(items).where(eq2(items.ownerId, user.id)).returning();
-    itemsDeleted += deletedItems.length;
-    await db.delete(users).where(eq2(users.id, user.id));
-    usersDeleted++;
-    console.log(`[SEED] Deleted demo user: ${user.name} and ${deletedItems.length} items`);
+  const demoUsersList = await db.select().from(users).where(
+    or2(
+      like(users.email, `%${DEMO_EMAIL_SUFFIX}`),
+      like(users.email, `%@demo.com`)
+    )
+  );
+  if (demoUsersList.length === 0) {
+    console.log("[SEED] No demo users found to delete");
+    return { users: 0, items: 0 };
   }
+  const demoUserIds = demoUsersList.map((u) => u.id);
+  console.log(`[SEED] Found ${demoUserIds.length} demo users to delete`);
+  const demoItems = await db.select().from(items).where(inArray2(items.ownerId, demoUserIds));
+  const demoItemIds = demoItems.map((i) => i.id);
+  console.log(`[SEED] Found ${demoItemIds.length} demo items to delete`);
+  if (demoItemIds.length > 0) {
+    const deletedReviews = await db.delete(reviews).where(inArray2(reviews.itemId, demoItemIds)).returning();
+    console.log(`[SEED] Deleted ${deletedReviews.length} reviews for demo items`);
+  }
+  const deletedReviewsByUser = await db.delete(reviews).where(
+    or2(
+      inArray2(reviews.reviewerId, demoUserIds),
+      inArray2(reviews.revieweeId, demoUserIds)
+    )
+  ).returning();
+  console.log(`[SEED] Deleted ${deletedReviewsByUser.length} reviews by/for demo users`);
+  if (demoItemIds.length > 0) {
+    const deletedBookings = await db.delete(bookings).where(inArray2(bookings.itemId, demoItemIds)).returning();
+    console.log(`[SEED] Deleted ${deletedBookings.length} bookings for demo items`);
+  }
+  const deletedBookingsByUser = await db.delete(bookings).where(
+    or2(
+      inArray2(bookings.renterId, demoUserIds),
+      inArray2(bookings.ownerId, demoUserIds)
+    )
+  ).returning();
+  console.log(`[SEED] Deleted ${deletedBookingsByUser.length} bookings by demo users`);
+  const demoConversations = await db.select().from(conversations).where(
+    or2(
+      inArray2(conversations.user1Id, demoUserIds),
+      inArray2(conversations.user2Id, demoUserIds)
+    )
+  );
+  const demoConversationIds = demoConversations.map((c) => c.id);
+  if (demoConversationIds.length > 0) {
+    const deletedMessages = await db.delete(messages).where(inArray2(messages.conversationId, demoConversationIds)).returning();
+    console.log(`[SEED] Deleted ${deletedMessages.length} messages from demo conversations`);
+    const deletedConversations = await db.delete(conversations).where(inArray2(conversations.id, demoConversationIds)).returning();
+    console.log(`[SEED] Deleted ${deletedConversations.length} conversations involving demo users`);
+  }
+  let itemsDeleted = 0;
+  if (demoItemIds.length > 0) {
+    const deletedItems = await db.delete(items).where(inArray2(items.id, demoItemIds)).returning();
+    itemsDeleted = deletedItems.length;
+    console.log(`[SEED] Deleted ${itemsDeleted} demo items`);
+  }
+  const deletedUsers = await db.delete(users).where(inArray2(users.id, demoUserIds)).returning();
+  const usersDeleted = deletedUsers.length;
+  console.log(`[SEED] Deleted ${usersDeleted} demo users`);
   console.log(`[SEED] Demo data deletion complete: ${usersDeleted} users, ${itemsDeleted} items`);
   return { users: usersDeleted, items: itemsDeleted };
 }
 async function getDemoDataStats() {
-  const demoUsersList = await db.select().from(users).where(like(users.email, `%${DEMO_EMAIL_SUFFIX}`));
+  const demoUsersList = await db.select().from(users).where(
+    or2(
+      like(users.email, `%${DEMO_EMAIL_SUFFIX}`),
+      like(users.email, `%@demo.com`)
+    )
+  );
   let totalItems = 0;
   for (const user of demoUsersList) {
     const userItems = await db.select().from(items).where(eq2(items.ownerId, user.id));
@@ -2891,7 +2883,7 @@ async function getDemoDataStats() {
 
 // server/routes.ts
 import * as path from "path";
-import * as fs2 from "fs";
+import * as fs from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 var __filename = fileURLToPath(import.meta.url);
@@ -2910,7 +2902,7 @@ async function registerRoutes(app2) {
       return res.json({ status: "ok", type: "api" });
     }
     const landingPath = path.join(__dirname, "landing", "index.html");
-    if (fs2.existsSync(landingPath)) {
+    if (fs.existsSync(landingPath)) {
       return res.sendFile(landingPath);
     }
     res.json({ status: "ok", message: "VikendMajstor API" });
@@ -2923,10 +2915,50 @@ async function registerRoutes(app2) {
       return res.redirect("exp://");
     }
     const webAppPath = path.join(process.cwd(), "static-build", "web", "index.html");
-    if (fs2.existsSync(webAppPath)) {
+    if (fs.existsSync(webAppPath)) {
       return res.sendFile(webAppPath);
     }
     res.redirect("/");
+  });
+  app2.get("/oauth/google/callback", (req, res) => {
+    res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VikendMajstor - Prijava</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #1a1a1a; color: white; }
+    .container { text-align: center; padding: 20px; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top-color: #FFCC00; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <p>Prijava u toku...</p>
+  </div>
+  <script>
+    (function() {
+      var hash = window.location.hash.substring(1);
+      var params = new URLSearchParams(hash);
+      var accessToken = params.get('access_token');
+      
+      if (accessToken) {
+        window.location.href = 'vikendmajstor://oauth?access_token=' + encodeURIComponent(accessToken);
+        setTimeout(function() {
+          document.querySelector('.container').innerHTML = '<p>Ako se aplikacija nije otvorila, <a href="vikendmajstor://oauth?access_token=' + encodeURIComponent(accessToken) + '" style="color: #FFCC00;">kliknite ovde</a></p>';
+        }, 2000);
+      } else {
+        document.querySelector('.container').innerHTML = '<p style="color: #ff4444;">Greska pri prijavi. Pokusajte ponovo.</p>';
+      }
+    })();
+  </script>
+</body>
+</html>
+    `);
   });
   app2.get("/public-objects/:filePath(*)", async (req, res) => {
     const filePath = req.params.filePath;
@@ -2944,13 +2976,31 @@ async function registerRoutes(app2) {
   });
   app2.get("/objects/:objectPath(*)", async (req, res) => {
     const objectStorageService = new ObjectStorageService();
+    console.log(`[OBJECTS] Requesting object: ${req.path}`);
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(
         req.path
       );
+      console.log(`[OBJECTS] Found object: ${req.path}`);
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
-      console.error("Error checking object access:", error);
+      console.error(`[OBJECTS] Error for ${req.path}:`, error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+  app2.get("/api/objects/:objectPath(*)", async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    const objectPath = `/objects/${req.params.objectPath}`;
+    console.log(`[API-OBJECTS] Requesting object: ${objectPath}`);
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      console.log(`[API-OBJECTS] Found object: ${objectPath}`);
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error(`[API-OBJECTS] Error for ${objectPath}:`, error);
       if (error instanceof ObjectNotFoundError) {
         return res.sendStatus(404);
       }
@@ -2972,6 +3022,7 @@ async function registerRoutes(app2) {
       return res.status(400).json({ error: "uploadURL is required" });
     }
     const userId = req.user.id;
+    console.log(`[UPLOAD] Finalizing upload for user ${userId}, URL: ${req.body.uploadURL.substring(0, 100)}...`);
     try {
       const objectStorageService = new ObjectStorageService();
       const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
@@ -2981,9 +3032,10 @@ async function registerRoutes(app2) {
           visibility: "public"
         }
       );
+      console.log(`[UPLOAD] Finalized successfully, objectPath: ${objectPath}`);
       res.status(200).json({ objectPath });
     } catch (error) {
-      console.error("Error finalizing upload:", error);
+      console.error("[UPLOAD] Error finalizing upload:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -3086,6 +3138,10 @@ async function registerRoutes(app2) {
       const userLat = lat ? parseFloat(lat) : null;
       const userLng = lng ? parseFloat(lng) : null;
       const maxDist = maxDistance ? parseFloat(maxDistance) : null;
+      const todayStart = /* @__PURE__ */ new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = /* @__PURE__ */ new Date();
+      todayEnd.setHours(23, 59, 59, 999);
       let itemsWithDistance = await Promise.all(
         items2.map(async (item) => {
           const owner = await storage.getUser(item.ownerId);
@@ -3099,7 +3155,14 @@ async function registerRoutes(app2) {
               parseFloat(item.longitude)
             );
           }
-          return { ...item, isPremium: !!isPremium, distance };
+          const itemBookings = await storage.getItemBookings(item.id);
+          const hasBookingToday = itemBookings.some((booking) => {
+            const bookingStart = new Date(booking.startDate);
+            const bookingEnd = new Date(booking.endDate);
+            return bookingStart <= todayEnd && bookingEnd >= todayStart;
+          });
+          const availableToday = item.isAvailable && !hasBookingToday;
+          return { ...item, isPremium: !!isPremium, distance, availableToday };
         })
       );
       if (maxDist !== null && userLat !== null && userLng !== null) {
@@ -3128,6 +3191,22 @@ async function registerRoutes(app2) {
       res.status(500).json({ error: "Gre\u0161ka pri u\u010Ditavanju stvari" });
     }
   });
+  app2.get("/api/items/category-counts", async (req, res) => {
+    try {
+      const allItems = await storage.getItems();
+      const activeItems = allItems.filter((item) => item.isAvailable);
+      const counts = {};
+      activeItems.forEach((item) => {
+        if (item.category) {
+          counts[item.category] = (counts[item.category] || 0) + 1;
+        }
+      });
+      res.json(counts);
+    } catch (error) {
+      console.error("Error fetching category counts:", error);
+      res.status(500).json({ error: "Gre\u0161ka pri u\u010Ditavanju broja alata po kategorijama" });
+    }
+  });
   app2.get("/api/items/:id", async (req, res) => {
     try {
       const item = await storage.getItem(req.params.id);
@@ -3135,7 +3214,18 @@ async function registerRoutes(app2) {
         return res.status(404).json({ error: "Stvar nije prona\u0111ena" });
       }
       const owner = await storage.getUser(item.ownerId);
-      res.json({ ...item, owner });
+      const todayStart = /* @__PURE__ */ new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = /* @__PURE__ */ new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+      const itemBookings = await storage.getItemBookings(item.id);
+      const hasBookingToday = itemBookings.some((booking) => {
+        const bookingStart = new Date(booking.startDate);
+        const bookingEnd = new Date(booking.endDate);
+        return bookingStart <= todayEnd && bookingEnd >= todayStart;
+      });
+      const availableToday = item.isAvailable && !hasBookingToday;
+      res.json({ ...item, owner, availableToday });
     } catch (error) {
       console.error("Error fetching item:", error);
       res.status(500).json({ error: "Gre\u0161ka pri u\u010Ditavanju stvari" });
@@ -3712,11 +3802,16 @@ async function registerRoutes(app2) {
     }
   });
   const isAdmin = async (req, res, next) => {
-    if (!req.session?.userId) {
+    let user = null;
+    if (req.user) {
+      user = req.user;
+    } else if (req.session?.userId) {
+      user = await storage.getUser(req.session.userId);
+    }
+    if (!user) {
       return res.status(401).json({ error: "Niste prijavljeni" });
     }
-    const user = await storage.getUser(req.session.userId);
-    if (!user || !user.isAdmin) {
+    if (!user.isAdmin) {
       return res.status(403).json({ error: "Nemate administratorska prava" });
     }
     req.user = user;
@@ -3838,6 +3933,28 @@ async function registerRoutes(app2) {
       res.json({ isAdmin: user?.isAdmin || false });
     } catch (error) {
       res.status(500).json({ error: "Gre\u0161ka pri proveri admin statusa" });
+    }
+  });
+  app2.delete("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "Korisnik nije prona\u0111en" });
+      }
+      if (user.isAdmin) {
+        return res.status(403).json({ error: "Ne mo\u017Eete obrisati admin korisnika" });
+      }
+      console.log(`[ADMIN] User ${req.user?.email} deleting user ${user.email}`);
+      const result = await storage.deleteUserWithData(userId);
+      res.json({
+        success: true,
+        message: `Korisnik ${user.email} je obrisan`,
+        deleted: result
+      });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Gre\u0161ka pri brisanju korisnika" });
     }
   });
   app2.get("/api/admin/demo-data", isAdmin, async (req, res) => {
@@ -4491,7 +4608,7 @@ var LANDING_PAGE_TEMPLATE = `<!DOCTYPE html>
       <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border);">
         <h3 style="font-size: 20px; margin-bottom: 16px;">Android korisnici</h3>
         <p style="color: var(--text-secondary); margin-bottom: 20px;">Preuzmi APK fajl direktno i instaliraj na svoj Android telefon</p>
-        <a href="/download/vikendmajstor.apk" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+        <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;" target="_blank" rel="noopener noreferrer">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
           Preuzmi APK
         </a>
@@ -4713,7 +4830,7 @@ var LANDING_PAGE_TEMPLATE = `<!DOCTYPE html>
 </html>`;
 
 // server/index.ts
-import * as fs3 from "fs";
+import * as fs2 from "fs";
 import * as path2 from "path";
 import { scrypt as scrypt3, randomBytes as randomBytes3 } from "crypto";
 import { promisify as promisify3 } from "util";
@@ -4835,7 +4952,7 @@ function setupRequestLogging(app2) {
 function getAppName() {
   try {
     const appJsonPath = path2.resolve(process.cwd(), "app.json");
-    const appJsonContent = fs3.readFileSync(appJsonPath, "utf-8");
+    const appJsonContent = fs2.readFileSync(appJsonPath, "utf-8");
     const appJson = JSON.parse(appJsonContent);
     return appJson.expo?.name || "App Landing Page";
   } catch {
@@ -4849,13 +4966,13 @@ function serveExpoManifest(platform, res) {
     platform,
     "manifest.json"
   );
-  if (!fs3.existsSync(manifestPath)) {
+  if (!fs2.existsSync(manifestPath)) {
     return res.status(404).json({ error: `Manifest not found for platform: ${platform}` });
   }
   res.setHeader("expo-protocol-version", "1");
   res.setHeader("expo-sfv-version", "0");
   res.setHeader("content-type", "application/json");
-  const manifest = fs3.readFileSync(manifestPath, "utf-8");
+  const manifest = fs2.readFileSync(manifestPath, "utf-8");
   res.send(manifest);
 }
 function serveLandingPage({
@@ -4891,8 +5008,8 @@ function configureExpoAndLanding(app2) {
   );
   const landingPageTemplate = LANDING_PAGE_TEMPLATE;
   const appName = getAppName();
-  const hasCustomLanding = fs3.existsSync(customLandingPath);
-  const hasAdminPanel = fs3.existsSync(adminPanelPath);
+  const hasCustomLanding = fs2.existsSync(customLandingPath);
+  const hasAdminPanel = fs2.existsSync(adminPanelPath);
   log("Serving static Expo files with dynamic manifest routing");
   if (hasAdminPanel) {
     app2.get("/admin", (_req, res) => {
@@ -4905,7 +5022,7 @@ function configureExpoAndLanding(app2) {
   }
   app2.get("/favicon.png", (_req, res) => {
     const faviconPath = path2.resolve(process.cwd(), "server", "templates", "favicon.png");
-    if (fs3.existsSync(faviconPath)) {
+    if (fs2.existsSync(faviconPath)) {
       res.sendFile(faviconPath);
     } else {
       res.status(404).send("Favicon not found");
@@ -4920,7 +5037,7 @@ function configureExpoAndLanding(app2) {
   });
   app2.get("/uslovi-koriscenja", (_req, res) => {
     const termsPath = path2.resolve(process.cwd(), "server", "templates", "terms.html");
-    if (fs3.existsSync(termsPath)) {
+    if (fs2.existsSync(termsPath)) {
       res.sendFile(termsPath);
     } else {
       res.status(404).send("Page not found");
@@ -4928,10 +5045,42 @@ function configureExpoAndLanding(app2) {
   });
   app2.get("/politika-privatnosti", (_req, res) => {
     const privacyPath = path2.resolve(process.cwd(), "server", "templates", "privacy.html");
-    if (fs3.existsSync(privacyPath)) {
+    if (fs2.existsSync(privacyPath)) {
       res.sendFile(privacyPath);
     } else {
       res.status(404).send("Page not found");
+    }
+  });
+  app2.get("/terms-of-service", (_req, res) => {
+    const termsPath = path2.resolve(process.cwd(), "server", "templates", "terms.html");
+    if (fs2.existsSync(termsPath)) {
+      res.sendFile(termsPath);
+    } else {
+      res.status(404).send("Page not found");
+    }
+  });
+  app2.get("/privacy-policy", (_req, res) => {
+    const privacyPath = path2.resolve(process.cwd(), "server", "templates", "privacy.html");
+    if (fs2.existsSync(privacyPath)) {
+      res.sendFile(privacyPath);
+    } else {
+      res.status(404).send("Page not found");
+    }
+  });
+  app2.get("/legal", (_req, res) => {
+    const legalPath = path2.resolve(process.cwd(), "server", "templates", "legal.html");
+    if (fs2.existsSync(legalPath)) {
+      res.sendFile(legalPath);
+    } else {
+      res.status(404).send("Page not found");
+    }
+  });
+  app2.get("/auth/google/callback", (_req, res) => {
+    const callbackPath = path2.resolve(process.cwd(), "server", "templates", "google-callback.html");
+    if (fs2.existsSync(callbackPath)) {
+      res.sendFile(callbackPath);
+    } else {
+      res.status(404).send("Callback page not found");
     }
   });
   app2.use((req, res, next) => {
@@ -4964,6 +5113,7 @@ function configureExpoAndLanding(app2) {
     next();
   });
   app2.use("/assets", express.static(path2.resolve(process.cwd(), "assets")));
+  app2.use("/demo-images", express.static(path2.resolve(process.cwd(), "server/public/demo-images")));
   app2.use((req, res, next) => {
     if (req.path.startsWith("/api")) {
       return next();
@@ -4974,7 +5124,7 @@ function configureExpoAndLanding(app2) {
       const webBuildPath = path2.resolve(process.cwd(), "static-build", "web");
       return express.static(webBuildPath)(req, res, () => {
         const indexPath = path2.join(webBuildPath, "index.html");
-        if (fs3.existsSync(indexPath)) {
+        if (fs2.existsSync(indexPath)) {
           return res.sendFile(indexPath);
         }
         next();
