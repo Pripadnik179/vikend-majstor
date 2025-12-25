@@ -9,18 +9,23 @@ import {
   Modal,
 } from "react-native";
 import { AlertCircleIcon, XIcon } from "@/components/icons/TabBarIcons";
-import { ThemedView } from "@/components/ThemedView";
-import { ThemedText } from "@/components/ThemedText";
-import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Fonts } from "@/constants/theme";
+import { Spacing, BorderRadius, Fonts, Colors } from "@/constants/theme";
 
 export type ErrorFallbackProps = {
   error: Error;
   resetError: () => void;
 };
 
+const FALLBACK_COLORS = {
+  background: Colors.light.backgroundRoot,
+  text: Colors.light.text,
+  textSecondary: Colors.light.textSecondary,
+  primary: Colors.light.primary,
+  buttonText: '#FFFFFF',
+  border: 'rgba(128, 128, 128, 0.2)',
+};
+
 export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
-  const { theme } = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleRestart = async () => {
@@ -41,48 +46,45 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={[styles.container, { backgroundColor: FALLBACK_COLORS.background }]}>
       {__DEV__ ? (
         <Pressable
           onPress={() => setIsModalVisible(true)}
           style={({ pressed }) => [
             styles.topButton,
             {
-              backgroundColor: theme.backgroundDefault,
+              backgroundColor: FALLBACK_COLORS.background,
               opacity: pressed ? 0.8 : 1,
             },
           ]}
         >
-          <AlertCircleIcon size={20} color={theme.text} />
+          <AlertCircleIcon size={20} color={FALLBACK_COLORS.text} />
         </Pressable>
       ) : null}
 
       <View style={styles.content}>
-        <ThemedText type="h1" style={styles.title}>
-          Something went wrong
-        </ThemedText>
+        <Text style={[styles.title, { color: FALLBACK_COLORS.text }]}>
+          Nesto nije u redu
+        </Text>
 
-        <ThemedText type="body" style={styles.message}>
-          Please reload the app to continue.
-        </ThemedText>
+        <Text style={[styles.message, { color: FALLBACK_COLORS.textSecondary }]}>
+          Molimo restartujte aplikaciju da biste nastavili.
+        </Text>
 
         <Pressable
           onPress={handleRestart}
           style={({ pressed }) => [
             styles.button,
             {
-              backgroundColor: theme.link,
+              backgroundColor: FALLBACK_COLORS.primary,
               opacity: pressed ? 0.9 : 1,
               transform: [{ scale: pressed ? 0.98 : 1 }],
             },
           ]}
         >
-          <ThemedText
-            type="body"
-            style={[styles.buttonText, { color: theme.buttonText }]}
-          >
-            Try Again
-          </ThemedText>
+          <Text style={[styles.buttonText, { color: FALLBACK_COLORS.buttonText }]}>
+            Pokusaj ponovo
+          </Text>
         </Pressable>
       </View>
 
@@ -94,11 +96,11 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
           onRequestClose={() => setIsModalVisible(false)}
         >
           <View style={styles.modalOverlay}>
-            <ThemedView style={styles.modalContainer}>
-              <View style={styles.modalHeader}>
-                <ThemedText type="h2" style={styles.modalTitle}>
-                  Error Details
-                </ThemedText>
+            <View style={[styles.modalContainer, { backgroundColor: FALLBACK_COLORS.background }]}>
+              <View style={[styles.modalHeader, { borderBottomColor: FALLBACK_COLORS.border }]}>
+                <Text style={[styles.modalTitle, { color: FALLBACK_COLORS.text }]}>
+                  Detalji greske
+                </Text>
                 <Pressable
                   onPress={() => setIsModalVisible(false)}
                   style={({ pressed }) => [
@@ -106,7 +108,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                     { opacity: pressed ? 0.6 : 1 },
                   ]}
                 >
-                  <XIcon size={24} color={theme.text} />
+                  <XIcon size={24} color={FALLBACK_COLORS.text} />
                 </Pressable>
               </View>
 
@@ -118,14 +120,14 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                 <View
                   style={[
                     styles.errorContainer,
-                    { backgroundColor: theme.backgroundDefault },
+                    { backgroundColor: FALLBACK_COLORS.background },
                   ]}
                 >
                   <Text
                     style={[
                       styles.errorText,
                       {
-                        color: theme.text,
+                        color: FALLBACK_COLORS.text,
                         fontFamily: Fonts?.mono || "monospace",
                       },
                     ]}
@@ -135,11 +137,11 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                   </Text>
                 </View>
               </ScrollView>
-            </ThemedView>
+            </View>
           </View>
         </Modal>
       ) : null}
-    </ThemedView>
+    </View>
   );
 }
 
@@ -161,10 +163,13 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: "center",
+    fontSize: 28,
+    fontWeight: "700",
     lineHeight: 40,
   },
   message: {
     textAlign: "center",
+    fontSize: 16,
     opacity: 0.7,
     lineHeight: 24,
   },
@@ -218,10 +223,10 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.lg,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(128, 128, 128, 0.2)",
   },
   modalTitle: {
     fontWeight: "600",
+    fontSize: 18,
   },
   closeButton: {
     padding: Spacing.xs,
