@@ -8,16 +8,31 @@
   <meta name="keywords" content="testerica Nis, iznajmljivanje testerice Nis, cirkular Nis, ubodna testera Nis, secenje drveta Nis">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/favicon.png">
+  
+  <link rel="canonical" href="https://vikendmajstor.rs/testerica-nis">
+  
   <meta property="og:title" content="Iznajmljivanje testerice u Nisu | VikendMajstor">
   <meta property="og:description" content="Iznajmi testericu u Nisu vec od 600 din/dan. Cirkularne i ubodne testere.">
-  <meta property="og:image" content="/favicon.png">
+  <meta property="og:image" content="https://vikendmajstor.rs/favicon.png">
+  <meta property="og:url" content="https://vikendmajstor.rs/testerica-nis">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="sr_RS">
-  <link rel="canonical" href="https://vikendmajstor.rs/testerica-nis">
+  <meta property="og:site_name" content="VikendMajstor">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Iznajmljivanje testerice u Nisu | VikendMajstor">
+  <meta name="twitter:description" content="Iznajmi testericu u Nisu vec od 600 din/dan. Cirkularne i ubodne testere.">
+  <meta name="twitter:image" content="https://vikendmajstor.rs/favicon.png">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
   
   <script type="application/ld+json">
   {
@@ -29,9 +44,47 @@
       "@type": "Offer",
       "priceCurrency": "RSD",
       "price": "600",
+      "priceValidUntil": "2025-12-31",
       "availability": "https://schema.org/InStock",
       "areaServed": "Nis"
     }
+  }
+  </script>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Pocetna", "item": "https://vikendmajstor.rs/"},
+      {"@type": "ListItem", "position": 2, "name": "Alati Nis", "item": "https://vikendmajstor.rs/iznajmljivanje-alata-nis"},
+      {"@type": "ListItem", "position": 3, "name": "Testerice Nis", "item": "https://vikendmajstor.rs/testerica-nis"}
+    ]
+  }
+  </script>
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Koju testeru da koristim za secenje laminata?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Za secenje laminata preporucujemo rucnu cirkularnu testeru ili ubodnu testeru. Cirkular daje brze, prave rezove, dok ubodna testera omogucava preciznije krivudave rezove oko prepreka."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Da li testera dolazi sa listovima?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Vecina vlasnika pruza osnovne listove za secenje drveta. Za specijalizovane listove (metal, laminat) proverite sa vlasnikom ili nabavite sopstvene."
+        }
+      }
+    ]
   }
   </script>
   
@@ -50,207 +103,102 @@
       --border: #E5E5E5;
     }
     html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      line-height: 1.7;
-      color: var(--text);
-      background: var(--background);
-    }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.7; color: var(--text); background: var(--background); }
     h1, h2, h3 { font-family: 'Montserrat', sans-serif; }
     a { text-decoration: none; color: inherit; }
     .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
     
-    .nav {
-      background: var(--dark);
-      padding: 12px 0;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-    }
-    .nav-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .breadcrumb { background: var(--dark); padding: 80px 0 10px; }
+    .breadcrumb-list { list-style: none; display: flex; gap: 8px; font-size: 14px; flex-wrap: wrap; }
+    .breadcrumb-list li { color: #888; }
+    .breadcrumb-list a { color: var(--primary); }
+    
+    .nav { background: var(--dark); padding: 12px 0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+    .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; }
     .nav-logo img { width: 36px; height: 36px; border-radius: 8px; }
-    .nav-logo-text {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--primary);
-    }
-    .nav-cta {
-      background: var(--accent);
-      color: #FFFFFF;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
+    .nav-logo-text { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: var(--primary); }
+    .nav-cta { background: var(--accent); color: #FFFFFF; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.2s; }
     .nav-cta:hover { background: #E55A2B; }
     
-    .hero {
-      background: linear-gradient(135deg, var(--dark) 0%, #2D2D2D 100%);
-      padding: 140px 0 80px;
-      text-align: center;
-    }
-    .hero h1 {
-      font-size: 42px;
-      font-weight: 800;
-      color: #FFFFFF;
-      margin-bottom: 20px;
-      line-height: 1.2;
-    }
+    .hero { background: linear-gradient(135deg, var(--dark) 0%, #2D2D2D 100%); padding: 60px 0 80px; text-align: center; }
+    .hero h1 { font-size: 42px; font-weight: 800; color: #FFFFFF; margin-bottom: 20px; line-height: 1.2; }
     .hero h1 span { color: var(--primary); }
-    .hero p {
-      font-size: 20px;
-      color: #CCCCCC;
-      max-width: 600px;
-      margin: 0 auto 30px;
-    }
-    .cta-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--primary);
-      color: var(--dark);
-      padding: 16px 32px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 18px;
-      transition: all 0.2s;
-    }
+    .hero p { font-size: 20px; color: #CCCCCC; max-width: 600px; margin: 0 auto 30px; }
+    .cta-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--primary); color: var(--dark); padding: 16px 32px; border-radius: 12px; font-weight: 700; font-size: 18px; transition: all 0.2s; }
     .cta-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
     
-    .content {
-      padding: 60px 0;
-    }
-    .content h2 {
-      font-size: 32px;
-      margin-bottom: 20px;
-      color: var(--dark);
-    }
-    .content p {
-      font-size: 17px;
-      color: var(--text-secondary);
-      margin-bottom: 20px;
-    }
-    .content ul {
-      margin: 20px 0 30px 20px;
-    }
-    .content li {
-      font-size: 17px;
-      color: var(--text-secondary);
-      margin-bottom: 10px;
-    }
+    .content { padding: 60px 0; }
+    .content h2 { font-size: 32px; margin-bottom: 20px; color: var(--dark); }
+    .content p { font-size: 17px; color: var(--text-secondary); margin-bottom: 20px; }
+    .content ul { margin: 20px 0 30px 20px; }
+    .content li { font-size: 17px; color: var(--text-secondary); margin-bottom: 10px; }
     
-    .types-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-      margin: 40px 0;
-    }
-    .type-card {
-      background: var(--background-secondary);
-      border-radius: 16px;
-      padding: 30px;
-      border: 1px solid var(--border);
-    }
-    .type-card h3 {
-      font-size: 22px;
-      margin-bottom: 16px;
-      color: var(--dark);
-    }
-    .type-card p {
-      font-size: 15px;
-      margin-bottom: 20px;
-    }
-    .type-price {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--primary-dark);
-    }
-    .type-price span {
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--text-secondary);
-    }
+    .types-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin: 40px 0; }
+    .type-card { background: var(--background-secondary); border-radius: 16px; padding: 30px; border: 1px solid var(--border); }
+    .type-card h3 { font-size: 22px; margin-bottom: 16px; color: var(--dark); }
+    .type-card p { font-size: 15px; margin-bottom: 20px; }
+    .type-price { font-size: 28px; font-weight: 700; color: var(--primary-dark); }
+    .type-price span { font-size: 14px; font-weight: 400; color: var(--text-secondary); }
     
-    .info-box {
-      background: #E3F2FD;
-      border: 2px solid #2196F3;
-      border-radius: 12px;
-      padding: 24px;
-      margin: 30px 0;
-    }
-    .info-box h3 {
-      color: var(--dark);
-      margin-bottom: 12px;
-    }
-    .info-box p {
-      margin-bottom: 0;
-    }
+    .info-box { background: #E3F2FD; border: 2px solid #2196F3; border-radius: 12px; padding: 24px; margin: 30px 0; }
+    .info-box h3 { color: var(--dark); margin-bottom: 12px; }
+    .info-box p { margin-bottom: 0; }
     
-    .cta-section {
-      background: var(--dark);
-      padding: 60px 0;
-      text-align: center;
-    }
-    .cta-section h2 {
-      font-size: 32px;
-      color: #FFFFFF;
-      margin-bottom: 16px;
-    }
-    .cta-section p {
-      font-size: 18px;
-      color: #CCCCCC;
-      margin-bottom: 30px;
-    }
+    .faq-section { padding: 60px 0; background: var(--background-secondary); }
+    .faq-section h2 { text-align: center; margin-bottom: 40px; }
+    .faq-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; background: white; }
+    .faq-question { padding: 20px 24px; font-weight: 600; font-size: 17px; }
+    .faq-answer { padding: 20px 24px; font-size: 16px; color: var(--text-secondary); line-height: 1.7; border-top: 1px solid var(--border); }
     
-    .footer {
-      background: var(--dark-secondary);
-      padding: 30px 0;
-      text-align: center;
-    }
-    .footer p {
-      color: #888888;
-      font-size: 14px;
-    }
+    .cta-section { background: var(--dark); padding: 60px 0; text-align: center; }
+    .cta-section h2 { font-size: 32px; color: #FFFFFF; margin-bottom: 16px; }
+    .cta-section p { font-size: 18px; color: #CCCCCC; margin-bottom: 30px; }
+    
+    .footer { background: var(--dark-secondary); padding: 30px 0; text-align: center; }
+    .footer p { color: #888888; font-size: 14px; }
     .footer a { color: var(--primary); }
+    .footer-links { margin-top: 16px; }
+    .footer-links a { margin: 0 12px; font-size: 14px; }
     
     @media (max-width: 768px) {
       .hero h1 { font-size: 28px; }
       .hero p { font-size: 16px; }
       .content h2 { font-size: 24px; }
+      .breadcrumb { padding-top: 70px; }
     }
   </style>
 </head>
 <body>
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
   <nav class="nav">
     <div class="nav-container">
       <a href="/" class="nav-logo">
-        <img src="/favicon.png" alt="VikendMajstor logo">
+        <img src="/favicon.png" alt="VikendMajstor logo" loading="lazy">
         <span class="nav-logo-text">VikendMajstor</span>
       </a>
-      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="nav-cta" target="_blank">Preuzmi aplikaciju</a>
+      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="nav-cta" target="_blank" onclick="gtag('event', 'click', {'event_category': 'CTA', 'event_label': 'Header Download', 'event_location': 'Nis', 'tool_category': 'Testerica'});">Preuzmi aplikaciju</a>
     </div>
   </nav>
+
+  <div class="breadcrumb">
+    <div class="container">
+      <ol class="breadcrumb-list">
+        <li><a href="/">Pocetna</a></li>
+        <li>/</li>
+        <li><a href="/iznajmljivanje-alata-nis">Alati Nis</a></li>
+        <li>/</li>
+        <li>Testerice Nis</li>
+      </ol>
+    </div>
+  </div>
 
   <section class="hero">
     <div class="container">
       <h1>Iznajmljivanje <span>testerice</span> u Nisu</h1>
       <p>Potrebna vam je testera za projekat? Iznajmite cirkular ili ubodnu testeru u Nisu vec od 600 din/dan.</p>
-      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="cta-btn" target="_blank">
+      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="cta-btn" target="_blank" onclick="gtag('event', 'click', {'event_category': 'CTA', 'event_label': 'Hero Rezervisi', 'event_location': 'Nis', 'tool_category': 'Testerica'});">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
         Rezervisi testeru odmah
       </a>
@@ -290,14 +238,11 @@
       <div class="info-box">
         <h3>Koju testeru izabrati?</h3>
         <p>
-          Ako sekete daske i panele po pravoj liniji - izaberite cirkular. Za izrezivanje otvora i krivih linija - ubodna testera. Za rusenje i grube radove - sabljasta. Za precizne uglove na lajsnama - potezna testera. Ako niste sigurni, pitajte vlasnika za savet.
+          Ako sekete daske i panele po pravoj liniji - izaberite cirkular. Za izrezivanje otvora i krivih linija - ubodna testera. Za rusenje i grube radove - sabljasta. Za precizne uglove na lajsnama - potezna testera.
         </p>
       </div>
       
       <h2>Za sta vam treba testera?</h2>
-      <p>
-        Elektricne testere su nezamenljive za mnoge kucne projekte. Bilo da gradite terasu, postavljate pod, pravite namestaj ili renovirate kucu u Nisu - prava testera ce vam ustedeti vreme i dati profesionalne rezultate.
-      </p>
       <ul>
         <li><strong>Postavljanje poda</strong> - Secenje laminata, parketa i podnih dasaka</li>
         <li><strong>Gradnja terase</strong> - Secenje terasa dasaka i nosaca</li>
@@ -305,11 +250,22 @@
         <li><strong>Renovacije</strong> - Demontaza i prilagodavanje postojecih elemenata</li>
         <li><strong>Bastenske konstrukcije</strong> - Pergole, ograde, sanduke za cvece</li>
       </ul>
+    </div>
+  </section>
+
+  <section class="faq-section">
+    <div class="container">
+      <h2>Cesta pitanja o testericama</h2>
       
-      <h2>Gde pronaci testeru u Nisu?</h2>
-      <p>
-        Testere za iznajmljivanje su dostupne sirom Nisa. Preuzmite VikendMajstor aplikaciju, pretrazite po kategoriji "Elektricni alati" i filtrirajte po tipu testere. Videcete sve dostupne opcije u vasoj blizini sa cenama i mogucnoscu da kontaktirate vlasnike.
-      </p>
+      <div class="faq-item">
+        <div class="faq-question">Koju testeru da koristim za secenje laminata?</div>
+        <div class="faq-answer">Za secenje laminata preporucujemo rucnu cirkularnu testeru ili ubodnu testeru. Cirkular daje brze, prave rezove, dok ubodna testera omogucava preciznije krivudave rezove oko prepreka.</div>
+      </div>
+      
+      <div class="faq-item">
+        <div class="faq-question">Da li testera dolazi sa listovima?</div>
+        <div class="faq-answer">Vecina vlasnika pruza osnovne listove za secenje drveta. Za specijalizovane listove (metal, laminat) proverite sa vlasnikom ili nabavite sopstvene.</div>
+      </div>
     </div>
   </section>
 
@@ -317,7 +273,7 @@
     <div class="container">
       <h2>Pronadji testeru u Nisu</h2>
       <p>Preuzmi besplatnu aplikaciju i iznajmi testeru vec danas.</p>
-      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="cta-btn" target="_blank">
+      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="cta-btn" target="_blank" onclick="gtag('event', 'click', {'event_category': 'CTA', 'event_label': 'Footer Preuzmi', 'event_location': 'Nis', 'tool_category': 'Testerica'});">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
         Preuzmi aplikaciju
       </a>
@@ -326,8 +282,20 @@
 
   <footer class="footer">
     <div class="container">
-      <p>&copy; 2024 VikendMajstor. Sva prava zadrzana. <a href="/">Pocetna</a> | <a href="/iznajmljivanje-alata-nis">Svi alati u Nisu</a></p>
+      <p>&copy; 2024 VikendMajstor. Sva prava zadrzana.</p>
+      <div class="footer-links">
+        <a href="/">Pocetna</a>
+        <a href="/iznajmljivanje-alata-nis">Svi alati Nis</a>
+        <a href="/busilica-nis">Busilice Nis</a>
+        <a href="/kosilica-beograd">Kosilice Beograd</a>
+      </div>
     </div>
   </footer>
+  
+  <script>
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'GA-XXXXXXXX');
+  </script>
 </body>
 </html>

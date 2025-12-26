@@ -2912,7 +2912,8 @@ async function registerRoutes(app2) {
     "busilica-nis",
     "kosilica-beograd",
     "brusilica-novi-sad",
-    "testerica-nis"
+    "testerica-nis",
+    "blog-top-5-alata-nis"
   ];
   seoPages.forEach((page) => {
     app2.get(`/${page}`, (req, res) => {

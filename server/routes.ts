@@ -53,7 +53,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     'busilica-nis',
     'kosilica-beograd',
     'brusilica-novi-sad',
-    'testerica-nis'
+    'testerica-nis',
+    'blog-top-5-alata-nis'
   ];
   
   seoPages.forEach(page => {
