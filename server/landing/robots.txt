@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Landing pages
+Allow: /iznajmljivanje-alata-nis
+Allow: /busilica-nis
+Allow: /kosilica-beograd
+Allow: /brusilica-novi-sad
+Allow: /testerica-nis
+
+# Disallow API endpoints
+Disallow: /api/
+Disallow: /objects/
+Disallow: /public-objects/
+
+# Sitemap location
+Sitemap: https://vikendmajstor.rs/sitemap.xml

@@ -2907,6 +2907,38 @@ async function registerRoutes(app2) {
     }
     res.json({ status: "ok", message: "VikendMajstor API" });
   });
+  const seoPages = [
+    "iznajmljivanje-alata-nis",
+    "busilica-nis",
+    "kosilica-beograd",
+    "brusilica-novi-sad",
+    "testerica-nis"
+  ];
+  seoPages.forEach((page) => {
+    app2.get(`/${page}`, (req, res) => {
+      const pagePath = path.join(__dirname, "landing", "seo", `${page}.html`);
+      if (fs.existsSync(pagePath)) {
+        return res.sendFile(pagePath);
+      }
+      res.redirect("/");
+    });
+  });
+  app2.get("/sitemap.xml", (req, res) => {
+    const sitemapPath = path.join(__dirname, "landing", "sitemap.xml");
+    if (fs.existsSync(sitemapPath)) {
+      res.setHeader("Content-Type", "application/xml");
+      return res.sendFile(sitemapPath);
+    }
+    res.status(404).send("Sitemap not found");
+  });
+  app2.get("/robots.txt", (req, res) => {
+    const robotsPath = path.join(__dirname, "landing", "robots.txt");
+    if (fs.existsSync(robotsPath)) {
+      res.setHeader("Content-Type", "text/plain");
+      return res.sendFile(robotsPath);
+    }
+    res.status(404).send("Robots.txt not found");
+  });
   app2.get("/app", (req, res) => {
     const userAgent = req.headers["user-agent"] || "";
     const isAndroid = /Android/i.test(userAgent);
