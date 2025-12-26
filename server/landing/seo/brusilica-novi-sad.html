@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iznajmljivanje brusilice u Novom Sadu | Ugaona brusilica, flex - VikendMajstor</title>
+  <meta name="description" content="Iznajmi brusilicu u Novom Sadu vec od 500 din/dan. Ugaone brusilice (flex), trakaste brusilice. Secenje metala, brusenje. Placanje prilikom preuzimanja.">
+  <meta name="keywords" content="brusilica Novi Sad, iznajmljivanje brusilice Novi Sad, ugaona brusilica Novi Sad, flex Novi Sad, secenje metala Novi Sad">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <meta property="og:title" content="Iznajmljivanje brusilice u Novom Sadu | VikendMajstor">
+  <meta property="og:description" content="Iznajmi brusilicu u Novom Sadu vec od 500 din/dan. Ugaone i trakaste brusilice.">
+  <meta property="og:image" content="/favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="sr_RS">
+  <link rel="canonical" href="https://vikendmajstor.rs/brusilica-novi-sad">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Iznajmljivanje brusilice u Novom Sadu",
+    "description": "Ugaone i trakaste brusilice za iznajmljivanje u Novom Sadu",
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "RSD",
+      "price": "500",
+      "availability": "https://schema.org/InStock",
+      "areaServed": "Novi Sad"
+    }
+  }
+  </script>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #FFCC00;
+      --primary-dark: #E6B800;
+      --accent: #FF6B35;
+      --dark: #1A1A1A;
+      --dark-secondary: #2A2A2A;
+      --text: #333333;
+      --text-secondary: #666666;
+      --background: #FFFFFF;
+      --background-secondary: #F8F9FA;
+      --border: #E5E5E5;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--background);
+    }
+    h1, h2, h3 { font-family: 'Montserrat', sans-serif; }
+    a { text-decoration: none; color: inherit; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+    
+    .nav {
+      background: var(--dark);
+      padding: 12px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-logo img { width: 36px; height: 36px; border-radius: 8px; }
+    .nav-logo-text {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .nav-cta {
+      background: var(--accent);
+      color: #FFFFFF;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .nav-cta:hover { background: #E55A2B; }
+    
+    .hero {
+      background: linear-gradient(135deg, var(--dark) 0%, #2D2D2D 100%);
+      padding: 140px 0 80px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+    .hero h1 span { color: var(--primary); }
+    .hero p {
+      font-size: 20px;
+      color: #CCCCCC;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: var(--dark);
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 18px;
+      transition: all 0.2s;
+    }
+    .cta-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+    
+    .content {
+      padding: 60px 0;
+    }
+    .content h2 {
+      font-size: 32px;
+      margin-bottom: 20px;
+      color: var(--dark);
+    }
+    .content p {
+      font-size: 17px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+    .content ul {
+      margin: 20px 0 30px 20px;
+    }
+    .content li {
+      font-size: 17px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    
+    .types-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin: 40px 0;
+    }
+    .type-card {
+      background: var(--background-secondary);
+      border-radius: 16px;
+      padding: 30px;
+      border: 1px solid var(--border);
+    }
+    .type-card h3 {
+      font-size: 22px;
+      margin-bottom: 16px;
+      color: var(--dark);
+    }
+    .type-card p {
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    .type-price {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+    .type-price span {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+    
+    .warning-box {
+      background: #FFF3E0;
+      border: 2px solid #FF9800;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 30px 0;
+    }
+    .warning-box h3 {
+      color: var(--dark);
+      margin-bottom: 12px;
+    }
+    .warning-box p {
+      margin-bottom: 0;
+    }
+    
+    .cta-section {
+      background: var(--dark);
+      padding: 60px 0;
+      text-align: center;
+    }
+    .cta-section h2 {
+      font-size: 32px;
+      color: #FFFFFF;
+      margin-bottom: 16px;
+    }
+    .cta-section p {
+      font-size: 18px;
+      color: #CCCCCC;
+      margin-bottom: 30px;
+    }
+    
+    .footer {
+      background: var(--dark-secondary);
+      padding: 30px 0;
+      text-align: center;
+    }
+    .footer p {
+      color: #888888;
+      font-size: 14px;
+    }
+    .footer a { color: var(--primary); }
+    
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 28px; }
+      .hero p { font-size: 16px; }
+      .content h2 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <img src="/favicon.png" alt="VikendMajstor logo">
+        <span class="nav-logo-text">VikendMajstor</span>
+      </a>
+      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="nav-cta" target="_blank">Preuzmi aplikaciju</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Iznajmljivanje <span>brusilice</span> u Novom Sadu</h1>
+      <p>Treba vam brusilica za secenje ili brusenje? Iznajmite od komsije u Novom Sadu vec od 500 din/dan.</p>
+      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="cta-btn" target="_blank">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
+        Rezervisi brusilicu odmah
+      </a>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container">
+      <h2>Tipovi brusilica za iznajmljivanje u Novom Sadu</h2>
+      <p>
+        VikendMajstor vam omogucava da pronadjete razlicite tipove brusilica u Novom Sadu. Ugaone brusilice (flex) su najpopularnije za secenje metala i brusenje, ali dostupne su i trakaste brusilice za finu obradu drveta i drugih materijala.
+      </p>
+      
+      <div class="types-grid">
+        <div class="type-card">
+          <h3>Mala ugaona brusilica (115-125mm)</h3>
+          <p>Kompaktna i laka za rukovanje. Idealna za secenje tanjih metalnih profila, brusenje zavarenih spojeva i uklanjanje rdje.</p>
+          <div class="type-price">od 500 din <span>/ dan</span></div>
+        </div>
+        <div class="type-card">
+          <h3>Velika ugaona brusilica (230mm)</h3>
+          <p>Za teze poslove - secenje debljih metalnih profila, betonskih blokova i kamena. Veca snaga za zahtevnije projekte.</p>
+          <div class="type-price">od 800 din <span>/ dan</span></div>
+        </div>
+        <div class="type-card">
+          <h3>Trakasta brusilica</h3>
+          <p>Za brusenje drvenih povrsina, uklanjanje boje i laka, pripremu povrsina za farbanje. Ravnomerno brusenje velikih povrsina.</p>
+          <div class="type-price">od 600 din <span>/ dan</span></div>
+        </div>
+        <div class="type-card">
+          <h3>Ekscentricna brusilica</h3>
+          <p>Za finu zavrsnu obradu drveta i metala. Idealna za pripremu povrsina pre lakiranja i farbanja.</p>
+          <div class="type-price">od 400 din <span>/ dan</span></div>
+        </div>
+      </div>
+      
+      <div class="warning-box">
+        <h3>Bezbednost pri radu sa brusilicom</h3>
+        <p>
+          Brusilica je mocan alat koji zahteva paznju pri koriscenju. Uvek nosite zastitne naocare i rukavice. Proverite da li je disk pravilno montiran pre upotrebe. Ako niste sigurni kako se koristi, pitajte vlasnika za demonstraciju prilikom preuzimanja.
+        </p>
+      </div>
+      
+      <h2>Za sta vam treba brusilica?</h2>
+      <p>
+        Brusilica je univerzalan alat sa mnogim primenama. U zavisnosti od diska koji koristite, mozete seciti metal, brusiti zavarene spojeve, uklanjati rdju, polirati povrsine ili cak seciti keramicke plocice.
+      </p>
+      <ul>
+        <li><strong>Secenje metala</strong> - Cevi, profili, armatura, limovi</li>
+        <li><strong>Brusenje</strong> - Varovi, neravnine, priprema za farbanje</li>
+        <li><strong>Uklanjanje rdje</strong> - Stare ograde, kapije, metalni namestaj</li>
+        <li><strong>Secenje keramike</strong> - Plocice, kamen, beton (sa dijamantskim diskom)</li>
+        <li><strong>Poliranje</strong> - Metalne povrsine, inox, aluminijum</li>
+      </ul>
+      
+      <h2>Gde pronaci brusilicu u Novom Sadu?</h2>
+      <p>
+        Brusilice su dostupne sirom Novog Sada - od centra i Limana do Telepa i Detelinare. Preuzmite VikendMajstor aplikaciju, pretrazite po kategoriji "Elektricni alati" i pronadjite brusilicu u vasoj blizini. Vecina vlasnika nudi i diskove za secenje i brusenje.
+      </p>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container">
+      <h2>Pronadji brusilicu u Novom Sadu</h2>
+      <p>Preuzmi besplatnu aplikaciju i iznajmi brusilicu vec danas.</p>
+      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="cta-btn" target="_blank">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
+        Preuzmi aplikaciju
+      </a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 VikendMajstor. Sva prava zadrzana. <a href="/">Pocetna</a></p>
+    </div>
+  </footer>
+</body>
+</html>
