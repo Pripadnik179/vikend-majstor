@@ -1368,8 +1368,22 @@ export function registerAdminRoutes(app: Express) {
       const admin = (req as any).admin;
       const { code } = req.body;
 
-      // For now, just enable without verification (simplified)
-      // In production, you'd verify the TOTP code here
+      if (!code || code.length !== 6) {
+        return res.status(400).json({ message: 'Unesite 6-cifreni kod iz aplikacije' });
+      }
+
+      // Get the secret
+      const [twoFa] = await db.select().from(admin2fa).where(eq(admin2fa.userId, admin.id));
+      if (!twoFa) {
+        return res.status(400).json({ message: 'Prvo pokrenite podesavanje 2FA' });
+      }
+
+      // Verify TOTP code
+      const isValid = verifyTOTP(twoFa.secret, code);
+      if (!isValid) {
+        return res.status(400).json({ message: 'Neispravan kod. Proverite da li je vreme na uredjaju tacno.' });
+      }
+
       await db.update(admin2fa)
         .set({ isEnabled: true, lastUsedAt: new Date() })
         .where(eq(admin2fa.userId, admin.id));
@@ -1382,6 +1396,56 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ message: 'Greska pri aktivaciji 2FA' });
     }
   });
+
+  // TOTP verification helper function
+  function verifyTOTP(secret: string, code: string): boolean {
+    const timeStep = 30;
+    const now = Math.floor(Date.now() / 1000);
+    
+    // Check current time window and one before/after for clock drift
+    for (let i = -1; i <= 1; i++) {
+      const time = Math.floor((now + i * timeStep) / timeStep);
+      const generatedCode = generateTOTP(secret, time);
+      if (generatedCode === code) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function generateTOTP(secret: string, time: number): string {
+    // Convert base32 secret to bytes
+    const base32chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let bits = '';
+    for (const char of secret.toUpperCase()) {
+      const val = base32chars.indexOf(char);
+      if (val === -1) continue;
+      bits += val.toString(2).padStart(5, '0');
+    }
+    const bytes: number[] = [];
+    for (let i = 0; i + 8 <= bits.length; i += 8) {
+      bytes.push(parseInt(bits.slice(i, i + 8), 2));
+    }
+    
+    // Create time buffer (8 bytes, big-endian)
+    const timeBuffer = Buffer.alloc(8);
+    timeBuffer.writeBigUInt64BE(BigInt(time));
+    
+    // HMAC-SHA1
+    const hmac = crypto.createHmac('sha1', Buffer.from(bytes));
+    hmac.update(timeBuffer);
+    const hash = hmac.digest();
+    
+    // Dynamic truncation
+    const offset = hash[hash.length - 1] & 0xf;
+    const binary = ((hash[offset] & 0x7f) << 24) |
+                   ((hash[offset + 1] & 0xff) << 16) |
+                   ((hash[offset + 2] & 0xff) << 8) |
+                   (hash[offset + 3] & 0xff);
+    
+    const otp = binary % 1000000;
+    return otp.toString().padStart(6, '0');
+  }
 
   app.post("/api/admin/2fa/disable", isAdminAuth, async (req, res) => {
     try {
