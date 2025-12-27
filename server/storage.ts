@@ -1,5 +1,5 @@
 import { 
-  users, items, bookings, conversations, messages, reviews, subscriptions, verificationTokens,
+  users, items, bookings, conversations, messages, reviews, subscriptions, verificationTokens, emailSubscribers,
   type User, type InsertUser,
   type Item, type InsertItem,
   type Booking, type InsertBooking,
@@ -7,7 +7,8 @@ import {
   type Message, type InsertMessage,
   type Review, type InsertReview,
   type Subscription, type InsertSubscription,
-  type VerificationToken
+  type VerificationToken,
+  type EmailSubscriber
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, sql, count, inArray, gt, lt, isNull } from "drizzle-orm";
@@ -684,6 +685,31 @@ export class DatabaseStorage implements IStorage {
       premiumUsers: premium?.count || 0,
       earlyAdopters: earlyAdopters?.count || 0
     };
+  }
+
+  async subscribeEmail(email: string, source: string = 'landing_page'): Promise<{ subscriber: EmailSubscriber; isNew: boolean }> {
+    const existing = await db.select().from(emailSubscribers).where(eq(emailSubscribers.email, email));
+    
+    if (existing.length > 0) {
+      if (!existing[0].isActive) {
+        const [updated] = await db.update(emailSubscribers)
+          .set({ isActive: true })
+          .where(eq(emailSubscribers.email, email))
+          .returning();
+        return { subscriber: updated, isNew: false };
+      }
+      return { subscriber: existing[0], isNew: false };
+    }
+    
+    const [subscriber] = await db.insert(emailSubscribers)
+      .values({ email, source })
+      .returning();
+    
+    return { subscriber, isNew: true };
+  }
+
+  async getEmailSubscribers(): Promise<EmailSubscriber[]> {
+    return db.select().from(emailSubscribers).where(eq(emailSubscribers.isActive, true)).orderBy(desc(emailSubscribers.createdAt));
   }
 }
 

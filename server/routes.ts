@@ -86,6 +86,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(404).send('Robots.txt not found');
   });
 
+  // Newsletter subscription endpoint
+  app.post("/api/subscribe", async (req, res) => {
+    try {
+      const { email, source } = req.body;
+      
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ success: false, message: "Email adresa je obavezna" });
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ success: false, message: "Unesite validnu email adresu" });
+      }
+      
+      const subscriber = await storage.subscribeEmail(email.toLowerCase().trim(), source || 'landing_page');
+      
+      res.json({ 
+        success: true, 
+        message: "Uspešno ste se prijavili na novosti!",
+        isNew: subscriber.isNew
+      });
+    } catch (error: any) {
+      console.error("Newsletter subscription error:", error);
+      
+      if (error.message === 'EMAIL_EXISTS') {
+        return res.json({ 
+          success: true, 
+          message: "Već ste prijavljeni na novosti!",
+          isNew: false
+        });
+      }
+      
+      res.status(500).json({ success: false, message: "Došlo je do greške. Pokušajte ponovo." });
+    }
+  });
+
   app.get("/app", (req, res) => {
     const userAgent = req.headers['user-agent'] || '';
     const isAndroid = /Android/i.test(userAgent);
