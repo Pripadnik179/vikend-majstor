@@ -3,50 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iznajmi alat od komsije | Zaradi od svog alata - VikendMajstor</title>
-  <meta name="description" content="Busilica ti treba za 1 dan? Iznajmi od komsije za 500 din. Ili zaradi iznajmljujuci svoj alat. Besplatna aplikacija. 500+ korisnika u Srbiji.">
-  <meta name="keywords" content="iznajmljivanje alata, renta alata, iznajmi busilicu, zaradi od alata, deli alat, komsija alat, alat na dan, rentiranje opreme">
+  <title>VikendMajstor - Ne kupuj alat. Iznajmi ga ili zaradi od njega.</title>
+  <meta name="description" content="VikendMajstor povezuje ljude kojima treba alat sa onima koji ga vec imaju. Bez provizije. Lokalno. Jednostavno. Iznajmljivanje alata Beograd, Nis, Novi Sad.">
+  <meta name="keywords" content="iznajmljivanje alata, rentiranje busilice, zarada od alata, alati Beograd, alati Nis, kosilica, testerica, brusilica">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/favicon.png">
-  <meta property="og:title" content="Alat koji stoji = Novac koji radi | VikendMajstor">
-  <meta property="og:description" content="Iznajmi alat od komsije ili zaradi iznajmljujuci svoj. Besplatna aplikacija za deljenje alata u Srbiji.">
-  <meta property="og:image" content="/favicon.png">
+  <link rel="canonical" href="https://vikendmajstor.rs/">
+  <meta property="og:title" content="VikendMajstor - Ne kupuj alat. Iznajmi ga ili zaradi od njega.">
+  <meta property="og:description" content="Povezujemo ljude kojima treba alat sa onima koji ga vec imaju. Bez provizije. Lokalno. Jednostavno.">
+  <meta property="og:image" content="https://vikendmajstor.rs/favicon.png">
+  <meta property="og:url" content="https://vikendmajstor.rs/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="sr_RS">
-  <link rel="canonical" href="https://vikendmajstor.rs">
-  
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- Structured Data -->
+  <meta property="og:site_name" content="VikendMajstor">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="VikendMajstor - Ne kupuj alat. Iznajmi ga ili zaradi od njega.">
+  <meta name="twitter:description" content="Povezujemo ljude kojima treba alat sa onima koji ga vec imaju. Bez provizije.">
+  <meta name="twitter:image" content="https://vikendmajstor.rs/favicon.png">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": "WebApplication",
     "name": "VikendMajstor",
-    "url": "https://vikendmajstor.rs",
-    "logo": "https://vikendmajstor.rs/favicon.png",
     "description": "Platforma za iznajmljivanje alata u Srbiji",
-    "address": {
-      "@type": "PostalAddress",
-      "addressCountry": "RS"
-    },
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "email": "podrska@vikendmajstor.rs",
-      "contactType": "customer service"
-    }
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "VikendMajstor",
-    "operatingSystem": "Android",
-    "applicationCategory": "LifestyleApplication",
+    "url": "https://vikendmajstor.rs",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Android, iOS, Web",
     "offers": {
       "@type": "Offer",
       "price": "0",
@@ -66,32 +48,23 @@
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "Kako da dodam oglas za svoj alat?",
+        "name": "Sta ako se alat osteti?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Preuzmite aplikaciju, registrujte se, i kliknite na + dugme. Dodajte fotografije, opis i cenu po danu. Besplatni korisnici mogu dodati do 5 oglasa."
+          "text": "Preporucujemo dogovor o depozitu prilikom preuzimanja alata. Fotografisite alat pre i posle koriscenja. U slucaju ostecenja, depozit pokriva troskove popravke ili zamene."
         }
       },
       {
         "@type": "Question",
-        "name": "Kako se vrsi placanje?",
+        "name": "Kako funkcionise placanje?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Placanje se vrsi direktno izmedju korisnika prilikom preuzimanja alata. Bez provizije, bez skrivenih troskova."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Da li je moj alat siguran?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Preporucujemo uzimanje depozita kao garancije. Fotografisite alat pre i posle iznajmljivanja. Svi korisnici su verifikovani putem emaila."
+          "text": "Placanje se vrsi direktno izmedju korisnika prilikom preuzimanja alata. VikendMajstor ne naplacuje proviziju. Uskoro ce biti dostupno i online placanje putem Stripe-a."
         }
       }
     ]
   }
   </script>
-  
   <style>
     * {
       margin: 0;
@@ -102,8 +75,7 @@
     :root {
       --primary: #FFCC00;
       --primary-dark: #E6B800;
-      --accent: #FF6B35;
-      --accent-dark: #E55A2B;
+      --primary-light: #FFE066;
       --dark: #1A1A1A;
       --dark-secondary: #2A2A2A;
       --text: #333333;
@@ -113,26 +85,16 @@
       --background-secondary: #F8F9FA;
       --success: #22C55E;
       --success-light: #DCFCE7;
-      --trust: #3B82F6;
-      --trust-light: #DBEAFE;
+      --accent-green: #10B981;
+      --accent-blue: #3B82F6;
       --border: #E5E5E5;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
-    
-    html {
-      scroll-behavior: smooth;
     }
     
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       line-height: 1.6;
       color: var(--text);
       background: var(--background);
-    }
-    
-    h1, h2, h3, h4 {
-      font-family: 'Montserrat', sans-serif;
     }
     
     a {
@@ -146,42 +108,15 @@
       padding: 0 20px;
     }
     
-    /* Animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-    
-    @keyframes countUp {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    .animate-in {
-      animation: fadeInUp 0.6s ease-out forwards;
-    }
-    
     /* Navigation */
     .nav {
       background: var(--dark);
-      padding: 12px 0;
+      padding: 16px 0;
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       z-index: 1000;
-      box-shadow: var(--shadow-lg);
     }
     
     .nav-container {
@@ -193,32 +128,30 @@
     .nav-logo {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
     
     .nav-logo img {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 8px;
     }
     
     .nav-logo-text {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 700;
       color: var(--primary);
     }
     
     .nav-links {
       display: flex;
-      gap: 28px;
+      gap: 32px;
       list-style: none;
     }
     
     .nav-links a {
       color: #FFFFFF;
       font-weight: 500;
-      font-size: 15px;
       transition: color 0.2s;
     }
     
@@ -227,21 +160,16 @@
     }
     
     .nav-cta {
-      background: var(--accent);
-      color: #FFFFFF;
-      padding: 10px 20px;
+      background: var(--primary);
+      color: var(--dark);
+      padding: 10px 24px;
       border-radius: 8px;
       font-weight: 600;
-      font-size: 14px;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      transition: background 0.2s;
     }
     
     .nav-cta:hover {
-      background: var(--accent-dark);
-      transform: translateY(-1px);
+      background: var(--primary-dark);
     }
     
     .mobile-menu-btn {
@@ -251,53 +179,13 @@
       color: #FFFFFF;
       font-size: 24px;
       cursor: pointer;
-      padding: 4px;
-    }
-    
-    .mobile-menu {
-      display: none;
-      position: fixed;
-      top: 60px;
-      left: 0;
-      right: 0;
-      background: var(--dark);
-      padding: 20px;
-      z-index: 999;
-    }
-    
-    .mobile-menu.active {
-      display: block;
-    }
-    
-    .mobile-menu-links {
-      list-style: none;
-      margin-bottom: 16px;
-    }
-    
-    .mobile-menu-links li {
-      padding: 12px 0;
-      border-bottom: 1px solid #333;
-    }
-    
-    .mobile-menu-links a {
-      color: #FFFFFF;
-      font-size: 16px;
-    }
-    
-    .mobile-menu-cta {
-      display: block;
-      background: var(--accent);
-      color: #FFFFFF;
-      padding: 14px 20px;
-      border-radius: 8px;
-      font-weight: 600;
-      text-align: center;
     }
     
     /* Hero Section */
     .hero {
-      background: linear-gradient(135deg, var(--dark) 0%, #2D2D2D 50%, var(--dark-secondary) 100%);
-      padding: 120px 0 80px;
+      background: linear-gradient(135deg, var(--dark) 0%, var(--dark-secondary) 100%);
+      padding: 160px 0 100px;
+      text-align: center;
       position: relative;
       overflow: hidden;
     }
@@ -309,459 +197,187 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFCC00' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      opacity: 0.5;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFCC00' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.3;
     }
     
     .hero-content {
       position: relative;
       z-index: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
-    }
-    
-    .hero-text {
-      animation: fadeInUp 0.8s ease-out;
-    }
-    
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 204, 0, 0.15);
-      color: var(--primary);
-      padding: 8px 16px;
-      border-radius: 50px;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 24px;
-      border: 1px solid rgba(255, 204, 0, 0.3);
-    }
-    
-    .hero-badge svg {
-      width: 16px;
-      height: 16px;
     }
     
     .hero h1 {
-      font-size: 48px;
+      font-size: 52px;
       font-weight: 800;
       color: #FFFFFF;
-      margin-bottom: 8px;
-      line-height: 1.1;
+      margin-bottom: 24px;
+      line-height: 1.2;
     }
     
-    .hero h1 .highlight {
+    .hero h1 span {
       color: var(--primary);
-      position: relative;
-    }
-    
-    .hero h1 .highlight::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: var(--primary);
-      border-radius: 2px;
     }
     
     .hero-subtitle {
-      font-size: 20px;
+      font-size: 22px;
       color: #CCCCCC;
-      margin-bottom: 12px;
+      max-width: 700px;
+      margin: 0 auto 48px;
       line-height: 1.6;
-    }
-    
-    .hero-subtitle-toggle {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 32px;
-    }
-    
-    .toggle-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #CCCCCC;
-      padding: 8px 16px;
-      border-radius: 50px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .toggle-btn.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: var(--dark);
-    }
-    
-    .hero-value {
-      font-size: 18px;
-      color: #AAAAAA;
-      margin-bottom: 32px;
-      padding: 16px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      border-left: 3px solid var(--primary);
-    }
-    
-    .hero-value strong {
-      color: var(--primary);
     }
     
     .hero-buttons {
       display: flex;
-      gap: 16px;
+      gap: 20px;
+      justify-content: center;
       flex-wrap: wrap;
     }
     
-    .btn-primary {
-      background: var(--accent);
+    .btn-green {
+      background: var(--accent-green);
       color: #FFFFFF;
-      padding: 16px 28px;
+      padding: 18px 36px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-green:hover {
+      background: #059669;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    }
+    
+    .btn-blue {
+      background: var(--accent-blue);
+      color: #FFFFFF;
+      padding: 18px 36px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-blue:hover {
+      background: #2563EB;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: var(--dark);
+      padding: 16px 32px;
       border-radius: 10px;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
       transition: all 0.2s;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 14px rgba(255, 107, 53, 0.4);
+      gap: 8px;
     }
     
     .btn-primary:hover {
-      background: var(--accent-dark);
+      background: var(--primary-dark);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
-    }
-    
-    .btn-primary svg {
-      width: 20px;
-      height: 20px;
     }
     
     .btn-secondary {
       background: transparent;
       color: #FFFFFF;
-      padding: 16px 28px;
+      padding: 16px 32px;
       border-radius: 10px;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      border: 2px solid #FFFFFF;
       transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
     }
     
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255,255,255,0.1);
     }
     
-    .hero-image {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      animation: fadeInUp 0.8s ease-out 0.2s both;
-    }
-    
-    .phone-mockup {
-      width: 280px;
-      height: 560px;
-      background: linear-gradient(145deg, #333 0%, #222 100%);
-      border-radius: 36px;
-      padding: 12px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      position: relative;
-    }
-    
-    .phone-mockup::before {
-      content: '';
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 24px;
-      background: #111;
-      border-radius: 12px;
-    }
-    
-    .phone-screen {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(180deg, var(--dark) 0%, var(--dark-secondary) 100%);
-      border-radius: 28px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-    }
-    
-    .phone-screen img {
-      width: 80px;
-      height: 80px;
-      border-radius: 20px;
-      margin-bottom: 16px;
-    }
-    
-    .phone-screen-title {
-      color: var(--primary);
-      font-family: 'Montserrat', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    
-    .phone-screen-text {
-      color: #888;
-      font-size: 14px;
-      text-align: center;
-    }
-    
-    .trust-badges {
-      display: flex;
-      gap: 24px;
-      margin-top: 32px;
-      flex-wrap: wrap;
-    }
-    
-    .trust-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #888;
-      font-size: 14px;
-    }
-    
-    .trust-badge svg {
-      width: 18px;
-      height: 18px;
-      color: var(--success);
-    }
-    
-    /* Social Proof Bar */
-    .social-proof {
-      background: var(--primary);
-      padding: 24px 0;
-      position: relative;
-    }
-    
-    .social-proof-content {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 48px;
-      flex-wrap: wrap;
-    }
-    
-    .proof-item {
-      text-align: center;
-    }
-    
-    .proof-number {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 36px;
-      font-weight: 800;
-      color: var(--dark);
-    }
-    
-    .proof-label {
-      font-size: 14px;
-      color: var(--dark);
-      opacity: 0.8;
-      font-weight: 500;
-    }
-    
-    .proof-divider {
-      width: 1px;
-      height: 40px;
-      background: rgba(0, 0, 0, 0.2);
-    }
-    
-    /* For Who Section */
-    .for-who {
-      padding: 80px 0;
+    /* Benefits Section */
+    .benefits {
+      padding: 100px 0;
       background: var(--background);
     }
     
-    .section-header {
-      text-align: center;
-      margin-bottom: 48px;
-    }
-    
-    .section-label {
-      display: inline-block;
-      background: var(--primary);
-      color: var(--dark);
-      padding: 6px 16px;
-      border-radius: 50px;
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 16px;
-    }
-    
     .section-title {
-      font-size: 36px;
+      text-align: center;
+      font-size: 40px;
       font-weight: 700;
+      margin-bottom: 16px;
       color: var(--dark);
-      margin-bottom: 12px;
     }
     
     .section-subtitle {
+      text-align: center;
       font-size: 18px;
       color: var(--text-secondary);
       max-width: 600px;
-      margin: 0 auto;
+      margin: 0 auto 60px;
     }
     
-    .for-who-grid {
+    .benefits-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 32px;
     }
     
-    .for-who-card {
-      background: var(--background-secondary);
+    .benefit-card {
+      background: #FFFFFF;
       border-radius: 20px;
-      padding: 40px;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.3s, box-shadow 0.3s;
+      padding: 40px 32px;
+      text-align: center;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+      transition: all 0.3s;
+      border: 1px solid var(--border);
     }
     
-    .for-who-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
+    .benefit-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
     }
     
-    .for-who-card.owners {
-      border: 2px solid var(--primary);
-    }
-    
-    .for-who-card.renters {
-      border: 2px solid var(--trust);
-    }
-    
-    .for-who-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 16px;
+    .benefit-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 24px;
+      margin: 0 auto 24px;
+      font-size: 36px;
     }
     
-    .for-who-card.owners .for-who-icon {
-      background: rgba(255, 204, 0, 0.15);
-      color: var(--primary-dark);
-    }
-    
-    .for-who-card.renters .for-who-icon {
-      background: var(--trust-light);
-      color: var(--trust);
-    }
-    
-    .for-who-icon svg {
-      width: 32px;
-      height: 32px;
-    }
-    
-    .for-who-card h3 {
-      font-size: 24px;
-      margin-bottom: 12px;
+    .benefit-card h3 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
       color: var(--dark);
     }
     
-    .for-who-card .tagline {
+    .benefit-card p {
+      color: var(--text-secondary);
       font-size: 16px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
+      line-height: 1.7;
     }
     
-    .for-who-benefits {
-      list-style: none;
-    }
-    
-    .for-who-benefits li {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 14px;
-      font-size: 15px;
-      color: var(--text);
-    }
-    
-    .for-who-benefits li svg {
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    
-    .for-who-card.owners .for-who-benefits li svg {
-      color: var(--primary-dark);
-    }
-    
-    .for-who-card.renters .for-who-benefits li svg {
-      color: var(--trust);
-    }
-    
-    .for-who-stat {
-      margin-top: 24px;
-      padding: 16px;
-      border-radius: 12px;
-      text-align: center;
-    }
-    
-    .for-who-card.owners .for-who-stat {
-      background: rgba(255, 204, 0, 0.1);
-    }
-    
-    .for-who-card.renters .for-who-stat {
-      background: var(--trust-light);
-    }
-    
-    .for-who-stat-number {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 28px;
-      font-weight: 700;
-    }
-    
-    .for-who-card.owners .for-who-stat-number {
-      color: var(--primary-dark);
-    }
-    
-    .for-who-card.renters .for-who-stat-number {
-      color: var(--trust);
-    }
-    
-    .for-who-stat-label {
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-    
-    /* How It Works */
+    /* How it Works */
     .how-it-works {
-      padding: 80px 0;
-      background: var(--dark);
-    }
-    
-    .how-it-works .section-title {
-      color: #FFFFFF;
-    }
-    
-    .how-it-works .section-subtitle {
-      color: #AAAAAA;
+      padding: 100px 0;
+      background: var(--background-secondary);
     }
     
     .steps {
@@ -774,378 +390,103 @@
     .steps::before {
       content: '';
       position: absolute;
-      top: 50px;
-      left: 15%;
-      right: 15%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      top: 60px;
+      left: 20%;
+      right: 20%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent-green));
+      border-radius: 2px;
       z-index: 0;
     }
     
     .step {
       text-align: center;
-      padding: 40px 24px;
-      background: var(--dark-secondary);
+      padding: 40px 32px;
+      background: #FFFFFF;
       border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
       position: relative;
       z-index: 1;
-      transition: transform 0.3s;
-    }
-    
-    .step:hover {
-      transform: translateY(-8px);
     }
     
     .step-number {
-      width: 60px;
-      height: 60px;
-      background: var(--primary);
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 28px;
+      font-weight: 800;
       color: var(--dark);
       margin: 0 auto 24px;
-      box-shadow: 0 4px 20px rgba(255, 204, 0, 0.3);
-    }
-    
-    .step-icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 20px;
-      background: rgba(255, 204, 0, 0.1);
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .step-icon svg {
-      width: 40px;
-      height: 40px;
-      color: var(--primary);
+      box-shadow: 0 4px 15px rgba(255, 204, 0, 0.4);
     }
     
     .step h3 {
-      font-size: 20px;
-      color: #FFFFFF;
+      font-size: 22px;
+      font-weight: 700;
       margin-bottom: 12px;
+      color: var(--dark);
     }
     
     .step p {
-      color: #AAAAAA;
-      font-size: 15px;
+      color: var(--text-secondary);
+      font-size: 16px;
       line-height: 1.6;
     }
     
-    /* Calculator Section */
-    .calculator-section {
+    /* Social Proof */
+    .social-proof {
       padding: 80px 0;
-      background: linear-gradient(135deg, var(--background-secondary) 0%, #FFFFFF 100%);
-    }
-    
-    .calculator-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
-    }
-    
-    .calculator-text h2 {
-      font-size: 36px;
-      color: var(--dark);
-      margin-bottom: 16px;
-    }
-    
-    .calculator-text p {
-      font-size: 18px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      line-height: 1.7;
-    }
-    
-    .calculator-box {
-      background: #FFFFFF;
-      border-radius: 20px;
-      padding: 32px;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid var(--border);
-    }
-    
-    .calc-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
-    
-    .calc-tab {
-      flex: 1;
-      padding: 12px;
-      border: 2px solid var(--border);
-      background: transparent;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .calc-tab.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: var(--dark);
-    }
-    
-    .calc-input-group {
-      margin-bottom: 20px;
-    }
-    
-    .calc-input-group label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-    
-    .calc-input-group select,
-    .calc-input-group input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      font-size: 16px;
-      transition: border-color 0.2s;
-    }
-    
-    .calc-input-group select:focus,
-    .calc-input-group input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    
-    .calc-result {
-      background: var(--success-light);
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      margin-top: 24px;
-    }
-    
-    .calc-result-label {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 4px;
-    }
-    
-    .calc-result-value {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--success);
-    }
-    
-    .calc-result-note {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 8px;
-    }
-    
-    .calc-cta {
-      margin-top: 24px;
-    }
-    
-    .calc-cta .btn-primary {
-      width: 100%;
-      justify-content: center;
-    }
-    
-    /* Storytelling Section */
-    .storytelling {
-      padding: 80px 0;
-      background: var(--background);
-    }
-    
-    .stories-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 32px;
-    }
-    
-    .story-card {
-      background: #FFFFFF;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    
-    .story-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
-    }
-    
-    .story-header {
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    
-    .story-card.owner .story-header {
-      background: linear-gradient(135deg, rgba(255, 204, 0, 0.1) 0%, rgba(255, 204, 0, 0.05) 100%);
-    }
-    
-    .story-card.renter .story-header {
-      background: linear-gradient(135deg, var(--trust-light) 0%, rgba(59, 130, 246, 0.05) 100%);
-    }
-    
-    .story-avatar {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-    }
-    
-    .story-card.owner .story-avatar {
-      background: var(--primary);
-      color: var(--dark);
-    }
-    
-    .story-card.renter .story-avatar {
-      background: var(--trust);
+      background: var(--dark);
       color: #FFFFFF;
     }
     
-    .story-meta h4 {
-      font-size: 18px;
-      color: var(--dark);
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      margin-bottom: 60px;
     }
     
-    .story-meta span {
-      font-size: 14px;
-      color: var(--text-secondary);
+    .stat-item {
+      text-align: center;
+      padding: 32px 20px;
+      background: var(--dark-secondary);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
     }
     
-    .story-label {
-      margin-left: auto;
-      padding: 6px 12px;
-      border-radius: 50px;
-      font-size: 12px;
-      font-weight: 600;
+    .stat-number {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 8px;
     }
     
-    .story-card.owner .story-label {
-      background: rgba(255, 204, 0, 0.2);
-      color: var(--primary-dark);
+    .stat-label {
+      font-size: 16px;
+      color: #CCCCCC;
     }
     
-    .story-card.renter .story-label {
-      background: var(--trust-light);
-      color: var(--trust);
-    }
-    
-    .story-content {
-      padding: 0 24px 24px;
-    }
-    
-    .story-section {
-      margin-bottom: 16px;
-    }
-    
-    .story-section-title {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-light);
-      margin-bottom: 6px;
-    }
-    
-    .story-section p {
-      font-size: 15px;
-      color: var(--text);
-      line-height: 1.6;
-    }
-    
-    .story-result {
-      padding: 16px;
-      border-radius: 12px;
-      margin-top: 16px;
-    }
-    
-    .story-card.owner .story-result {
-      background: rgba(255, 204, 0, 0.1);
-      border-left: 3px solid var(--primary);
-    }
-    
-    .story-card.renter .story-result {
-      background: var(--trust-light);
-      border-left: 3px solid var(--trust);
-    }
-    
-    .story-result-number {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 24px;
-      font-weight: 700;
-    }
-    
-    .story-card.owner .story-result-number {
-      color: var(--primary-dark);
-    }
-    
-    .story-card.renter .story-result-number {
-      color: var(--trust);
-    }
-    
-    .story-result-text {
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-    
-    /* Testimonials */
     .testimonials {
-      padding: 80px 0;
-      background: var(--background-secondary);
-    }
-    
-    .testimonials-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 24px;
     }
     
-    .testimonial-card {
-      background: #FFFFFF;
+    .testimonial {
+      background: var(--dark-secondary);
       border-radius: 16px;
-      padding: 28px;
-      box-shadow: var(--shadow);
-    }
-    
-    .testimonial-stars {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 16px;
-    }
-    
-    .testimonial-stars svg {
-      width: 18px;
-      height: 18px;
-      color: var(--primary);
-      fill: var(--primary);
+      padding: 32px;
+      border: 1px solid rgba(255,255,255,0.1);
     }
     
     .testimonial-text {
-      font-size: 15px;
-      color: var(--text);
+      font-size: 16px;
+      color: #CCCCCC;
       line-height: 1.7;
       margin-bottom: 20px;
       font-style: italic;
@@ -1158,208 +499,124 @@
     }
     
     .testimonial-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
+      width: 48px;
+      height: 48px;
       background: var(--primary);
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Montserrat', sans-serif;
+      font-size: 20px;
       font-weight: 700;
       color: var(--dark);
     }
     
-    .testimonial-info h5 {
-      font-size: 15px;
-      color: var(--dark);
+    .testimonial-info h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
     }
     
     .testimonial-info span {
-      font-size: 13px;
-      color: var(--text-secondary);
+      font-size: 14px;
+      color: var(--primary);
     }
     
-    /* Download Section */
-    .download-section {
-      padding: 80px 0;
-      background: linear-gradient(135deg, var(--dark) 0%, var(--dark-secondary) 100%);
+    .testimonial-stars {
+      color: var(--primary);
+      font-size: 14px;
+      letter-spacing: 2px;
+    }
+    
+    /* Dual CTA Section */
+    .dual-cta {
+      padding: 100px 0;
+      background: var(--background);
+    }
+    
+    .dual-cta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px;
+    }
+    
+    .cta-card {
+      padding: 48px 40px;
+      border-radius: 24px;
+      text-align: center;
       position: relative;
       overflow: hidden;
     }
     
-    .download-section::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(255, 204, 0, 0.15) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-    
-    .download-content {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-    
-    .download-content h2 {
-      font-size: 40px;
+    .cta-card-owner {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, #1D4ED8 100%);
       color: #FFFFFF;
-      margin-bottom: 16px;
     }
     
-    .download-content h2 span {
-      color: var(--primary);
+    .cta-card-renter {
+      background: linear-gradient(135deg, var(--accent-green) 0%, #047857 100%);
+      color: #FFFFFF;
     }
     
-    .download-content p {
-      font-size: 18px;
-      color: #AAAAAA;
-      margin-bottom: 40px;
-    }
-    
-    .download-buttons {
+    .cta-card-icon {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
       display: flex;
-      gap: 16px;
+      align-items: center;
       justify-content: center;
-      flex-wrap: wrap;
+      margin: 0 auto 24px;
+      font-size: 36px;
+    }
+    
+    .cta-card h3 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    
+    .cta-card ul {
+      list-style: none;
+      text-align: left;
       margin-bottom: 32px;
     }
     
-    .download-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 28px;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 16px;
-      transition: all 0.2s;
-    }
-    
-    .download-btn.primary {
-      background: var(--accent);
-      color: #FFFFFF;
-      box-shadow: 0 4px 14px rgba(255, 107, 53, 0.4);
-    }
-    
-    .download-btn.primary:hover {
-      background: var(--accent-dark);
-      transform: translateY(-2px);
-    }
-    
-    .download-btn.secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .download-btn.secondary:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
-    
-    .download-btn svg {
-      width: 24px;
-      height: 24px;
-    }
-    
-    .download-btn .btn-text {
-      text-align: left;
-    }
-    
-    .download-btn .btn-small {
-      font-size: 11px;
-      opacity: 0.8;
-      font-weight: 400;
-    }
-    
-    .download-btn .btn-large {
-      font-size: 16px;
-    }
-    
-    .download-note {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(34, 197, 94, 0.15);
-      color: var(--success);
-      padding: 10px 20px;
-      border-radius: 50px;
-      font-size: 14px;
-    }
-    
-    .download-note svg {
-      width: 18px;
-      height: 18px;
-    }
-    
-    /* Why Us Section */
-    .why-us {
-      padding: 80px 0;
-      background: var(--background);
-    }
-    
-    .why-us-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
-    }
-    
-    .why-us-card {
-      text-align: center;
-      padding: 32px 24px;
-    }
-    
-    .why-us-icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 24px;
-      border-radius: 20px;
+    .cta-card li {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+      font-size: 16px;
+      opacity: 0.95;
     }
     
-    .why-us-card:nth-child(1) .why-us-icon {
-      background: rgba(255, 204, 0, 0.15);
-      color: var(--primary-dark);
+    .cta-card li svg {
+      flex-shrink: 0;
+      margin-top: 2px;
     }
     
-    .why-us-card:nth-child(2) .why-us-icon {
-      background: var(--success-light);
-      color: var(--success);
-    }
-    
-    .why-us-card:nth-child(3) .why-us-icon {
-      background: var(--trust-light);
-      color: var(--trust);
-    }
-    
-    .why-us-icon svg {
-      width: 40px;
-      height: 40px;
-    }
-    
-    .why-us-card h3 {
-      font-size: 20px;
-      margin-bottom: 12px;
+    .cta-card .btn-white {
+      background: #FFFFFF;
       color: var(--dark);
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
     }
     
-    .why-us-card p {
-      font-size: 15px;
-      color: var(--text-secondary);
-      line-height: 1.6;
+    .cta-card .btn-white:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }
     
     /* FAQ Section */
     .faq {
-      padding: 80px 0;
+      padding: 100px 0;
       background: var(--background-secondary);
     }
     
@@ -1369,22 +626,21 @@
     }
     
     .faq-item {
-      background: #FFFFFF;
-      border-radius: 12px;
-      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 16px;
       overflow: hidden;
-      box-shadow: var(--shadow);
+      background: #FFFFFF;
     }
     
     .faq-question {
-      padding: 20px 24px;
+      padding: 24px 28px;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-weight: 600;
-      font-size: 16px;
-      color: var(--dark);
+      font-size: 18px;
       transition: background 0.2s;
     }
     
@@ -1393,9 +649,8 @@
     }
     
     .faq-arrow {
-      width: 24px;
-      height: 24px;
       transition: transform 0.3s;
+      font-size: 14px;
       color: var(--text-secondary);
     }
     
@@ -1404,81 +659,175 @@
     }
     
     .faq-answer {
-      padding: 0 24px;
+      padding: 0 28px;
       max-height: 0;
       overflow: hidden;
-      transition: all 0.3s ease;
+      transition: all 0.3s;
+      background: var(--background-secondary);
     }
     
     .faq-item.active .faq-answer {
-      padding: 0 24px 20px;
+      padding: 24px 28px;
       max-height: 300px;
     }
     
     .faq-answer p {
       color: var(--text-secondary);
       line-height: 1.7;
-      font-size: 15px;
+      font-size: 16px;
     }
     
-    /* Contact Section */
-    .contact {
-      padding: 60px 0;
+    /* Lead Capture */
+    .lead-capture {
+      padding: 80px 0;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      text-align: center;
+    }
+    
+    .lead-capture h2 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 16px;
+    }
+    
+    .lead-capture p {
+      font-size: 18px;
+      color: var(--dark);
+      opacity: 0.8;
+      margin-bottom: 32px;
+    }
+    
+    .lead-form {
+      display: flex;
+      gap: 12px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .lead-form input {
+      flex: 1;
+      padding: 16px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #FFFFFF;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .lead-form input:focus {
+      outline: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .lead-form button {
+      padding: 16px 32px;
       background: var(--dark);
       color: #FFFFFF;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
     }
     
-    .contact-content {
+    .lead-form button:hover {
+      background: var(--dark-secondary);
+      transform: translateY(-2px);
+    }
+    
+    /* Download Section */
+    .download {
+      padding: 80px 0;
+      background: var(--dark);
+      text-align: center;
+    }
+    
+    .download h2 {
+      font-size: 36px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 16px;
+    }
+    
+    .download p {
+      font-size: 18px;
+      color: #CCCCCC;
+      margin-bottom: 40px;
+    }
+    
+    .download-buttons {
       display: flex;
+      gap: 20px;
       justify-content: center;
-      align-items: center;
-      gap: 48px;
       flex-wrap: wrap;
     }
     
-    .contact-item {
-      display: flex;
+    .store-btn {
+      display: inline-flex;
       align-items: center;
-      gap: 16px;
-    }
-    
-    .contact-icon {
-      width: 50px;
-      height: 50px;
-      background: var(--primary);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .contact-icon svg {
-      width: 24px;
-      height: 24px;
-      color: var(--dark);
-    }
-    
-    .contact-text h4 {
-      font-size: 14px;
-      color: #888;
-      font-weight: 400;
-      margin-bottom: 4px;
-    }
-    
-    .contact-text a {
-      font-size: 18px;
+      gap: 12px;
+      padding: 16px 32px;
+      background: var(--dark-secondary);
       color: #FFFFFF;
+      border-radius: 12px;
       font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s;
+      border: 1px solid rgba(255,255,255,0.1);
     }
     
-    .contact-text a:hover {
-      color: var(--primary);
+    .store-btn:hover {
+      background: #3A3A3A;
+      transform: translateY(-2px);
+    }
+    
+    .store-btn-primary {
+      background: var(--primary);
+      color: var(--dark);
+      border: none;
+    }
+    
+    .store-btn-primary:hover {
+      background: var(--primary-dark);
+    }
+    
+    .store-btn-disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .store-btn-disabled:hover {
+      opacity: 0.6;
+      transform: none;
+    }
+    
+    /* Trust Badges */
+    .trust-badges {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+    
+    .trust-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #999;
+      font-size: 14px;
+    }
+    
+    .trust-badge svg {
+      color: var(--success);
     }
     
     /* Footer */
     .footer {
       background: var(--dark);
-      padding: 48px 0 24px;
+      padding: 60px 0 30px;
       border-top: 1px solid #333;
     }
     
@@ -1486,44 +835,47 @@
       display: grid;
       grid-template-columns: 2fr 1fr 1fr 1fr;
       gap: 48px;
-      margin-bottom: 40px;
+      margin-bottom: 48px;
     }
     
     .footer-brand h3 {
-      font-family: 'Montserrat', sans-serif;
       color: var(--primary);
       font-size: 24px;
       margin-bottom: 16px;
     }
     
     .footer-brand p {
-      color: #888;
+      color: #999;
       line-height: 1.7;
-      font-size: 14px;
+      margin-bottom: 24px;
     }
     
-    .footer-badge {
-      display: inline-flex;
+    .footer-social {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .footer-social a {
+      width: 40px;
+      height: 40px;
+      background: var(--dark-secondary);
+      border-radius: 10px;
+      display: flex;
       align-items: center;
-      gap: 8px;
-      margin-top: 16px;
-      padding: 8px 16px;
-      background: rgba(255, 204, 0, 0.1);
-      border-radius: 8px;
-      color: var(--primary);
-      font-size: 13px;
+      justify-content: center;
+      color: #FFFFFF;
+      transition: all 0.2s;
     }
     
-    .footer-badge svg {
-      width: 16px;
-      height: 16px;
+    .footer-social a:hover {
+      background: var(--primary);
+      color: var(--dark);
     }
     
     .footer-links h4 {
       color: #FFFFFF;
-      font-size: 15px;
+      font-size: 16px;
       margin-bottom: 20px;
-      font-weight: 600;
     }
     
     .footer-links ul {
@@ -1535,9 +887,9 @@
     }
     
     .footer-links a {
-      color: #888;
-      font-size: 14px;
+      color: #999;
       transition: color 0.2s;
+      font-size: 15px;
     }
     
     .footer-links a:hover {
@@ -1545,270 +897,92 @@
     }
     
     .footer-bottom {
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding-top: 24px;
       border-top: 1px solid #333;
       color: #666;
       font-size: 14px;
+      flex-wrap: wrap;
+      gap: 16px;
     }
     
-    /* Mobile Sticky CTA */
-    .mobile-sticky-cta {
+    .footer-badges {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .footer-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #999;
+      font-size: 13px;
+    }
+    
+    .footer-badge svg {
+      color: var(--success);
+    }
+    
+    /* Gamification Banner */
+    .gamification {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, #6366F1 100%);
+      padding: 40px 0;
+      text-align: center;
+      color: #FFFFFF;
+    }
+    
+    .gamification h3 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .gamification p {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+    
+    /* Sticky Mobile CTA */
+    .sticky-cta {
       display: none;
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       background: var(--dark);
-      padding: 12px 16px;
+      padding: 16px 20px;
       z-index: 999;
-      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+      border-top: 1px solid #333;
     }
     
-    .mobile-sticky-cta-buttons {
+    .sticky-cta-content {
       display: flex;
-      gap: 10px;
+      gap: 12px;
     }
     
-    .mobile-sticky-cta .btn-primary,
-    .mobile-sticky-cta .btn-webapp {
+    .sticky-cta .btn-green,
+    .sticky-cta .btn-blue {
       flex: 1;
       justify-content: center;
-      padding: 12px 16px;
+      padding: 14px 16px;
       font-size: 14px;
-      border-radius: 8px;
-    }
-    
-    .mobile-sticky-cta .btn-webapp {
-      background: var(--trust);
-      color: #FFFFFF;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    
-    .mobile-sticky-cta .btn-webapp:hover {
-      background: #2563EB;
-    }
-    
-    /* Web App Button Style */
-    .btn-webapp {
-      background: var(--trust) !important;
-      border-color: var(--trust) !important;
-      color: #FFFFFF !important;
-    }
-    
-    .btn-webapp:hover {
-      background: #2563EB !important;
-    }
-    
-    .download-btn.webapp {
-      background: var(--trust);
-      color: #FFFFFF;
-      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
-    }
-    
-    .download-btn.webapp:hover {
-      background: #2563EB;
-      transform: translateY(-2px);
-    }
-    
-    /* Coming Soon Store Badges */
-    .download-stores {
-      display: flex;
-      gap: 24px;
-      justify-content: center;
-      margin-top: 20px;
-      margin-bottom: 24px;
-    }
-    
-    .store-coming-soon {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #888;
-      font-size: 14px;
-    }
-    
-    .store-coming-soon svg {
-      width: 20px;
-      height: 20px;
-      opacity: 0.6;
-    }
-    
-    /* App Preview Section */
-    .app-preview {
-      padding: 80px 0;
-      background: var(--background);
-    }
-    
-    .app-preview-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
-    }
-    
-    .app-preview-text h2 {
-      font-size: 36px;
-      color: var(--dark);
-      margin-bottom: 16px;
-    }
-    
-    .app-preview-text p {
-      font-size: 18px;
-      color: var(--text-secondary);
-      margin-bottom: 32px;
-      line-height: 1.7;
-    }
-    
-    .app-preview-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    
-    .preview-step {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-    }
-    
-    .preview-step-number {
-      width: 40px;
-      height: 40px;
-      background: var(--primary);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 700;
-      color: var(--dark);
-      flex-shrink: 0;
-    }
-    
-    .preview-step-content h4 {
-      font-size: 18px;
-      color: var(--dark);
-      margin-bottom: 4px;
-    }
-    
-    .preview-step-content p {
-      font-size: 15px;
-      color: var(--text-secondary);
-      margin: 0;
-    }
-    
-    .app-preview-mockups {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-    }
-    
-    .preview-phone {
-      width: 180px;
-      height: 360px;
-      background: linear-gradient(145deg, #333 0%, #222 100%);
-      border-radius: 24px;
-      padding: 8px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-    }
-    
-    .preview-phone:nth-child(2) {
-      transform: translateY(30px);
-    }
-    
-    .preview-phone-screen {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(180deg, var(--dark) 0%, var(--dark-secondary) 100%);
-      border-radius: 18px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 12px;
-      text-align: center;
-    }
-    
-    .preview-phone-screen .screen-icon {
-      width: 48px;
-      height: 48px;
-      background: rgba(255, 204, 0, 0.15);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-    }
-    
-    .preview-phone-screen .screen-icon svg {
-      width: 24px;
-      height: 24px;
-      color: var(--primary);
-    }
-    
-    .preview-phone-screen .screen-title {
-      color: #FFFFFF;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    
-    .preview-phone-screen .screen-text {
-      color: #888;
-      font-size: 11px;
     }
     
     /* Mobile Styles */
     @media (max-width: 1024px) {
-      .hero-content {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .testimonials {
         grid-template-columns: 1fr;
-        text-align: center;
-      }
-      
-      .hero-image {
-        display: none;
-      }
-      
-      .hero-subtitle-toggle {
-        justify-content: center;
-      }
-      
-      .trust-badges {
-        justify-content: center;
-      }
-      
-      .for-who-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .calculator-content {
-        grid-template-columns: 1fr;
-      }
-      
-      .stories-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .testimonials-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .why-us-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .footer-content {
-        grid-template-columns: 1fr 1fr;
       }
     }
     
     @media (max-width: 768px) {
-      .nav-links, .nav-cta {
+      .nav-links {
         display: none;
       }
       
@@ -1816,16 +990,8 @@
         display: block;
       }
       
-      .mobile-sticky-cta {
-        display: block;
-      }
-      
-      body {
-        padding-bottom: 70px;
-      }
-      
       .hero {
-        padding: 100px 0 60px;
+        padding: 120px 0 80px;
       }
       
       .hero h1 {
@@ -1833,16 +999,17 @@
       }
       
       .hero-subtitle {
-        font-size: 16px;
+        font-size: 18px;
       }
       
       .hero-buttons {
         flex-direction: column;
+        align-items: center;
       }
       
-      .hero-buttons .btn-primary,
-      .hero-buttons .btn-secondary {
+      .btn-green, .btn-blue {
         width: 100%;
+        max-width: 300px;
         justify-content: center;
       }
       
@@ -1850,16 +1017,8 @@
         font-size: 28px;
       }
       
-      .social-proof-content {
-        gap: 24px;
-      }
-      
-      .proof-number {
-        font-size: 28px;
-      }
-      
-      .proof-divider {
-        display: none;
+      .benefits-grid {
+        grid-template-columns: 1fr;
       }
       
       .steps {
@@ -1870,17 +1029,26 @@
         display: none;
       }
       
-      .download-content h2 {
-        font-size: 28px;
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      
+      .stat-number {
+        font-size: 32px;
+      }
+      
+      .dual-cta-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .lead-form {
+        flex-direction: column;
       }
       
       .download-buttons {
         flex-direction: column;
-      }
-      
-      .download-btn {
-        width: 100%;
-        justify-content: center;
+        align-items: center;
       }
       
       .footer-content {
@@ -1888,22 +1056,30 @@
         text-align: center;
       }
       
-      .contact-content {
+      .footer-social {
+        justify-content: center;
+      }
+      
+      .footer-bottom {
         flex-direction: column;
+        text-align: center;
       }
       
-      .app-preview-content {
-        grid-template-columns: 1fr;
+      .footer-badges {
+        justify-content: center;
       }
       
-      .app-preview-mockups {
-        display: none;
-      }
-      
-      .download-stores {
+      .trust-badges {
         flex-direction: column;
-        gap: 12px;
-        align-items: center;
+        gap: 16px;
+      }
+      
+      .sticky-cta {
+        display: block;
+      }
+      
+      .footer {
+        padding-bottom: 100px;
       }
     }
   </style>
@@ -1912,502 +1088,156 @@
   <!-- Navigation -->
   <nav class="nav">
     <div class="container nav-container">
-      <a href="#" class="nav-logo">
-        <img src="/favicon.png" alt="VikendMajstor">
+      <a href="/" class="nav-logo">
+        <img src="/favicon.png" alt="VikendMajstor" loading="lazy">
         <span class="nav-logo-text">VikendMajstor</span>
       </a>
       <ul class="nav-links">
-        <li><a href="#kako-poceti">Kako poceti</a></li>
-        <li><a href="#za-koga">Za koga</a></li>
+        <li><a href="#koristi">Koristi</a></li>
         <li><a href="#kako-radi">Kako radi</a></li>
-        <li><a href="#kalkulator">Kalkulator</a></li>
         <li><a href="#faq">FAQ</a></li>
+        <li><a href="#preuzmi">Preuzmi</a></li>
       </ul>
-      <a href="#preuzmi" class="nav-cta">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Preuzmi aplikaciju
-      </a>
-      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">&#9776;</button>
+      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="nav-cta" target="_blank" rel="noopener noreferrer">Preuzmi aplikaciju</a>
+      <button class="mobile-menu-btn" aria-label="Meni">&#9776;</button>
     </div>
   </nav>
-  
-  <!-- Mobile Menu -->
-  <div class="mobile-menu" id="mobileMenu">
-    <ul class="mobile-menu-links">
-      <li><a href="#kako-poceti" onclick="toggleMobileMenu()">Kako poceti</a></li>
-      <li><a href="#za-koga" onclick="toggleMobileMenu()">Za koga</a></li>
-      <li><a href="#kako-radi" onclick="toggleMobileMenu()">Kako radi</a></li>
-      <li><a href="#kalkulator" onclick="toggleMobileMenu()">Kalkulator</a></li>
-      <li><a href="#faq" onclick="toggleMobileMenu()">FAQ</a></li>
-    </ul>
-    <a href="#preuzmi" class="mobile-menu-cta" onclick="toggleMobileMenu()">Preuzmi aplikaciju</a>
-  </div>
 
   <!-- Hero Section -->
   <section class="hero">
-    <div class="container">
-      <div class="hero-content">
-        <div class="hero-text">
-          <div class="hero-badge">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            Srpska platforma za deljenje alata
-          </div>
-          <h1>Alat koji stoji = <span class="highlight">Novac koji radi</span></h1>
-          
-          <div class="hero-subtitle-toggle">
-            <button class="toggle-btn active" onclick="showOwnerText()">Imam alat</button>
-            <button class="toggle-btn" onclick="showRenterText()">Treba mi alat</button>
-          </div>
-          
-          <p class="hero-subtitle" id="heroSubtitle">Tvoja busilica moze da ti donese 5.000 din mesecno. Prestani da placas za alat koji skuplja prasinu.</p>
-          
-          <div class="hero-value" id="heroValue">
-            <strong>Prosecna zarada vlasnika:</strong> 8.000 din mesecno od 3 alata
-          </div>
-          
-          <div class="hero-buttons">
-            <a href="#preuzmi" class="btn-primary">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 2.3a1.5 1.5 0 0 0-2.1.37l-1.83 2.44a5.72 5.72 0 0 0-3.19 0L8.57 2.67a1.5 1.5 0 0 0-2.47 1.7l1.64 2.19A5.7 5.7 0 0 0 6 11v1H4.5A1.5 1.5 0 0 0 3 13.5v3A1.5 1.5 0 0 0 4.5 18H6v2.5A1.5 1.5 0 0 0 7.5 22h1A1.5 1.5 0 0 0 10 20.5V18h4v2.5a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5V18h1.5a1.5 1.5 0 0 0 1.5-1.5v-3a1.5 1.5 0 0 0-1.5-1.5H18v-1a5.7 5.7 0 0 0-1.74-4.44l1.64-2.19a1.5 1.5 0 0 0-.37-2.07zM10 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
-              Preuzmi APK
-            </a>
-            <a href="https://app.vikendmajstor.rs" target="_blank" class="btn-secondary btn-webapp">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              Otvori web aplikaciju
-            </a>
-          </div>
-          
-          <div class="trust-badges">
-            <div class="trust-badge">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              Bezbedno
-            </div>
-            <div class="trust-badge">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              Bez provizije
-            </div>
-            <div class="trust-badge">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
-              Verifikovani korisnici
-            </div>
-            <div class="trust-badge">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              Srpska platforma
-            </div>
-          </div>
-        </div>
-        
-        <div class="hero-image">
-          <div class="phone-mockup">
-            <div class="phone-screen">
-              <img src="/favicon.png" alt="VikendMajstor">
-              <div class="phone-screen-title">VikendMajstor</div>
-              <div class="phone-screen-text">Iznajmi ili zaradi od alata u tvom komsijstvu</div>
-            </div>
-          </div>
-        </div>
+    <div class="container hero-content">
+      <h1>Ne kupuj alat.<br><span>Iznajmi ga ili zaradi od njega.</span></h1>
+      <p class="hero-subtitle">VikendMajstor povezuje ljude kojima treba alat sa onima koji ga vec imaju. Bez provizije. Lokalno. Jednostavno.</p>
+      <div class="hero-buttons">
+        <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="btn-green" target="_blank" rel="noopener noreferrer">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          Iznajmi alat
+        </a>
+        <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="btn-blue" target="_blank" rel="noopener noreferrer">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          Dodaj svoj alat i zaradi
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- Social Proof Bar -->
-  <section class="social-proof">
+  <!-- Benefits Section -->
+  <section class="benefits" id="koristi">
     <div class="container">
-      <div class="social-proof-content">
-        <div class="proof-item">
-          <div class="proof-number">500+</div>
-          <div class="proof-label">Korisnika</div>
-        </div>
-        <div class="proof-divider"></div>
-        <div class="proof-item">
-          <div class="proof-number">2.000+</div>
-          <div class="proof-label">Alata</div>
-        </div>
-        <div class="proof-divider"></div>
-        <div class="proof-item">
-          <div class="proof-number">4.8/5</div>
-          <div class="proof-label">Prosecna ocena</div>
-        </div>
-        <div class="proof-divider"></div>
-        <div class="proof-item">
-          <div class="proof-number">15+</div>
-          <div class="proof-label">Gradova</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- App Preview / Onboarding Section -->
-  <section class="app-preview" id="kako-poceti">
-    <div class="container">
-      <div class="app-preview-content">
-        <div class="app-preview-text">
-          <span class="section-label">Kako poceti</span>
-          <h2>Postavi oglas u 3 koraka</h2>
-          <p>Bez komplikovanih procedura. Registruj se, dodaj alat i pocni da zaradjujes vec danas.</p>
-          
-          <div class="app-preview-steps">
-            <div class="preview-step">
-              <div class="preview-step-number">1</div>
-              <div class="preview-step-content">
-                <h4>Dodaj alat</h4>
-                <p>Fotografisi svoj alat, dodaj opis i odredi cenu po danu. Traje manje od 2 minuta.</p>
-              </div>
-            </div>
-            <div class="preview-step">
-              <div class="preview-step-number">2</div>
-              <div class="preview-step-content">
-                <h4>Iznajmi</h4>
-                <p>Prihvati rezervacije, dogovori preuzimanje i predaj alat komsiji uz depozit.</p>
-              </div>
-            </div>
-            <div class="preview-step">
-              <div class="preview-step-number">3</div>
-              <div class="preview-step-content">
-                <h4>Zaradi</h4>
-                <p>Primi uplatu direktno - bez provizije, bez posrednika. Tvoj alat, tvoja zarada.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="app-preview-mockups">
-          <div class="preview-phone">
-            <div class="preview-phone-screen">
-              <div class="screen-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              </div>
-              <div class="screen-title">Dodaj alat</div>
-              <div class="screen-text">Fotografisi i postavi oglas za 2 min</div>
-            </div>
-          </div>
-          <div class="preview-phone">
-            <div class="preview-phone-screen">
-              <div class="screen-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-              <div class="screen-title">Iznajmi</div>
-              <div class="screen-text">Prihvati rezervacije i dogovori termin</div>
-            </div>
-          </div>
-          <div class="preview-phone">
-            <div class="preview-phone-screen">
-              <div class="screen-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
-              </div>
-              <div class="screen-title">Zaradi</div>
-              <div class="screen-text">Primi uplatu direktno bez provizije</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- For Who Section -->
-  <section class="for-who" id="za-koga">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-label">Za koga je VikendMajstor</span>
-        <h2 class="section-title">Izaberi svoju stranu</h2>
-        <p class="section-subtitle">Bilo da imas alat koji stoji ili ti treba alat za vikend projekat</p>
-      </div>
+      <h2 class="section-title">Zasto VikendMajstor?</h2>
+      <p class="section-subtitle">Tri razloga zasto je pametnije iznajmiti nego kupiti</p>
       
-      <div class="for-who-grid">
-        <div class="for-who-card owners">
-          <div class="for-who-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
           </div>
-          <h3>Za vlasnike alata</h3>
-          <p class="tagline">Pretvori garazni alat u mesecni prihod</p>
-          <ul class="for-who-benefits">
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Postavi oglas za 2 minuta
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Ti odredjujes cenu i uslove
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Placanje direktno - bez provizije
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Depozit za zastitu tvog alata
-            </li>
-          </ul>
-          <div class="for-who-stat">
-            <div class="for-who-stat-number">8.000 din</div>
-            <div class="for-who-stat-label">prosecna mesecna zarada</div>
-          </div>
+          <h3>Ne kupuj ono sto koristis retko</h3>
+          <p>Ustedi novac iznajmljivanjem alata iz komsiluka. Zasto placati punu cenu za nesto sto ces koristiti jednom godisnje?</p>
         </div>
         
-        <div class="for-who-card renters">
-          <div class="for-who-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
           </div>
-          <h3>Za iznajmljivace</h3>
-          <p class="tagline">Uzmi alat koji ti treba, bez kupovine</p>
-          <ul class="for-who-benefits">
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Pronadji alat u komsijstvu
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Ustedi do 90% u odnosu na kupovinu
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Rezervisi online, preuzmi uzivo
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Verifikovani vlasnici sa ocenama
-            </li>
-          </ul>
-          <div class="for-who-stat">
-            <div class="for-who-stat-number">90%</div>
-            <div class="for-who-stat-label">usteda u odnosu na kupovinu</div>
+          <h3>Zaradi od alata koji stoji</h3>
+          <p>Tvoj alat moze da donosi prihod svaki vikend. Dodaj oglas za par minuta i pocni da zaradujes.</p>
+        </div>
+        
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           </div>
+          <h3>Lokalno i direktno</h3>
+          <p>Bez provizije. Dogovor direktno izmedju korisnika. Podrzi lokalnu zajednicu i upoznaj komsije.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- How It Works -->
+  <!-- How it Works -->
   <section class="how-it-works" id="kako-radi">
     <div class="container">
-      <div class="section-header">
-        <span class="section-label" style="background: var(--primary); color: var(--dark);">Kako radi</span>
-        <h2 class="section-title">Tri jednostavna koraka</h2>
-        <p class="section-subtitle">Od pretrage do alata u tvojim rukama za manje od sat vremena</p>
-      </div>
+      <h2 class="section-title">Kako funkcionise?</h2>
+      <p class="section-subtitle">Tri jednostavna koraka do alata ili zarade</p>
       
       <div class="steps">
         <div class="step">
           <div class="step-number">1</div>
-          <div class="step-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          </div>
-          <h3>Pronadji alat</h3>
-          <p>Pretrazi oglase u tvojoj okolini. Koristi filtere za kategoriju, cenu i udaljenost.</p>
+          <h3>Pronadi ili dodaj alat</h3>
+          <p>Pretrazuj dostupne alate u blizini ili dodaj svoj alat i odredi cenu iznajmljivanja.</p>
         </div>
         <div class="step">
           <div class="step-number">2</div>
-          <div class="step-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          </div>
-          <h3>Rezervisi termin</h3>
-          <p>Izaberi datume, posalji zahtev i sacekaj potvrdu od vlasnika. Chat je uvek dostupan.</p>
+          <h3>Dogovori iznajmljivanje</h3>
+          <p>Komuniciraj direktno sa drugom stranom, dogovori datume i nacin preuzimanja.</p>
         </div>
         <div class="step">
           <div class="step-number">3</div>
-          <div class="step-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          </div>
-          <h3>Preuzmi i koristi</h3>
-          <p>Dogovori se o preuzimanju, plati direktno vlasniku, koristi alat i vrati na vreme.</p>
+          <h3>Ustedi ili zaradi</h3>
+          <p>Ustedi novac iznajmljivanjem umesto kupovine, ili zaradi pasivni prihod od svog alata.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Calculator Section -->
-  <section class="calculator-section" id="kalkulator">
+  <!-- Social Proof -->
+  <section class="social-proof">
     <div class="container">
-      <div class="calculator-content">
-        <div class="calculator-text">
-          <span class="section-label">Kalkulator</span>
-          <h2>Izracunaj koliko mozes da ustedi ili zaradis</h2>
-          <p>Bilo da zelis da iznajmis alat za vikend projekat ili da zaradis od svog alata koji stoji - izracunaj kolika je tvoja korist.</p>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number">500+</div>
+          <div class="stat-label">Korisnika</div>
         </div>
-        
-        <div class="calculator-box">
-          <div class="calc-tabs">
-            <button class="calc-tab active" onclick="switchCalcTab('renter')">Zelim da iznajmim</button>
-            <button class="calc-tab" onclick="switchCalcTab('owner')">Zelim da zaradim</button>
-          </div>
-          
-          <div id="renterCalc">
-            <div class="calc-input-group">
-              <label>Koji alat ti treba?</label>
-              <select id="toolSelect" onchange="calculateSavings()">
-                <option value="12000">Busilica (cena nove: 12.000 din)</option>
-                <option value="25000">Brusilica (cena nove: 25.000 din)</option>
-                <option value="35000">Kruzna testera (cena nove: 35.000 din)</option>
-                <option value="45000">Elektricna rendisaljka (cena nove: 45.000 din)</option>
-                <option value="80000">Betonska mesalica (cena nove: 80.000 din)</option>
-              </select>
-            </div>
-            <div class="calc-input-group">
-              <label>Koliko dana ti treba?</label>
-              <input type="number" id="daysInput" value="2" min="1" max="30" onchange="calculateSavings()">
-            </div>
-            <div class="calc-result">
-              <div class="calc-result-label">Tvoja usteda</div>
-              <div class="calc-result-value" id="savingsResult">11.000 din</div>
-              <div class="calc-result-note">u poredjenju sa kupovinom novog alata</div>
-            </div>
-          </div>
-          
-          <div id="ownerCalc" style="display: none;">
-            <div class="calc-input-group">
-              <label>Koji alat imas?</label>
-              <select id="ownerToolSelect" onchange="calculateEarnings()">
-                <option value="500">Busilica (dnevna cena: ~500 din)</option>
-                <option value="800">Brusilica (dnevna cena: ~800 din)</option>
-                <option value="1000">Kruzna testera (dnevna cena: ~1.000 din)</option>
-                <option value="1500">Elektricna rendisaljka (dnevna cena: ~1.500 din)</option>
-                <option value="3000">Betonska mesalica (dnevna cena: ~3.000 din)</option>
-              </select>
-            </div>
-            <div class="calc-input-group">
-              <label>Koliko dana mesecno mozes da iznajmis?</label>
-              <input type="number" id="rentalDaysInput" value="8" min="1" max="30" onchange="calculateEarnings()">
-            </div>
-            <div class="calc-result">
-              <div class="calc-result-label">Tvoja mesecna zarada</div>
-              <div class="calc-result-value" id="earningsResult">4.000 din</div>
-              <div class="calc-result-note">od jednog alata, bez provizije</div>
-            </div>
-          </div>
-          
-          <div class="calc-cta">
-            <a href="#preuzmi" class="btn-primary">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Preuzmi aplikaciju i pocni
-            </a>
-          </div>
+        <div class="stat-item">
+          <div class="stat-number">2000+</div>
+          <div class="stat-label">Alata</div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Storytelling Section -->
-  <section class="storytelling">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-label">Prave price</span>
-        <h2 class="section-title">Kako su nasi korisnici profitirali</h2>
-        <p class="section-subtitle">Konkretne price iz Srbije - od problema do resenja</p>
+        <div class="stat-item">
+          <div class="stat-number">4.8</div>
+          <div class="stat-label">Prosecna ocena</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">15+</div>
+          <div class="stat-label">Gradova</div>
+        </div>
       </div>
       
-      <div class="stories-grid">
-        <div class="story-card owner">
-          <div class="story-header">
-            <div class="story-avatar">P</div>
-            <div class="story-meta">
-              <h4>Petar M.</h4>
-              <span>Beograd, Vozdovac</span>
-            </div>
-            <span class="story-label">Vlasnik</span>
-          </div>
-          <div class="story-content">
-            <div class="story-section">
-              <div class="story-section-title">Problem</div>
-              <p>Petar ima garazu punu alata - busilicu, brusilicu, kruznu testeru. Koristi ih mozda 5 puta godisnje. Alat stoji i gubi na vrednosti.</p>
-            </div>
-            <div class="story-section">
-              <div class="story-section-title">Resenje</div>
-              <p>Stavio je 3 alata na VikendMajstor za ukupno 10 minuta. Fotografisao, dodao opis i cenu.</p>
-            </div>
-            <div class="story-result">
-              <div class="story-result-number">12.000 din</div>
-              <div class="story-result-text">zarade prvog meseca. Alat koji je bio "mrtav kapital" sada radi za njega.</div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="story-card renter">
-          <div class="story-header">
-            <div class="story-avatar">M</div>
-            <div class="story-meta">
-              <h4>Marko S.</h4>
-              <span>Nis, Mediana</span>
-            </div>
-            <span class="story-label">Iznajmljivac</span>
-          </div>
-          <div class="story-content">
-            <div class="story-section">
-              <div class="story-section-title">Problem</div>
-              <p>Marko je hteo da napravi terasu. Trebala mu je kruzna testera (cena nove: 35.000 din) za jedan vikend.</p>
-            </div>
-            <div class="story-section">
-              <div class="story-section-title">Resenje</div>
-              <p>Pronasao komsiju na 10 minuta koji ima testeru. Rezervisao, platio na licu mesta.</p>
-            </div>
-            <div class="story-result">
-              <div class="story-result-number">33.000 din</div>
-              <div class="story-result-text">ustede. Platio 2.000 din za 2 dana umesto 35.000 za novu testeru.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Testimonials -->
-  <section class="testimonials">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-label">Utisci korisnika</span>
-        <h2 class="section-title">Sta kazu nasi korisnici</h2>
-        <p class="section-subtitle">Prava misljenja od pravih ljudi iz Srbije</p>
-      </div>
+      <h3 style="text-align: center; font-size: 28px; margin-bottom: 40px;">Sta kazu nasi korisnici</h3>
       
-      <div class="testimonials-grid">
-        <div class="testimonial-card">
-          <div class="testimonial-stars">
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-          </div>
-          <p class="testimonial-text">"Imam Makitu busilicu koja je stajala 2 godine. Sada zaradjujem 3.000 din mesecno samo od nje. Najbolja odluka!"</p>
+      <div class="testimonials">
+        <div class="testimonial">
+          <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial-text">"Trebala mi je busilica samo za jedan dan. Nasao sam je u komsiluku za 500 dinara umesto da kupujem novu za 15.000. Odlicna aplikacija!"</p>
           <div class="testimonial-author">
             <div class="testimonial-avatar">M</div>
             <div class="testimonial-info">
-              <h5>Milan P.</h5>
-              <span>Novi Sad</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="testimonial-card">
-          <div class="testimonial-stars">
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-          </div>
-          <p class="testimonial-text">"Trebala mi je slajferica za jedan dan. Umesto da kupim za 8.000, platila sam 500 din. Genijalno jednostavno!"</p>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">A</div>
-            <div class="testimonial-info">
-              <h5>Ana M.</h5>
+              <h4>Marko P.</h4>
               <span>Beograd</span>
             </div>
           </div>
         </div>
         
-        <div class="testimonial-card">
-          <div class="testimonial-stars">
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-          </div>
-          <p class="testimonial-text">"Super aplikacija za vikend majstore! Uzeo sam mesalicu za beton na 3 dana, ustedio sam preko 70.000 dinara."</p>
+        <div class="testimonial">
+          <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial-text">"Imam kosilicu koju koristim jednom nedeljno. Sada je iznajmljujem komsijama i zaradim 4-5 hiljada mesecno. Super ideja!"</p>
           <div class="testimonial-author">
-            <div class="testimonial-avatar">D</div>
+            <div class="testimonial-avatar">J</div>
             <div class="testimonial-info">
-              <h5>Dragan K.</h5>
-              <span>Kragujevac</span>
+              <h4>Jelena S.</h4>
+              <span>Nis</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="testimonial">
+          <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial-text">"Konacno nesto sto povezuje ljude u komsiluku. Upoznao sam super ljude i zaradio od alata koji je stajao u garazi."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">N</div>
+            <div class="testimonial-info">
+              <h4>Nikola T.</h4>
+              <span>Novi Sad</span>
             </div>
           </div>
         </div>
@@ -2415,82 +1245,66 @@
     </div>
   </section>
 
-  <!-- Download Section -->
-  <section class="download-section" id="preuzmi">
+  <!-- Dual CTA Section -->
+  <section class="dual-cta">
     <div class="container">
-      <div class="download-content">
-        <h2>Pocni da <span>zaradjujes</span> danas</h2>
-        <p>Besplatno preuzimanje, bez skrivenih troskova, bez provizije. Placanje direktno izmedju korisnika.</p>
-        
-        <div class="download-buttons">
-          <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="download-btn primary" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 2.3a1.5 1.5 0 0 0-2.1.37l-1.83 2.44a5.72 5.72 0 0 0-3.19 0L8.57 2.67a1.5 1.5 0 0 0-2.47 1.7l1.64 2.19A5.7 5.7 0 0 0 6 11v1H4.5A1.5 1.5 0 0 0 3 13.5v3A1.5 1.5 0 0 0 4.5 18H6v2.5A1.5 1.5 0 0 0 7.5 22h1A1.5 1.5 0 0 0 10 20.5V18h4v2.5a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5V18h1.5a1.5 1.5 0 0 0 1.5-1.5v-3a1.5 1.5 0 0 0-1.5-1.5H18v-1a5.7 5.7 0 0 0-1.74-4.44l1.64-2.19a1.5 1.5 0 0 0-.37-2.07zM10 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
-            <span class="btn-text">
-              <span class="btn-small">Preuzmi za</span>
-              <span class="btn-large">Android (APK)</span>
-            </span>
+      <div class="dual-cta-grid">
+        <div class="cta-card cta-card-owner">
+          <div class="cta-card-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+          </div>
+          <h3>Imas alat koji ti stoji?</h3>
+          <ul>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Dodaj alat za par minuta
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Sam odredujes cenu
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Zaradujes kad god ga neko iznajmi
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              0% provizije
+            </li>
+          </ul>
+          <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="btn-white" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg>
+            Dodaj alat
           </a>
-          
-          <a href="https://app.vikendmajstor.rs" target="_blank" class="download-btn webapp">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            <span class="btn-text">
-              <span class="btn-small">Otvori odmah</span>
-              <span class="btn-large">Web aplikaciju</span>
-            </span>
+        </div>
+        
+        <div class="cta-card cta-card-renter">
+          <div class="cta-card-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          </div>
+          <h3>Treba ti alat samo za vikend?</h3>
+          <ul>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Ne kupujes skupo
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Ustedi prostor i novac
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Alat ti je blizu
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Direktan dogovor sa vlasnikom
+            </li>
+          </ul>
+          <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="btn-white" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            Pronadi alat
           </a>
-        </div>
-        
-        <div class="download-stores">
-          <div class="store-coming-soon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
-            <span>Google Play - uskoro</span>
-          </div>
-          <div class="store-coming-soon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-            <span>App Store - uskoro</span>
-          </div>
-        </div>
-        
-        <div class="download-note">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          Besplatno zauvek za osnovne funkcije
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Why Us Section -->
-  <section class="why-us">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-label">Zasto VikendMajstor</span>
-        <h2 class="section-title">Tri razloga zasto smo bolji izbor</h2>
-        <p class="section-subtitle">Vise od obicne aplikacije - zajednica koja menja nacin na koji koristimo alat</p>
-      </div>
-      
-      <div class="why-us-grid">
-        <div class="why-us-card">
-          <div class="why-us-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
-          </div>
-          <h3>Ekonomija deljenja</h3>
-          <p>Ustedi novac iznajmljivanjem umesto kupovine. Ili zaradi od alata koji ti ne treba svaki dan. Win-win za sve.</p>
-        </div>
-        
-        <div class="why-us-card">
-          <div class="why-us-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M7 12a5 5 0 0 1 5-5"/><path d="M12 22a10 10 0 0 1-7-17"/></svg>
-          </div>
-          <h3>Ekologija</h3>
-          <p>Manje kupovine = manje proizvodnje = manje otpada. Deljenjem resursa stedi planetu i produzavas zivotni vek alata.</p>
-        </div>
-        
-        <div class="why-us-card">
-          <div class="why-us-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <h3>Lokalna zajednica</h3>
-          <p>Povezi se sa komsijama, gradi poverenje u zajednici. Srpska platforma za Srbe - bez posrednika.</p>
         </div>
       </div>
     </div>
@@ -2499,108 +1313,116 @@
   <!-- FAQ Section -->
   <section class="faq" id="faq">
     <div class="container">
-      <div class="section-header">
-        <span class="section-label">FAQ</span>
-        <h2 class="section-title">Cesta pitanja</h2>
-        <p class="section-subtitle">Odgovori na najcesce postavljana pitanja</p>
-      </div>
+      <h2 class="section-title">Cesta pitanja</h2>
+      <p class="section-subtitle">Sve sto treba da znas pre koriscenja</p>
       
       <div class="faq-grid">
         <div class="faq-item">
-          <div class="faq-question" onclick="toggleFaq(this)">
-            Kako da dodam oglas za svoj alat?
-            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="faq-question">
+            Sta ako se alat osteti?
+            <span class="faq-arrow">&#9660;</span>
           </div>
           <div class="faq-answer">
-            <p>Preuzmite aplikaciju, registrujte se, i kliknite na "+" dugme u donjem meniju. Dodajte fotografije (do 4), opis, kategoriju i cenu po danu. Ceo proces traje manje od 2 minuta. Besplatni korisnici mogu dodati do 5 oglasa.</p>
+            <p>Preporucujemo dogovor o depozitu prilikom preuzimanja alata. Fotografisite alat pre i posle koriscenja. U slucaju ostecenja, depozit pokriva troskove popravke ili zamene. Uvek komunicirajte otvoreno sa drugom stranom.</p>
           </div>
         </div>
         
         <div class="faq-item">
-          <div class="faq-question" onclick="toggleFaq(this)">
-            Kako se vrsi placanje?
-            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="faq-question">
+            Kako funkcionise placanje?
+            <span class="faq-arrow">&#9660;</span>
           </div>
           <div class="faq-answer">
-            <p>Placanje se vrsi direktno izmedju korisnika prilikom preuzimanja alata. VikendMajstor ne uzima proviziju i ne procesira placanja kroz aplikaciju. To znaci vise novca za vas, bez skrivenih troskova.</p>
+            <p>Placanje se vrsi direktno izmedju korisnika prilikom preuzimanja alata. VikendMajstor ne naplacuje proviziju. Uskoro ce biti dostupno i online placanje putem Stripe-a za dodatnu sigurnost.</p>
           </div>
         </div>
         
         <div class="faq-item">
-          <div class="faq-question" onclick="toggleFaq(this)">
-            Sta ako neko osteti moj alat?
-            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="faq-question">
+            Kako da dodam oglas?
+            <span class="faq-arrow">&#9660;</span>
           </div>
           <div class="faq-answer">
-            <p>Preporucujemo da uvek trazite depozit kao garanciju (obicno 20-50% vrednosti alata). Fotografisite alat pre i posle iznajmljivanja. Svi korisnici imaju ocene i recenzije, pa mozete videti njihovu istoriju pre nego sto prihvatite rezervaciju.</p>
+            <p>Preuzmite aplikaciju, registrujte se i kliknite na "+" dugme. Dodajte naslov, opis, kategoriju, cenu po danu i do 4 fotografije. Vas oglas ce odmah biti vidljiv drugim korisnicima u vasem gradu.</p>
           </div>
         </div>
         
         <div class="faq-item">
-          <div class="faq-question" onclick="toggleFaq(this)">
-            Da li aplikacija radi na iOS (iPhone)?
-            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="faq-question">
+            Da li je koriscenje besplatno?
+            <span class="faq-arrow">&#9660;</span>
           </div>
           <div class="faq-answer">
-            <p>Trenutno je dostupna Android verzija za direktno preuzimanje. iOS verzija i objave na Google Play i App Store su u pripremi i bice dostupne uskoro. Mozete koristiti web verziju aplikacije na app.vikendmajstor.rs sa bilo kog uredjaja.</p>
+            <p>Da! Osnovna verzija aplikacije je potpuno besplatna. Mozete dodati do 5 oglasa i koristiti sve osnovne funkcije. Premium plan je dostupan za korisnike koji zele neogranicen broj oglasa i dodatne benefite.</p>
           </div>
         </div>
         
         <div class="faq-item">
-          <div class="faq-question" onclick="toggleFaq(this)">
-            Kako funkcionise rezervacija?
-            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="faq-question">
+            U kojim gradovima je dostupno?
+            <span class="faq-arrow">&#9660;</span>
           </div>
           <div class="faq-answer">
-            <p>Pronadjite alat koji vam treba, izaberite datume i posaljite zahtev za rezervaciju. Vlasnik ce dobiti obavestenje i moze da prihvati ili odbije zahtev. Nakon potvrde, koristite chat da se dogovorite o preuzimanju.</p>
-          </div>
-        </div>
-        
-        <div class="faq-item">
-          <div class="faq-question" onclick="toggleFaq(this)">
-            Da li je aplikacija besplatna?
-            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-          <div class="faq-answer">
-            <p>Da, osnovne funkcije su besplatne zauvek. Besplatni korisnici mogu da dodaju do 5 oglasa. Za neogranicen broj oglasa i dodatne mogucnosti (istaknuti oglasi, prioritet u pretrazi), postoje Premium paketi.</p>
+            <p>VikendMajstor je dostupan sirom Srbije! Imamo aktivne korisnike u Beogradu, Nisu, Novom Sadu, Kragujevcu, Subotici i mnogim drugim gradovima. Aplikacija automatski prikazuje alate u vasoj blizini.</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Contact Section -->
-  <section class="contact" id="kontakt">
+  <!-- Lead Capture -->
+  <section class="lead-capture">
     <div class="container">
-      <div class="contact-content">
-        <div class="contact-item">
-          <div class="contact-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          </div>
-          <div class="contact-text">
-            <h4>Email podrska</h4>
-            <a href="mailto:podrska@vikendmajstor.rs">podrska@vikendmajstor.rs</a>
-          </div>
+      <h2>Budi u toku sa novostima</h2>
+      <p>Ostavi email da te obavestimo o novim funkcijama i specijalnim ponudama.</p>
+      <form class="lead-form" action="#" method="POST" onsubmit="event.preventDefault(); alert('Hvala! Obavesticemo te o novostima.'); this.reset();">
+        <input type="email" name="email" placeholder="Tvoja email adresa" required>
+        <button type="submit">Prijavi se</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Gamification Banner -->
+  <section class="gamification">
+    <div class="container">
+      <h3>Postani top majstor u svom gradu!</h3>
+      <p>Sakupljaj pozitivne ocene, budi aktivan i osvoji titulu najboljeg iznajmljivaca u tvojoj okolini.</p>
+    </div>
+  </section>
+
+  <!-- Download Section -->
+  <section class="download" id="preuzmi">
+    <div class="container">
+      <h2>Preuzmi aplikaciju</h2>
+      <p>Dostupno za Android. iOS verzija uskoro!</p>
+      
+      <div class="download-buttons">
+        <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="store-btn store-btn-primary" target="_blank" rel="noopener noreferrer">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
+          Preuzmi APK za Android
+        </a>
+        <a href="#" class="store-btn store-btn-disabled" onclick="event.preventDefault(); alert('App Store verzija ce uskoro biti dostupna!');">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          App Store (uskoro)
+        </a>
+        <a href="#" class="store-btn store-btn-disabled" onclick="event.preventDefault(); alert('Google Play verzija ce uskoro biti dostupna!');">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
+          Google Play (uskoro)
+        </a>
+      </div>
+      
+      <div class="trust-badges">
+        <div class="trust-badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          SSL zastita aktivna
         </div>
-        
-        <div class="contact-item">
-          <div class="contact-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          </div>
-          <div class="contact-text">
-            <h4>Lokacija</h4>
-            <a href="#">Srbija - cela zemlja</a>
-          </div>
+        <div class="trust-badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+          Stripe placanje uskoro
         </div>
-        
-        <div class="contact-item">
-          <div class="contact-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          </div>
-          <div class="contact-text">
-            <h4>Odgovaramo u roku od</h4>
-            <a href="#">24 sata</a>
-          </div>
+        <div class="trust-badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Email verifikacija
         </div>
       </div>
     </div>
@@ -2612,173 +1434,85 @@
       <div class="footer-content">
         <div class="footer-brand">
           <h3>VikendMajstor</h3>
-          <p>Platforma za iznajmljivanje alata i opreme. Povezujemo komsije i stedimo planetu kroz deljenje resursa.</p>
-          <div class="footer-badge">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-            Srpska platforma
+          <p>Platforma za iznajmljivanje alata koja povezuje komsije i stedi planetu kroz deljenje resursa. Bez provizije, lokalno, jednostavno.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="#" aria-label="Instagram">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
           </div>
         </div>
         
         <div class="footer-links">
           <h4>Navigacija</h4>
           <ul>
-            <li><a href="#za-koga">Za koga</a></li>
+            <li><a href="#koristi">Koristi</a></li>
             <li><a href="#kako-radi">Kako radi</a></li>
-            <li><a href="#kalkulator">Kalkulator</a></li>
+            <li><a href="#faq">FAQ</a></li>
             <li><a href="#preuzmi">Preuzmi</a></li>
           </ul>
         </div>
         
         <div class="footer-links">
-          <h4>Podrska</h4>
+          <h4>Gradovi</h4>
           <ul>
-            <li><a href="#faq">Cesta pitanja</a></li>
-            <li><a href="mailto:podrska@vikendmajstor.rs">Kontakt</a></li>
-            <li><a href="https://app.vikendmajstor.rs">Web aplikacija</a></li>
+            <li><a href="/iznajmljivanje-alata-nis">Nis</a></li>
+            <li><a href="/kosilica-beograd">Beograd</a></li>
+            <li><a href="/brusilica-novi-sad">Novi Sad</a></li>
           </ul>
         </div>
         
         <div class="footer-links">
-          <h4>Pravne informacije</h4>
+          <h4>Kontakt</h4>
           <ul>
-            <li><a href="/privacy-policy">Politika privatnosti</a></li>
-            <li><a href="/terms-of-service">Uslovi koriscenja</a></li>
+            <li><a href="mailto:podrska@vikendmajstor.rs">podrska@vikendmajstor.rs</a></li>
+            <li><a href="/iznajmljivanje-alata-nis">Alati u Nisu</a></li>
+            <li><a href="/busilica-nis">Busilice Nis</a></li>
           </ul>
         </div>
       </div>
       
       <div class="footer-bottom">
-        <p>&copy; 2024 VikendMajstor. Sva prava zadrzana.</p>
+        <span>&copy; 2024 VikendMajstor. Sva prava zadrzana.</span>
+        <div class="footer-badges">
+          <div class="footer-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            SSL
+          </div>
+          <div class="footer-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Verifikovano
+          </div>
+        </div>
       </div>
     </div>
   </footer>
 
-  <!-- Mobile Sticky CTA -->
-  <div class="mobile-sticky-cta">
-    <div class="mobile-sticky-cta-buttons">
-      <a href="#preuzmi" class="btn-primary">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M17.523 2.3a1.5 1.5 0 0 0-2.1.37l-1.83 2.44a5.72 5.72 0 0 0-3.19 0L8.57 2.67a1.5 1.5 0 0 0-2.47 1.7l1.64 2.19A5.7 5.7 0 0 0 6 11v1H4.5A1.5 1.5 0 0 0 3 13.5v3A1.5 1.5 0 0 0 4.5 18H6v2.5A1.5 1.5 0 0 0 7.5 22h1A1.5 1.5 0 0 0 10 20.5V18h4v2.5a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5V18h1.5a1.5 1.5 0 0 0 1.5-1.5v-3a1.5 1.5 0 0 0-1.5-1.5H18v-1a5.7 5.7 0 0 0-1.74-4.44l1.64-2.19a1.5 1.5 0 0 0-.37-2.07z"/></svg>
-        APK
+  <!-- Sticky Mobile CTA -->
+  <div class="sticky-cta">
+    <div class="sticky-cta-content">
+      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="btn-green" target="_blank" rel="noopener noreferrer">
+        Iznajmi alat
       </a>
-      <a href="https://app.vikendmajstor.rs" target="_blank" class="btn-webapp">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        Web App
+      <a href="https://expo.dev/artifacts/eas/kBvrMhL9Lw5pfmLCeD35KB.apk" class="btn-blue" target="_blank" rel="noopener noreferrer">
+        Dodaj alat
       </a>
     </div>
   </div>
 
+  <!-- FAQ Toggle Script -->
   <script>
-    // Mobile menu toggle
-    function toggleMobileMenu() {
-      const menu = document.getElementById('mobileMenu');
-      menu.classList.toggle('active');
-    }
-    
-    // Hero text toggle
-    function showOwnerText() {
-      document.getElementById('heroSubtitle').textContent = 'Tvoja busilica moze da ti donese 5.000 din mesecno. Prestani da placas za alat koji skuplja prasinu.';
-      document.getElementById('heroValue').innerHTML = '<strong>Prosecna zarada vlasnika:</strong> 8.000 din mesecno od 3 alata';
-      document.querySelectorAll('.toggle-btn').forEach((btn, i) => {
-        btn.classList.toggle('active', i === 0);
-      });
-    }
-    
-    function showRenterText() {
-      document.getElementById('heroSubtitle').textContent = 'Zasto kupovati busilicu za 15.000 kad mozes iznajmiti za 500 din? Pronadji alat u komsijstvu za vikend projekat.';
-      document.getElementById('heroValue').innerHTML = '<strong>Prosecna usteda:</strong> 90% u odnosu na kupovinu novog alata';
-      document.querySelectorAll('.toggle-btn').forEach((btn, i) => {
-        btn.classList.toggle('active', i === 1);
-      });
-    }
-    
-    // Calculator tabs
-    function switchCalcTab(tab) {
-      const tabs = document.querySelectorAll('.calc-tab');
-      const renterCalc = document.getElementById('renterCalc');
-      const ownerCalc = document.getElementById('ownerCalc');
-      
-      tabs.forEach((t, i) => {
-        t.classList.toggle('active', (tab === 'renter' && i === 0) || (tab === 'owner' && i === 1));
-      });
-      
-      if (tab === 'renter') {
-        renterCalc.style.display = 'block';
-        ownerCalc.style.display = 'none';
-        calculateSavings();
-      } else {
-        renterCalc.style.display = 'none';
-        ownerCalc.style.display = 'block';
-        calculateEarnings();
-      }
-    }
-    
-    // Savings calculator
-    function calculateSavings() {
-      const toolPrice = parseInt(document.getElementById('toolSelect').value);
-      const days = parseInt(document.getElementById('daysInput').value) || 1;
-      const rentalPrice = Math.round(toolPrice * 0.04) * days; // ~4% per day
-      const savings = toolPrice - rentalPrice;
-      document.getElementById('savingsResult').textContent = savings.toLocaleString('sr-RS') + ' din';
-    }
-    
-    // Earnings calculator
-    function calculateEarnings() {
-      const dailyRate = parseInt(document.getElementById('ownerToolSelect').value);
-      const days = parseInt(document.getElementById('rentalDaysInput').value) || 1;
-      const earnings = dailyRate * days;
-      document.getElementById('earningsResult').textContent = earnings.toLocaleString('sr-RS') + ' din';
-    }
-    
-    // FAQ accordion
-    function toggleFaq(element) {
-      const faqItem = element.parentElement;
-      const isActive = faqItem.classList.contains('active');
-      
-      // Close all other FAQ items
-      document.querySelectorAll('.faq-item').forEach(item => {
-        item.classList.remove('active');
-      });
-      
-      // Toggle current item
-      if (!isActive) {
-        faqItem.classList.add('active');
-      }
-    }
-    
-    // Initialize calculators
-    calculateSavings();
-    calculateEarnings();
-    
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        const href = this.getAttribute('href');
-        if (href !== '#') {
-          e.preventDefault();
-          const target = document.querySelector(href);
-          if (target) {
-            target.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
-          }
+    document.querySelectorAll('.faq-question').forEach(question => {
+      question.addEventListener('click', () => {
+        const item = question.parentElement;
+        const isActive = item.classList.contains('active');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+        if (!isActive) {
+          item.classList.add('active');
         }
       });
-    });
-    
-    // Hide mobile sticky CTA when near download section
-    window.addEventListener('scroll', function() {
-      const downloadSection = document.getElementById('preuzmi');
-      const stickyCta = document.querySelector('.mobile-sticky-cta');
-      
-      if (downloadSection && stickyCta) {
-        const rect = downloadSection.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-          stickyCta.style.transform = 'translateY(100%)';
-        } else {
-          stickyCta.style.transform = 'translateY(0)';
-        }
-      }
     });
   </script>
 </body>
