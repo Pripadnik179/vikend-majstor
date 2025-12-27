@@ -227,13 +227,17 @@
           <button class="nav-item" data-page="plans"><span class="nav-icon">📋</span> Planovi</button>
           <button class="nav-item" data-page="item-stats"><span class="nav-icon">📊</span> Statistika oglasa</button>
           <div class="nav-section">Moderacija</div>
-          <button class="nav-item" data-page="reports"><span class="nav-icon">🚩</span> Prijave</button>
+          <button class="nav-item" data-page="reports"><span class="nav-icon">🚩</span> Prijave oglasa</button>
+          <button class="nav-item" data-page="user-reports"><span class="nav-icon">👤</span> Prijave korisnika</button>
           <button class="nav-item" data-page="messages"><span class="nav-icon">💬</span> Poruke</button>
           <div class="nav-section">Analitika</div>
           <button class="nav-item" data-page="analytics"><span class="nav-icon">📈</span> Analitika</button>
           <button class="nav-item" data-page="logs"><span class="nav-icon">📋</span> Admin logovi</button>
+          <button class="nav-item" data-page="error-logs"><span class="nav-icon">⚠️</span> Logovi gresaka</button>
           <div class="nav-section">Sistem</div>
           <button class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span> Podesavanja</button>
+          <button class="nav-item" data-page="app-versions"><span class="nav-icon">📱</span> Verzije aplikacije</button>
+          <button class="nav-item" data-page="security"><span class="nav-icon">🔐</span> Bezbednost</button>
           <button class="nav-item" data-page="notifications"><span class="nav-icon">🔔</span> Notifikacije</button>
         </nav>
         <div class="sidebar-footer">
@@ -615,6 +619,135 @@
             </div>
           </div>
         </div>
+        
+        <!-- User Reports Page -->
+        <div id="page-user-reports" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Prijave korisnika</h1>
+              <p>Pregled prijavljenih korisnika</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Prijavljeni korisnik</th>
+                    <th>Prijavljen od</th>
+                    <th>Razlog</th>
+                    <th>Status</th>
+                    <th>Datum</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="user-reports-table">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Error Logs Page -->
+        <div id="page-error-logs" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Logovi gresaka</h1>
+              <p>Pregled serverskih gresaka</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm btn-danger" onclick="clearErrorLogs()">Obrisi sve</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nivo</th>
+                    <th>Poruka</th>
+                    <th>Endpoint</th>
+                    <th>IP</th>
+                    <th>Datum</th>
+                  </tr>
+                </thead>
+                <tbody id="error-logs-table">
+                  <tr><td colspan="5"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- App Versions Page -->
+        <div id="page-app-versions" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Verzije aplikacije</h1>
+              <p>Upravljanje verzijama za Web, Android i iOS</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm" onclick="showAddVersionModal()">+ Dodaj verziju</button>
+            </div>
+          </div>
+          <div class="stats-grid" id="version-stats"></div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Platforma</th>
+                    <th>Verzija</th>
+                    <th>Build</th>
+                    <th>Obavezno</th>
+                    <th>Objavljeno</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="versions-table">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Security Page (2FA) -->
+        <div id="page-security" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Bezbednost</h1>
+              <p>Dvofaktorska autentifikacija i eksport podataka</p>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+              <h3>Dvofaktorska autentifikacija (2FA)</h3>
+            </div>
+            <div id="2fa-status" style="padding: 20px;">
+              <div class="loading"><div class="spinner"></div>Ucitavanje...</div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+              <h3>Status servera</h3>
+            </div>
+            <div id="server-status" style="padding: 20px;">
+              <div class="loading"><div class="spinner"></div>Ucitavanje...</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Eksport podataka</h3>
+            </div>
+            <div style="padding: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="btn" onclick="exportCSV('users')">📥 Eksportuj korisnike (CSV)</button>
+              <button class="btn" onclick="exportCSV('items')">📥 Eksportuj oglase (CSV)</button>
+              <button class="btn" onclick="exportCSV('transactions')">📥 Eksportuj transakcije (CSV)</button>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   </div>
@@ -665,6 +798,10 @@
         subscriptions: loadSubscriptions,
         plans: loadPlans,
         'item-stats': loadItemStats,
+        'user-reports': loadUserReports,
+        'error-logs': loadErrorLogs,
+        'app-versions': loadAppVersions,
+        security: loadSecurity,
         analytics: loadAnalytics,
         reports: loadReports,
         messages: loadMessages,
@@ -1505,6 +1642,392 @@
       const modal = document.getElementById(modalId);
       if (modal) modal.remove();
       document.getElementById('modal-overlay').classList.add('hidden');
+    }
+
+    // ========== User Reports ==========
+    async function loadUserReports() {
+      try {
+        const data = await api('/api/admin/reported-users');
+        const tbody = document.getElementById('user-reports-table');
+        
+        if (!data.reports?.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:40px;">Nema prijava korisnika</td></tr>';
+        } else {
+          tbody.innerHTML = data.reports.map(r => `
+            <tr>
+              <td><strong>${r.reportedUser?.name || r.reportedUser?.email || 'Nepoznat'}</strong></td>
+              <td>${r.reporter?.name || r.reporter?.email || 'Nepoznat'}</td>
+              <td>${r.reason}</td>
+              <td><span class="badge badge-${r.status === 'resolved' ? 'success' : r.status === 'dismissed' ? 'warning' : 'info'}">${r.status}</span></td>
+              <td>${new Date(r.createdAt).toLocaleDateString('sr-RS')}</td>
+              <td>
+                ${r.status === 'pending' ? `
+                  <button class="btn btn-sm" onclick="resolveUserReport('${r.id}', 'resolved')">Resi</button>
+                  <button class="btn btn-sm btn-danger" onclick="resolveUserReport('${r.id}', 'dismissed')">Odbaci</button>
+                ` : '-'}
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        document.getElementById('user-reports-table').innerHTML = '<tr><td colspan="6" style="color:var(--error);text-align:center;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    async function resolveUserReport(reportId, status) {
+      const notes = prompt('Unesite napomenu (opciono):');
+      try {
+        await api(`/api/admin/reported-users/${reportId}/resolve`, {
+          method: 'POST',
+          body: JSON.stringify({ status, adminNotes: notes || '' })
+        });
+        loadUserReports();
+        alert('Prijava resena!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== Error Logs ==========
+    async function loadErrorLogs() {
+      try {
+        const data = await api('/api/admin/error-logs');
+        const tbody = document.getElementById('error-logs-table');
+        
+        if (!data.logs?.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-tertiary);padding:40px;">Nema logova gresaka</td></tr>';
+        } else {
+          tbody.innerHTML = data.logs.map(l => `
+            <tr>
+              <td><span class="badge badge-${l.level === 'error' ? 'error' : l.level === 'warning' ? 'warning' : 'info'}">${l.level}</span></td>
+              <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;">${l.message}</td>
+              <td>${l.endpoint || '-'}</td>
+              <td>${l.ipAddress || '-'}</td>
+              <td>${new Date(l.createdAt).toLocaleString('sr-RS')}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        document.getElementById('error-logs-table').innerHTML = '<tr><td colspan="5" style="color:var(--error);text-align:center;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    async function clearErrorLogs() {
+      if (!confirm('Da li ste sigurni da zelite da obrisete sve logove gresaka?')) return;
+      try {
+        await api('/api/admin/error-logs/clear', { method: 'DELETE' });
+        loadErrorLogs();
+        alert('Logovi obrisani!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== App Versions ==========
+    async function loadAppVersions() {
+      try {
+        const data = await api('/api/admin/app-versions');
+        const tbody = document.getElementById('versions-table');
+        const stats = document.getElementById('version-stats');
+        
+        // Version stats
+        const webVersion = data.versions?.find(v => v.platform === 'web')?.version || 'N/A';
+        const androidVersion = data.versions?.find(v => v.platform === 'android')?.version || 'N/A';
+        const iosVersion = data.versions?.find(v => v.platform === 'ios')?.version || 'N/A';
+        
+        stats.innerHTML = `
+          <div class="stat-card">
+            <div class="stat-icon">🌐</div>
+            <div class="stat-value">${webVersion}</div>
+            <div class="stat-label">Web verzija</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-value">${androidVersion}</div>
+            <div class="stat-label">Android verzija</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🍎</div>
+            <div class="stat-value">${iosVersion}</div>
+            <div class="stat-label">iOS verzija</div>
+          </div>
+        `;
+        
+        if (!data.versions?.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:40px;">Nema verzija</td></tr>';
+        } else {
+          tbody.innerHTML = data.versions.map(v => `
+            <tr>
+              <td><span class="badge badge-${v.platform === 'web' ? 'info' : v.platform === 'android' ? 'success' : 'warning'}">${v.platform}</span></td>
+              <td><strong>${v.version}</strong></td>
+              <td>${v.buildNumber || '-'}</td>
+              <td>${v.isRequired ? 'Da' : 'Ne'}</td>
+              <td>${new Date(v.releasedAt).toLocaleDateString('sr-RS')}</td>
+              <td>
+                <button class="btn btn-sm btn-danger" onclick="deleteVersion('${v.id}')">Obrisi</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        document.getElementById('versions-table').innerHTML = '<tr><td colspan="6" style="color:var(--error);text-align:center;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    function showAddVersionModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.id = 'version-modal';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Dodaj novu verziju</h3>
+            <button class="modal-close" onclick="closeModal('version-modal')">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Platforma</label>
+              <select id="version-platform" class="input">
+                <option value="web">Web</option>
+                <option value="android">Android</option>
+                <option value="ios">iOS</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Verzija (npr. 1.0.0)</label>
+              <input type="text" id="version-number" class="input" placeholder="1.0.0">
+            </div>
+            <div class="form-group">
+              <label>Build broj</label>
+              <input type="number" id="version-build" class="input" placeholder="1">
+            </div>
+            <div class="form-group">
+              <label>Napomene o izdanju</label>
+              <textarea id="version-notes" class="input" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+              <label><input type="checkbox" id="version-required"> Obavezno azuriranje</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" onclick="closeModal('version-modal')">Otkazi</button>
+            <button class="btn btn-primary" onclick="saveVersion()">Sacuvaj</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      document.getElementById('modal-overlay').classList.remove('hidden');
+    }
+
+    async function saveVersion() {
+      try {
+        const versionData = {
+          platform: document.getElementById('version-platform').value,
+          version: document.getElementById('version-number').value,
+          buildNumber: parseInt(document.getElementById('version-build').value) || null,
+          releaseNotes: document.getElementById('version-notes').value,
+          isRequired: document.getElementById('version-required').checked
+        };
+        await api('/api/admin/app-versions', { method: 'POST', body: JSON.stringify(versionData) });
+        closeModal('version-modal');
+        loadAppVersions();
+        alert('Verzija uspesno dodata!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function deleteVersion(versionId) {
+      if (!confirm('Da li ste sigurni da zelite da obrisete ovu verziju?')) return;
+      try {
+        await api(`/api/admin/app-versions/${versionId}`, { method: 'DELETE' });
+        loadAppVersions();
+        alert('Verzija obrisana!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== Security (2FA) ==========
+    async function loadSecurity() {
+      try {
+        // Load 2FA status
+        const twoFaData = await api('/api/admin/2fa/status');
+        const twoFaDiv = document.getElementById('2fa-status');
+        
+        if (twoFaData.enabled) {
+          twoFaDiv.innerHTML = `
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <span class="badge badge-success">Aktivno</span>
+              <span>Dvofaktorska autentifikacija je ukljucena</span>
+            </div>
+            <button class="btn btn-danger" onclick="disable2FA()">Iskljuci 2FA</button>
+          `;
+        } else {
+          twoFaDiv.innerHTML = `
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <span class="badge badge-warning">Neaktivno</span>
+              <span>Dvofaktorska autentifikacija nije ukljucena</span>
+            </div>
+            <button class="btn btn-primary" onclick="setup2FA()">Podesi 2FA</button>
+          `;
+        }
+
+        // Load server status
+        const statusData = await api('/api/admin/deployment-status');
+        const statusDiv = document.getElementById('server-status');
+        
+        const uptimeHours = Math.floor(statusData.status.uptime / 3600);
+        const uptimeMinutes = Math.floor((statusData.status.uptime % 3600) / 60);
+        const memoryMB = Math.round(statusData.status.memoryUsage.heapUsed / 1024 / 1024);
+        
+        statusDiv.innerHTML = `
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+            <div style="padding:16px;background:var(--background);border-radius:8px;">
+              <div style="font-weight:500;margin-bottom:4px;">Server status</div>
+              <span class="badge badge-success">${statusData.status.server}</span>
+            </div>
+            <div style="padding:16px;background:var(--background);border-radius:8px;">
+              <div style="font-weight:500;margin-bottom:4px;">Baza podataka</div>
+              <span class="badge badge-success">${statusData.status.database}</span>
+            </div>
+            <div style="padding:16px;background:var(--background);border-radius:8px;">
+              <div style="font-weight:500;margin-bottom:4px;">Uptime</div>
+              <span>${uptimeHours}h ${uptimeMinutes}m</span>
+            </div>
+            <div style="padding:16px;background:var(--background);border-radius:8px;">
+              <div style="font-weight:500;margin-bottom:4px;">Memorija</div>
+              <span>${memoryMB} MB</span>
+            </div>
+            <div style="padding:16px;background:var(--background);border-radius:8px;">
+              <div style="font-weight:500;margin-bottom:4px;">Node.js</div>
+              <span>${statusData.status.nodeVersion}</span>
+            </div>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('2fa-status').innerHTML = '<p style="color:var(--error);">Greska pri ucitavanju</p>';
+      }
+    }
+
+    async function setup2FA() {
+      try {
+        const data = await api('/api/admin/2fa/setup', { method: 'POST' });
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = '2fa-modal';
+        modal.innerHTML = `
+          <div class="modal-content" style="max-width:500px;">
+            <div class="modal-header">
+              <h3>Podesavanje 2FA</h3>
+              <button class="modal-close" onclick="closeModal('2fa-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p style="margin-bottom:16px;">Skenirajte QR kod pomocu autentifikator aplikacije (Google Authenticator, Authy, itd.):</p>
+              <div style="text-align:center;padding:20px;background:var(--background);border-radius:8px;margin-bottom:16px;">
+                <code style="font-size:18px;letter-spacing:2px;">${data.secret}</code>
+              </div>
+              <p style="margin-bottom:12px;"><strong>Rezervni kodovi (sacuvajte ih na sigurno mesto):</strong></p>
+              <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;padding:16px;background:var(--background);border-radius:8px;">
+                ${data.backupCodes.map(c => `<code>${c}</code>`).join('')}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn" onclick="closeModal('2fa-modal')">Otkazi</button>
+              <button class="btn btn-primary" onclick="enable2FA()">Aktiviraj 2FA</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('modal-overlay').classList.remove('hidden');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function enable2FA() {
+      try {
+        await api('/api/admin/2fa/enable', { method: 'POST', body: JSON.stringify({ code: '000000' }) });
+        closeModal('2fa-modal');
+        loadSecurity();
+        alert('2FA uspesno aktivirano!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function disable2FA() {
+      if (!confirm('Da li ste sigurni da zelite da iskljucite 2FA?')) return;
+      try {
+        await api('/api/admin/2fa/disable', { method: 'POST' });
+        loadSecurity();
+        alert('2FA deaktivirano!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== CSV Export ==========
+    async function exportCSV(type) {
+      try {
+        const blob = await api(`/api/admin/export/${type}`, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${type}_export.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Greska pri eksportovanju: ' + e.message);
+      }
+    }
+
+    // ========== User Reputation ==========
+    async function showUserReputation(userId) {
+      try {
+        const data = await api(`/api/admin/users/${userId}/reputation`);
+        const rep = data.reputation;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'reputation-modal';
+        modal.innerHTML = `
+          <div class="modal-content" style="max-width:500px;">
+            <div class="modal-header">
+              <h3>Reputacija korisnika</h3>
+              <button class="modal-close" onclick="closeModal('reputation-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div style="text-align:center;margin-bottom:20px;">
+                <div style="font-size:48px;font-weight:bold;color:var(--primary);">${rep.score}</div>
+                <div style="color:var(--text-tertiary);">Reputation Score</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div><strong>Prosecna ocena:</strong> ${rep.avgRating}/5</div>
+                <div><strong>Ukupno recenzija:</strong> ${rep.totalReviews}</div>
+                <div><strong>Kao vlasnik:</strong> ${rep.completedAsOwner} transakcija</div>
+                <div><strong>Kao zakupac:</strong> ${rep.completedAsRenter} transakcija</div>
+                <div><strong>Oglasa:</strong> ${rep.itemsCount}</div>
+                <div><strong>Clan od:</strong> ${new Date(rep.memberSince).toLocaleDateString('sr-RS')}</div>
+              </div>
+              <div style="margin-top:16px;">
+                <strong>Verifikacije:</strong>
+                ${rep.emailVerified ? '<span class="badge badge-success">Email</span>' : ''}
+                ${rep.phoneVerified ? '<span class="badge badge-success">Telefon</span>' : ''}
+                ${rep.documentVerified ? '<span class="badge badge-success">Dokument</span>' : ''}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn" onclick="closeModal('reputation-modal')">Zatvori</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('modal-overlay').classList.remove('hidden');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
     }
 
     async function checkAuth() {
