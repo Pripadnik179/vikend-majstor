@@ -239,10 +239,10 @@ export function registerAdminRoutes(app: Express) {
           description: item.description,
           pricePerDay: item.pricePerDay,
           category: item.category,
-          status: item.status || 'active',
+          status: item.isAvailable ? 'active' : 'pending',
           ownerName: owner?.name || 'Nepoznato',
           ownerEmail: owner?.email || '',
-          views: item.views || 0,
+          views: 0,
           bookings: 0,
           createdAt: item.createdAt,
           images: item.images || []
@@ -259,7 +259,7 @@ export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/items/:id/approve", isAdminAuth, async (req, res) => {
     try {
       const itemId = req.params.id;
-      await storage.updateItem(itemId, { status: 'active' });
+      await storage.updateItem(itemId, { isAvailable: true });
       res.json({ success: true });
     } catch (error) {
       console.error('Admin approve error:', error);
@@ -270,7 +270,7 @@ export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/items/:id/reject", isAdminAuth, async (req, res) => {
     try {
       const itemId = req.params.id;
-      await storage.updateItem(itemId, { status: 'rejected' });
+      await storage.updateItem(itemId, { isAvailable: false });
       res.json({ success: true });
     } catch (error) {
       console.error('Admin reject error:', error);
