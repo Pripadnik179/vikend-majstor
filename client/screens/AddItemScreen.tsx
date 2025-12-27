@@ -28,6 +28,54 @@ import { getCityCoordinates } from '@shared/cityCoordinates';
 
 const FREE_ITEM_LIMIT = 5;
 
+function ProgressBar({ step, totalSteps, theme }: { step: number; totalSteps: number; theme: any }) {
+  const progress = step / totalSteps;
+  return (
+    <View style={progressStyles.container}>
+      <View style={progressStyles.header}>
+        <ThemedText type="small" style={{ color: theme.textSecondary }}>
+          Korak {step} od {totalSteps}
+        </ThemedText>
+        <ThemedText type="small" style={{ color: theme.primary, fontWeight: '600' }}>
+          {Math.round(progress * 100)}%
+        </ThemedText>
+      </View>
+      <View style={[progressStyles.track, { backgroundColor: theme.border }]}>
+        <View 
+          style={[
+            progressStyles.fill, 
+            { 
+              backgroundColor: theme.primary,
+              width: `${progress * 100}%`,
+            }
+          ]} 
+        />
+      </View>
+    </View>
+  );
+}
+
+const progressStyles = StyleSheet.create({
+  container: {
+    marginBottom: Spacing.lg,
+    paddingHorizontal: Spacing.md,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.xs,
+  },
+  track: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  fill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+});
+
 export default function AddItemScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
@@ -78,6 +126,22 @@ export default function AddItemScreen() {
   const selectedCategoryData = useMemo(() => {
     return allCategories.find(c => c.name === category);
   }, [allCategories, category]);
+
+  const currentStep = useMemo(() => {
+    let filledFields = 0;
+    const totalFields = 6;
+    
+    if (title.trim()) filledFields++;
+    if (category) filledFields++;
+    if (pricePerDay) filledFields++;
+    if (city.trim()) filledFields++;
+    if (description.trim()) filledFields++;
+    if (images.length > 0) filledFields++;
+    
+    if (filledFields === 0) return 1;
+    if (filledFields <= 3) return 1;
+    return 2;
+  }, [title, category, pricePerDay, city, description, images]);
 
   const { data: myItems } = useQuery<Item[]>({
     queryKey: ['/api/my-items'],
@@ -296,6 +360,9 @@ export default function AddItemScreen() {
       ]}
     >
       <View style={{ width: '100%', maxWidth: MAX_CONTENT_WIDTH }}>
+      {!isEditing ? (
+        <ProgressBar step={currentStep} totalSteps={2} theme={theme} />
+      ) : null}
       <View style={styles.section}>
         <ThemedText type="h4" style={styles.label}>Tip oglasa</ThemedText>
         <View style={styles.adTypeRow}>
