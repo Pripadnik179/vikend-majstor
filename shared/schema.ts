@@ -385,3 +385,95 @@ export const insertEmailSubscriberSchema = createInsertSchema(emailSubscribers).
 
 export type EmailSubscriber = typeof emailSubscribers.$inferSelect;
 export type InsertEmailSubscriber = z.infer<typeof insertEmailSubscriberSchema>;
+
+// Admin logs - tracking admin actions
+export const adminLogs = pgTable("admin_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  adminId: varchar("admin_id").notNull().references(() => users.id),
+  action: text("action").notNull(),
+  targetType: text("target_type"),
+  targetId: text("target_id"),
+  details: text("details"),
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const adminLogsRelations = relations(adminLogs, ({ one }) => ({
+  admin: one(users, {
+    fields: [adminLogs.adminId],
+    references: [users.id],
+  }),
+}));
+
+// User activity logs
+export const userActivityLogs = pgTable("user_activity_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  action: text("action").notNull(),
+  details: text("details"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const userActivityLogsRelations = relations(userActivityLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [userActivityLogs.userId],
+    references: [users.id],
+  }),
+}));
+
+// Reported items
+export const reportedItems = pgTable("reported_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemId: varchar("item_id").notNull().references(() => items.id),
+  reporterId: varchar("reporter_id").notNull().references(() => users.id),
+  reason: text("reason").notNull(),
+  description: text("description"),
+  status: text("status").default("pending").notNull(),
+  resolvedBy: varchar("resolved_by").references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const reportedItemsRelations = relations(reportedItems, ({ one }) => ({
+  item: one(items, {
+    fields: [reportedItems.itemId],
+    references: [items.id],
+  }),
+  reporter: one(users, {
+    fields: [reportedItems.reporterId],
+    references: [users.id],
+  }),
+}));
+
+// Feature toggles
+export const featureToggles = pgTable("feature_toggles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  isEnabled: boolean("is_enabled").default(true).notNull(),
+  enabledForPercentage: integer("enabled_for_percentage").default(100),
+  updatedBy: varchar("updated_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Admin notifications sent
+export const adminNotifications = pgTable("admin_notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  adminId: varchar("admin_id").notNull().references(() => users.id),
+  type: text("type").notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  targetType: text("target_type"),
+  targetIds: text("target_ids").array(),
+  sentCount: integer("sent_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type AdminLog = typeof adminLogs.$inferSelect;
+export type UserActivityLog = typeof userActivityLogs.$inferSelect;
+export type ReportedItem = typeof reportedItems.$inferSelect;
+export type FeatureToggle = typeof featureToggles.$inferSelect;
+export type AdminNotification = typeof adminNotifications.$inferSelect;

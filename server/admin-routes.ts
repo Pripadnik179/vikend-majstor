@@ -2,7 +2,20 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { scrypt, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
+import { db } from "./db";
 import * as jose from "jose";
+import { eq, desc, and, inArray } from "drizzle-orm";
+import { 
+  adminLogs, 
+  userActivityLogs, 
+  reportedItems, 
+  featureToggles, 
+  adminNotifications,
+  messages,
+  conversations,
+  users,
+  items
+} from "@shared/schema";
 
 const scryptAsync = promisify(scrypt);
 
@@ -65,6 +78,28 @@ async function isAdminAuth(req: Request, res: Response, next: NextFunction) {
   };
   
   next();
+}
+
+async function logAdminAction(
+  adminId: string, 
+  action: string, 
+  targetType?: string, 
+  targetId?: string, 
+  details?: string,
+  ipAddress?: string
+) {
+  try {
+    await db.insert(adminLogs).values({
+      adminId,
+      action,
+      targetType,
+      targetId,
+      details,
+      ipAddress
+    });
+  } catch (error) {
+    console.error('Failed to log admin action:', error);
+  }
 }
 
 export function registerAdminRoutes(app: Express) {
@@ -207,7 +242,9 @@ export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/users/:id/suspend", isAdminAuth, async (req, res) => {
     try {
       const userId = req.params.id;
+      const admin = (req as any).admin;
       await storage.updateUser(userId, { isActive: false });
+      await logAdminAction(admin.id, 'suspend_user', 'user', userId, 'User suspended', req.ip);
       res.json({ success: true });
     } catch (error) {
       console.error('Admin suspend error:', error);
@@ -218,7 +255,9 @@ export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/users/:id/activate", isAdminAuth, async (req, res) => {
     try {
       const userId = req.params.id;
+      const admin = (req as any).admin;
       await storage.updateUser(userId, { isActive: true });
+      await logAdminAction(admin.id, 'activate_user', 'user', userId, 'User activated', req.ip);
       res.json({ success: true });
     } catch (error) {
       console.error('Admin activate error:', error);
@@ -259,7 +298,9 @@ export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/items/:id/approve", isAdminAuth, async (req, res) => {
     try {
       const itemId = req.params.id;
+      const admin = (req as any).admin;
       await storage.updateItem(itemId, { isAvailable: true });
+      await logAdminAction(admin.id, 'approve_item', 'item', itemId, 'Item approved', req.ip);
       res.json({ success: true });
     } catch (error) {
       console.error('Admin approve error:', error);
@@ -270,7 +311,9 @@ export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/items/:id/reject", isAdminAuth, async (req, res) => {
     try {
       const itemId = req.params.id;
+      const admin = (req as any).admin;
       await storage.updateItem(itemId, { isAvailable: false });
+      await logAdminAction(admin.id, 'reject_item', 'item', itemId, 'Item rejected', req.ip);
       res.json({ success: true });
     } catch (error) {
       console.error('Admin reject error:', error);
@@ -281,7 +324,9 @@ export function registerAdminRoutes(app: Express) {
   app.delete("/api/admin/items/:id", isAdminAuth, async (req, res) => {
     try {
       const itemId = req.params.id;
+      const admin = (req as any).admin;
       await storage.deleteItem(itemId);
+      await logAdminAction(admin.id, 'delete_item', 'item', itemId, 'Item deleted', req.ip);
       res.json({ success: true });
     } catch (error) {
       console.error('Admin delete item error:', error);
@@ -364,6 +409,453 @@ export function registerAdminRoutes(app: Express) {
 
   app.get("/api/admin/logs", isAdminAuth, async (req, res) => {
     res.json({ logs: [] });
+  });
+
+  // ============================================
+  // Admin Logs - Track admin actions
+  // ============================================
+  app.get("/api/admin/admin-logs", isAdminAuth, async (req, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = (page - 1) * limit;
+
+      const logs = await db.select({
+        id: adminLogs.id,
+        adminId: adminLogs.adminId,
+        action: adminLogs.action,
+        targetType: adminLogs.targetType,
+        targetId: adminLogs.targetId,
+        details: adminLogs.details,
+        ipAddress: adminLogs.ipAddress,
+        createdAt: adminLogs.createdAt
+      })
+        .from(adminLogs)
+        .orderBy(desc(adminLogs.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      const allUsers = await storage.getAllUsers();
+      const logsWithAdmin = logs.map(log => {
+        const admin = allUsers.find(u => u.id === log.adminId);
+        return {
+          ...log,
+          adminName: admin?.name || admin?.email || 'Unknown',
+          adminEmail: admin?.email || ''
+        };
+      });
+
+      res.json({ logs: logsWithAdmin, page, limit });
+    } catch (error) {
+      console.error('Get admin logs error:', error);
+      res.status(500).json({ message: 'Greska pri dobijanju admin logova' });
+    }
+  });
+
+  app.post("/api/admin/log-action", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { action, targetType, targetId, details } = req.body;
+
+      if (!action) {
+        return res.status(400).json({ message: 'Action is required' });
+      }
+
+      const ipAddress = req.ip || req.socket.remoteAddress;
+      await logAdminAction(admin.id, action, targetType, targetId, details, ipAddress);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Log action error:', error);
+      res.status(500).json({ message: 'Greska pri logovanju akcije' });
+    }
+  });
+
+  // ============================================
+  // User Activity - Track user activities
+  // ============================================
+  app.get("/api/admin/users/:id/activity", isAdminAuth, async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const limit = parseInt(req.query.limit as string) || 50;
+
+      const activities = await db.select()
+        .from(userActivityLogs)
+        .where(eq(userActivityLogs.userId, userId))
+        .orderBy(desc(userActivityLogs.createdAt))
+        .limit(limit);
+
+      res.json({ activities });
+    } catch (error) {
+      console.error('Get user activity error:', error);
+      res.status(500).json({ message: 'Greska pri dobijanju aktivnosti korisnika' });
+    }
+  });
+
+  // ============================================
+  // Reported Items - Handle reported ads
+  // ============================================
+  app.get("/api/admin/reported-items", isAdminAuth, async (req, res) => {
+    try {
+      const status = req.query.status as string || 'all';
+
+      let reports;
+      if (status === 'all') {
+        reports = await db.select()
+          .from(reportedItems)
+          .orderBy(desc(reportedItems.createdAt));
+      } else {
+        reports = await db.select()
+          .from(reportedItems)
+          .where(eq(reportedItems.status, status))
+          .orderBy(desc(reportedItems.createdAt));
+      }
+
+      const allUsers = await storage.getAllUsers();
+      const allItems = await storage.getItems();
+
+      const reportsWithDetails = reports.map(report => {
+        const item = allItems.find((i: any) => i.id === report.itemId);
+        const reporter = allUsers.find(u => u.id === report.reporterId);
+        const resolver = report.resolvedBy ? allUsers.find(u => u.id === report.resolvedBy) : null;
+        
+        return {
+          ...report,
+          itemTitle: item?.title || 'Deleted Item',
+          itemOwnerName: item ? allUsers.find(u => u.id === item.ownerId)?.name || 'Unknown' : 'Unknown',
+          reporterName: reporter?.name || reporter?.email || 'Unknown',
+          resolverName: resolver?.name || resolver?.email || null
+        };
+      });
+
+      res.json({ reports: reportsWithDetails });
+    } catch (error) {
+      console.error('Get reported items error:', error);
+      res.status(500).json({ message: 'Greska pri dobijanju prijavljenih oglasa' });
+    }
+  });
+
+  app.post("/api/admin/reported-items/:id/resolve", isAdminAuth, async (req, res) => {
+    try {
+      const reportId = req.params.id;
+      const admin = (req as any).admin;
+      const { resolution, action } = req.body;
+
+      await db.update(reportedItems)
+        .set({
+          status: 'resolved',
+          resolvedBy: admin.id,
+          resolvedAt: new Date()
+        })
+        .where(eq(reportedItems.id, reportId));
+
+      if (action === 'remove_item') {
+        const report = await db.select().from(reportedItems).where(eq(reportedItems.id, reportId));
+        if (report.length > 0 && report[0].itemId) {
+          await storage.deleteItem(report[0].itemId);
+          await logAdminAction(admin.id, 'remove_reported_item', 'item', report[0].itemId, `Report resolved with item removal: ${resolution}`, req.ip);
+        }
+      } else {
+        await logAdminAction(admin.id, 'resolve_report', 'report', reportId, resolution, req.ip);
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Resolve report error:', error);
+      res.status(500).json({ message: 'Greska pri resavanju prijave' });
+    }
+  });
+
+  // ============================================
+  // Feature Toggles
+  // ============================================
+  app.get("/api/admin/feature-toggles", isAdminAuth, async (req, res) => {
+    try {
+      const toggles = await db.select()
+        .from(featureToggles)
+        .orderBy(featureToggles.name);
+
+      res.json({ toggles });
+    } catch (error) {
+      console.error('Get feature toggles error:', error);
+      res.status(500).json({ message: 'Greska pri dobijanju feature toggle-a' });
+    }
+  });
+
+  app.post("/api/admin/feature-toggles", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { name, description, isEnabled, enabledForPercentage } = req.body;
+
+      if (!name) {
+        return res.status(400).json({ message: 'Name is required' });
+      }
+
+      const existing = await db.select().from(featureToggles).where(eq(featureToggles.name, name));
+      
+      if (existing.length > 0) {
+        await db.update(featureToggles)
+          .set({
+            description,
+            isEnabled: isEnabled !== undefined ? isEnabled : true,
+            enabledForPercentage: enabledForPercentage || 100,
+            updatedBy: admin.id,
+            updatedAt: new Date()
+          })
+          .where(eq(featureToggles.name, name));
+      } else {
+        await db.insert(featureToggles).values({
+          name,
+          description,
+          isEnabled: isEnabled !== undefined ? isEnabled : true,
+          enabledForPercentage: enabledForPercentage || 100,
+          updatedBy: admin.id
+        });
+      }
+
+      await logAdminAction(admin.id, 'update_feature_toggle', 'feature_toggle', name, `Enabled: ${isEnabled}`, req.ip);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Create/update feature toggle error:', error);
+      res.status(500).json({ message: 'Greska pri kreiranju/azuriranju feature toggle-a' });
+    }
+  });
+
+  app.put("/api/admin/feature-toggles/:id", isAdminAuth, async (req, res) => {
+    try {
+      const toggleId = req.params.id;
+      const admin = (req as any).admin;
+      const { isEnabled, description, enabledForPercentage } = req.body;
+
+      await db.update(featureToggles)
+        .set({
+          isEnabled: isEnabled !== undefined ? isEnabled : true,
+          description,
+          enabledForPercentage: enabledForPercentage || 100,
+          updatedBy: admin.id,
+          updatedAt: new Date()
+        })
+        .where(eq(featureToggles.id, toggleId));
+
+      await logAdminAction(admin.id, 'update_feature_toggle', 'feature_toggle', toggleId, `Enabled: ${isEnabled}`, req.ip);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Update feature toggle error:', error);
+      res.status(500).json({ message: 'Greska pri azuriranju feature toggle-a' });
+    }
+  });
+
+  // ============================================
+  // Messages - View user conversations
+  // ============================================
+  app.get("/api/admin/messages", isAdminAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 100;
+
+      const recentMessages = await db.select({
+        id: messages.id,
+        conversationId: messages.conversationId,
+        senderId: messages.senderId,
+        receiverId: messages.receiverId,
+        content: messages.content,
+        isRead: messages.isRead,
+        createdAt: messages.createdAt
+      })
+        .from(messages)
+        .orderBy(desc(messages.createdAt))
+        .limit(limit);
+
+      const allUsers = await storage.getAllUsers();
+
+      const messagesWithUsers = recentMessages.map(msg => {
+        const sender = allUsers.find(u => u.id === msg.senderId);
+        const receiver = allUsers.find(u => u.id === msg.receiverId);
+        return {
+          ...msg,
+          senderName: sender?.name || sender?.email || 'Unknown',
+          senderEmail: sender?.email || '',
+          receiverName: receiver?.name || receiver?.email || 'Unknown',
+          receiverEmail: receiver?.email || ''
+        };
+      });
+
+      res.json({ messages: messagesWithUsers });
+    } catch (error) {
+      console.error('Get admin messages error:', error);
+      res.status(500).json({ message: 'Greska pri dobijanju poruka' });
+    }
+  });
+
+  // ============================================
+  // Notifications - Send notifications
+  // ============================================
+  app.post("/api/admin/notifications/send", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { type, title, message, targetType, targetIds } = req.body;
+
+      if (!type || !title || !message) {
+        return res.status(400).json({ message: 'Type, title and message are required' });
+      }
+
+      let sentCount = 0;
+      const allUsers = await storage.getAllUsers();
+
+      if (targetType === 'all') {
+        sentCount = allUsers.length;
+      } else if (targetType === 'specific' && Array.isArray(targetIds)) {
+        sentCount = targetIds.length;
+      } else if (targetType === 'premium') {
+        sentCount = allUsers.filter(u => u.subscriptionType === 'premium').length;
+      }
+
+      await db.insert(adminNotifications).values({
+        adminId: admin.id,
+        type,
+        title,
+        message,
+        targetType,
+        targetIds: Array.isArray(targetIds) ? targetIds : null,
+        sentCount
+      });
+
+      await logAdminAction(admin.id, 'send_notification', 'notification', undefined, `Type: ${type}, Title: ${title}, Sent to: ${sentCount} users`, req.ip);
+
+      res.json({ success: true, sentCount });
+    } catch (error) {
+      console.error('Send notification error:', error);
+      res.status(500).json({ message: 'Greska pri slanju notifikacija' });
+    }
+  });
+
+  app.get("/api/admin/notifications", isAdminAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+
+      const notifications = await db.select()
+        .from(adminNotifications)
+        .orderBy(desc(adminNotifications.createdAt))
+        .limit(limit);
+
+      const allUsers = await storage.getAllUsers();
+
+      const notificationsWithAdmin = notifications.map(notif => {
+        const admin = allUsers.find(u => u.id === notif.adminId);
+        return {
+          ...notif,
+          adminName: admin?.name || admin?.email || 'Unknown'
+        };
+      });
+
+      res.json({ notifications: notificationsWithAdmin });
+    } catch (error) {
+      console.error('Get notifications error:', error);
+      res.status(500).json({ message: 'Greska pri dobijanju notifikacija' });
+    }
+  });
+
+  // ============================================
+  // CSV Export
+  // ============================================
+  app.get("/api/admin/export/users", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const allUsers = await storage.getAllUsers();
+
+      const csvHeader = 'ID,Email,Name,Phone,City,Role,Subscription,Active,Verified,Created At\n';
+      const csvRows = allUsers.map(u => 
+        `"${u.id}","${u.email}","${u.name || ''}","${u.phone || ''}","${u.city || ''}","${u.role}","${u.subscriptionType}","${u.isActive}","${u.emailVerified}","${u.createdAt}"`
+      ).join('\n');
+
+      const csv = csvHeader + csvRows;
+
+      await logAdminAction(admin.id, 'export_users', 'users', undefined, `Exported ${allUsers.length} users`, req.ip);
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=users_export.csv');
+      res.send(csv);
+    } catch (error) {
+      console.error('Export users error:', error);
+      res.status(500).json({ message: 'Greska pri eksportovanju korisnika' });
+    }
+  });
+
+  app.get("/api/admin/export/items", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const allItems = await storage.getItems();
+      const allUsers = await storage.getAllUsers();
+
+      const csvHeader = 'ID,Title,Category,Price Per Day,Deposit,City,Owner Email,Available,Featured,Created At\n';
+      const csvRows = allItems.map((item: any) => {
+        const owner = allUsers.find(u => u.id === item.ownerId);
+        return `"${item.id}","${item.title}","${item.category}","${item.pricePerDay}","${item.deposit}","${item.city}","${owner?.email || ''}","${item.isAvailable}","${item.isFeatured}","${item.createdAt}"`;
+      }).join('\n');
+
+      const csv = csvHeader + csvRows;
+
+      await logAdminAction(admin.id, 'export_items', 'items', undefined, `Exported ${allItems.length} items`, req.ip);
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=items_export.csv');
+      res.send(csv);
+    } catch (error) {
+      console.error('Export items error:', error);
+      res.status(500).json({ message: 'Greska pri eksportovanju oglasa' });
+    }
+  });
+
+  // ============================================
+  // Bulk Actions
+  // ============================================
+  app.post("/api/admin/bulk/suspend-users", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { userIds } = req.body;
+
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ message: 'userIds array is required' });
+      }
+
+      await db.update(users)
+        .set({ isActive: false })
+        .where(inArray(users.id, userIds));
+
+      await logAdminAction(admin.id, 'bulk_suspend_users', 'users', undefined, `Suspended ${userIds.length} users: ${userIds.join(', ')}`, req.ip);
+
+      res.json({ success: true, count: userIds.length });
+    } catch (error) {
+      console.error('Bulk suspend users error:', error);
+      res.status(500).json({ message: 'Greska pri suspendovanju korisnika' });
+    }
+  });
+
+  app.post("/api/admin/bulk/delete-items", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { itemIds } = req.body;
+
+      if (!Array.isArray(itemIds) || itemIds.length === 0) {
+        return res.status(400).json({ message: 'itemIds array is required' });
+      }
+
+      let deletedCount = 0;
+      for (const itemId of itemIds) {
+        try {
+          await storage.deleteItem(itemId);
+          deletedCount++;
+        } catch (err) {
+          console.error(`Failed to delete item ${itemId}:`, err);
+        }
+      }
+
+      await logAdminAction(admin.id, 'bulk_delete_items', 'items', undefined, `Deleted ${deletedCount} items: ${itemIds.join(', ')}`, req.ip);
+
+      res.json({ success: true, count: deletedCount });
+    } catch (error) {
+      console.error('Bulk delete items error:', error);
+      res.status(500).json({ message: 'Greska pri brisanju oglasa' });
+    }
   });
 
   console.log('[ADMIN] Admin panel API routes registered');

@@ -1,0 +1,65 @@
+PROMPT ZA REPLIT:
+
+Deployuj odvojeni admin panel za VikendMajstor na subdomen `admin.vikendmajstor.rs`. Panel mora biti potpuno odvojen od korisničke aplikacije (`app.vikendmajstor.rs`) i smešten u zaseban root folder na serveru.
+
+Nemoj dodavati login, search ili listing alata — to već postoji u korisničkoj aplikaciji. Fokusiraj se isključivo na admin funkcionalnosti.
+
+1. STRUKTURA
+- Frontend aplikacije za admin panel (React, Vue, ili plain HTML/CSS/JS).
+- Backend može koristiti isti API kao korisnička aplikacija, ali sa role‑based pristupom (admin vs. user).
+- Deployuj aplikaciju u root folder subdomena `admin.vikendmajstor.rs`.
+
+2. FUNKCIONALNOSTI
+✅ Korisnička kontrola:
+- Pregled korisnika: ime, email, pretplata, broj oglasa, status.
+- Uređivanje korisnika: promena pretplate, dodavanje/uklanjanje oglasa, reset lozinke.
+- Suspendovanje naloga.
+- Verifikacija korisnika (email, telefon, dokument).
+- Istorija aktivnosti: prijave, objave, izmene, transakcije.
+
+✅ Pretplate i monetizacija:
+- Upravljanje planovima: dodavanje novih, promena cena i trajanja.
+- Stripe integracija: pregled transakcija, refundacije, neuspele naplate.
+- Istek pretplate: automatski podsetnici, ručna obnova.
+
+✅ Moderacija oglasa:
+- Pregled i odobravanje oglasa.
+- Prijavljeni oglasi: prikaz i obrada prijava.
+- Uklanjanje oglasa.
+- Statistika oglasa: broj pregleda, rezervacija, prosečna cena.
+
+✅ Analitika:
+- Aktivni korisnici (dnevno, mesečno).
+- Konverzija: registracija → objava → rezervacija.
+- Popularni alati po kategoriji.
+- Gradovi sa najviše aktivnosti.
+- Funnel analiza: gde korisnici odustaju.
+
+✅ Sigurnost i poverenje:
+- Prijave korisnika (oštećenje alata, loša komunikacija).
+- Reputacija korisnika: ocene, recenzije, broj uspešnih transakcija.
+- Interna komunikacija: pregled poruka između korisnika.
+
+✅ Tehnička kontrola:
+- Logovi grešaka.
+- Verzije aplikacije (web, Android, iOS).
+- Deployment status.
+- Feature toggles: uključivanje/isključivanje funkcionalnosti.
+
+✅ Operativne akcije:
+- Slanje obaveštenja (push, email).
+- Bulk akcije: masovno brisanje, suspendovanje, obnova naloga.
+- CSV eksport: korisnici, oglasi, transakcije.
+- Admin logovi: ko iz tima je šta menjao.
+
+3. SIGURNOST
+- Admin login mora biti odvojen od korisničkog.
+- Dodaj 2FA za admin naloge.
+- Loguj sve admin akcije.
+
+4. UI
+- Navigacija sa sekcijama: Korisnici, Oglasi, Pretplate, Analitika, Sigurnost, Podešavanja.
+- Responsive dizajn za desktop i tablet.
+- Dodaj loading indikatore i statusne poruke.
+
+CILJ: Admin panel mora biti operativni cockpit za tim, sa punom kontrolom nad korisnicima, oglasima, pretplatama i sigurnošću. Deployuj ga na `admin.vikendmajstor.rs` kao odvojenu aplikaciju, spremnu za produkciju.
