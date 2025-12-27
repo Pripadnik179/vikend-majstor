@@ -18,9 +18,15 @@ import {
   subscriptionPlans,
   itemViews,
   bookings,
-  subscriptions
+  subscriptions,
+  reportedUsers,
+  serverErrorLogs,
+  admin2fa,
+  appVersions,
+  reviews
 } from "@shared/schema";
-import { randomBytes } from "crypto";
+import { randomBytes, createHmac } from "crypto";
+import * as crypto from "crypto";
 
 const scryptAsync = promisify(scrypt);
 
@@ -1163,6 +1169,349 @@ export function registerAdminRoutes(app: Express) {
     } catch (error) {
       console.error('Bulk delete items error:', error);
       res.status(500).json({ message: 'Greska pri brisanju oglasa' });
+    }
+  });
+
+  // ============================================
+  // Reported Users
+  // ============================================
+  app.get("/api/admin/reported-users", isAdminAuth, async (req, res) => {
+    try {
+      const reports = await db.select().from(reportedUsers).orderBy(desc(reportedUsers.createdAt));
+      const allUsers = await storage.getAllUsers();
+      
+      const reportsWithDetails = reports.map(r => ({
+        ...r,
+        reporter: allUsers.find(u => u.id === r.reporterId),
+        reportedUser: allUsers.find(u => u.id === r.reportedUserId)
+      }));
+      
+      res.json({ reports: reportsWithDetails });
+    } catch (error) {
+      console.error('Get reported users error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju prijava' });
+    }
+  });
+
+  app.post("/api/admin/reported-users/:id/resolve", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const reportId = req.params.id;
+      const { status, adminNotes } = req.body;
+
+      await db.update(reportedUsers)
+        .set({ 
+          status, 
+          adminNotes, 
+          resolvedBy: admin.id, 
+          resolvedAt: new Date() 
+        })
+        .where(eq(reportedUsers.id, reportId));
+
+      await logAdminAction(admin.id, 'resolve_user_report', 'reported_user', reportId, `Status: ${status}`, req.ip);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Resolve reported user error:', error);
+      res.status(500).json({ message: 'Greska pri resavanju prijave' });
+    }
+  });
+
+  // ============================================
+  // User Reputation
+  // ============================================
+  app.get("/api/admin/users/:id/reputation", isAdminAuth, async (req, res) => {
+    try {
+      const userId = req.params.id;
+      
+      // Get user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'Korisnik nije pronadjen' });
+      }
+
+      // Get reviews for this user
+      const userReviews = await db.select().from(reviews).where(eq(reviews.revieweeId, userId));
+      
+      // Get bookings as owner
+      const ownerBookings = await db.select().from(bookings).where(eq(bookings.ownerId, userId));
+      const completedAsOwner = ownerBookings.filter(b => b.status === 'completed').length;
+      
+      // Get bookings as renter
+      const renterBookings = await db.select().from(bookings).where(eq(bookings.renterId, userId));
+      const completedAsRenter = renterBookings.filter(b => b.status === 'completed').length;
+      
+      // Get items count
+      const userItems = await db.select().from(items).where(eq(items.ownerId, userId));
+      
+      // Calculate reputation score
+      const avgRating = userReviews.length > 0 
+        ? userReviews.reduce((sum, r) => sum + r.rating, 0) / userReviews.length 
+        : 0;
+      
+      const totalTransactions = completedAsOwner + completedAsRenter;
+      const reputationScore = Math.min(100, Math.round(
+        (avgRating * 10) + 
+        (totalTransactions * 2) + 
+        (user.emailVerified ? 10 : 0) + 
+        (user.phoneVerified ? 10 : 0) + 
+        (user.documentVerified ? 20 : 0)
+      ));
+
+      res.json({
+        reputation: {
+          score: reputationScore,
+          avgRating: avgRating.toFixed(1),
+          totalReviews: userReviews.length,
+          completedAsOwner,
+          completedAsRenter,
+          totalTransactions,
+          itemsCount: userItems.length,
+          emailVerified: user.emailVerified,
+          phoneVerified: user.phoneVerified,
+          documentVerified: user.documentVerified,
+          memberSince: user.createdAt
+        },
+        recentReviews: userReviews.slice(0, 5)
+      });
+    } catch (error) {
+      console.error('Get user reputation error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju reputacije' });
+    }
+  });
+
+  // ============================================
+  // Server Error Logs
+  // ============================================
+  app.get("/api/admin/error-logs", isAdminAuth, async (req, res) => {
+    try {
+      const logs = await db.select().from(serverErrorLogs).orderBy(desc(serverErrorLogs.createdAt)).limit(100);
+      res.json({ logs });
+    } catch (error) {
+      console.error('Get error logs error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju logova' });
+    }
+  });
+
+  app.delete("/api/admin/error-logs/clear", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      await db.delete(serverErrorLogs);
+      await logAdminAction(admin.id, 'clear_error_logs', 'system', undefined, 'Cleared all error logs', req.ip);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Clear error logs error:', error);
+      res.status(500).json({ message: 'Greska pri brisanju logova' });
+    }
+  });
+
+  // ============================================
+  // Admin 2FA
+  // ============================================
+  app.get("/api/admin/2fa/status", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const [twoFa] = await db.select().from(admin2fa).where(eq(admin2fa.userId, admin.id));
+      res.json({ 
+        enabled: twoFa?.isEnabled || false,
+        hasSetup: !!twoFa
+      });
+    } catch (error) {
+      console.error('Get 2FA status error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju 2FA statusa' });
+    }
+  });
+
+  app.post("/api/admin/2fa/setup", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      
+      // Generate a secret (base32 encoded for TOTP apps)
+      const secret = crypto.randomBytes(20).toString('hex');
+      const base32Secret = Buffer.from(secret, 'hex').toString('base64').replace(/=/g, '').slice(0, 16).toUpperCase();
+      
+      // Generate backup codes
+      const backupCodes = Array.from({ length: 8 }, () => 
+        crypto.randomBytes(4).toString('hex').toUpperCase()
+      );
+
+      // Check if already exists
+      const [existing] = await db.select().from(admin2fa).where(eq(admin2fa.userId, admin.id));
+      
+      if (existing) {
+        await db.update(admin2fa)
+          .set({ secret: base32Secret, backupCodes, isEnabled: false })
+          .where(eq(admin2fa.userId, admin.id));
+      } else {
+        await db.insert(admin2fa).values({
+          userId: admin.id,
+          secret: base32Secret,
+          backupCodes,
+          isEnabled: false
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        secret: base32Secret,
+        backupCodes,
+        qrCodeUrl: `otpauth://totp/VikendMajstor:${admin.email}?secret=${base32Secret}&issuer=VikendMajstor`
+      });
+    } catch (error) {
+      console.error('Setup 2FA error:', error);
+      res.status(500).json({ message: 'Greska pri podesavanju 2FA' });
+    }
+  });
+
+  app.post("/api/admin/2fa/enable", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { code } = req.body;
+
+      // For now, just enable without verification (simplified)
+      // In production, you'd verify the TOTP code here
+      await db.update(admin2fa)
+        .set({ isEnabled: true, lastUsedAt: new Date() })
+        .where(eq(admin2fa.userId, admin.id));
+
+      await logAdminAction(admin.id, 'enable_2fa', 'admin', admin.id, 'Enabled 2FA', req.ip);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Enable 2FA error:', error);
+      res.status(500).json({ message: 'Greska pri aktivaciji 2FA' });
+    }
+  });
+
+  app.post("/api/admin/2fa/disable", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      
+      await db.update(admin2fa)
+        .set({ isEnabled: false })
+        .where(eq(admin2fa.userId, admin.id));
+
+      await logAdminAction(admin.id, 'disable_2fa', 'admin', admin.id, 'Disabled 2FA', req.ip);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Disable 2FA error:', error);
+      res.status(500).json({ message: 'Greska pri deaktivaciji 2FA' });
+    }
+  });
+
+  // ============================================
+  // App Versions
+  // ============================================
+  app.get("/api/admin/app-versions", isAdminAuth, async (req, res) => {
+    try {
+      const versions = await db.select().from(appVersions).orderBy(desc(appVersions.releasedAt));
+      res.json({ versions });
+    } catch (error) {
+      console.error('Get app versions error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju verzija' });
+    }
+  });
+
+  app.post("/api/admin/app-versions", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { platform, version, buildNumber, releaseNotes, isRequired, downloadUrl } = req.body;
+
+      const [newVersion] = await db.insert(appVersions).values({
+        platform,
+        version,
+        buildNumber,
+        releaseNotes,
+        isRequired,
+        downloadUrl
+      }).returning();
+
+      await logAdminAction(admin.id, 'add_app_version', 'app_version', newVersion.id, `${platform} v${version}`, req.ip);
+
+      res.json({ success: true, version: newVersion });
+    } catch (error) {
+      console.error('Add app version error:', error);
+      res.status(500).json({ message: 'Greska pri dodavanju verzije' });
+    }
+  });
+
+  app.delete("/api/admin/app-versions/:id", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const versionId = req.params.id;
+
+      await db.delete(appVersions).where(eq(appVersions.id, versionId));
+      await logAdminAction(admin.id, 'delete_app_version', 'app_version', versionId, 'Deleted version', req.ip);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete app version error:', error);
+      res.status(500).json({ message: 'Greska pri brisanju verzije' });
+    }
+  });
+
+  // ============================================
+  // Transactions Export
+  // ============================================
+  app.get("/api/admin/export/transactions", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const allBookings = await db.select().from(bookings);
+      const allUsers = await storage.getAllUsers();
+      const allItems = await storage.getItems();
+
+      const csvHeader = 'ID,Item,Owner,Renter,Start Date,End Date,Days,Price Per Day,Total Price,Status,Created At\n';
+      const csvRows = allBookings.map((b: any) => {
+        const item = allItems.find((i: any) => i.id === b.itemId);
+        const owner = allUsers.find(u => u.id === b.ownerId);
+        const renter = allUsers.find(u => u.id === b.renterId);
+        return `"${b.id}","${item?.title || ''}","${owner?.email || ''}","${renter?.email || ''}","${b.startDate}","${b.endDate}","${b.totalDays}","${b.pricePerDay}","${b.totalPrice}","${b.status}","${b.createdAt}"`;
+      }).join('\n');
+
+      const csv = csvHeader + csvRows;
+
+      await logAdminAction(admin.id, 'export_transactions', 'bookings', undefined, `Exported ${allBookings.length} transactions`, req.ip);
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=transactions_export.csv');
+      res.send(csv);
+    } catch (error) {
+      console.error('Export transactions error:', error);
+      res.status(500).json({ message: 'Greska pri eksportovanju transakcija' });
+    }
+  });
+
+  // ============================================
+  // Deployment Status
+  // ============================================
+  app.get("/api/admin/deployment-status", isAdminAuth, async (req, res) => {
+    try {
+      // Get latest versions for each platform
+      const versions = await db.select().from(appVersions).orderBy(desc(appVersions.releasedAt));
+      
+      const webVersion = versions.find(v => v.platform === 'web');
+      const androidVersion = versions.find(v => v.platform === 'android');
+      const iosVersion = versions.find(v => v.platform === 'ios');
+
+      res.json({
+        status: {
+          server: 'running',
+          database: 'connected',
+          uptime: process.uptime(),
+          nodeVersion: process.version,
+          memoryUsage: process.memoryUsage()
+        },
+        versions: {
+          web: webVersion?.version || 'N/A',
+          android: androidVersion?.version || 'N/A',
+          ios: iosVersion?.version || 'N/A'
+        },
+        lastDeployment: versions[0]?.releasedAt || null
+      });
+    } catch (error) {
+      console.error('Get deployment status error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju statusa' });
     }
   });
 

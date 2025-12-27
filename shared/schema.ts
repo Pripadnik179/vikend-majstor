@@ -412,6 +412,82 @@ export const itemViewsRelations = relations(itemViews, ({ one }) => ({
 export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 export type ItemView = typeof itemViews.$inferSelect;
 
+// Reported users - prijave korisnika
+export const reportedUsers = pgTable("reported_users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  reporterId: varchar("reporter_id").notNull().references(() => users.id),
+  reportedUserId: varchar("reported_user_id").notNull().references(() => users.id),
+  reason: text("reason").notNull(),
+  description: text("description"),
+  status: text("status").default("pending").notNull(), // pending, reviewed, resolved, dismissed
+  adminNotes: text("admin_notes"),
+  resolvedBy: varchar("resolved_by").references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const reportedUsersRelations = relations(reportedUsers, ({ one }) => ({
+  reporter: one(users, {
+    fields: [reportedUsers.reporterId],
+    references: [users.id],
+    relationName: "reporterUser",
+  }),
+  reportedUser: one(users, {
+    fields: [reportedUsers.reportedUserId],
+    references: [users.id],
+    relationName: "reportedUser",
+  }),
+  resolver: one(users, {
+    fields: [reportedUsers.resolvedBy],
+    references: [users.id],
+    relationName: "resolverUser",
+  }),
+}));
+
+// Server error logs
+export const serverErrorLogs = pgTable("server_error_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  level: text("level").notNull().default("error"), // error, warning, info
+  message: text("message").notNull(),
+  stack: text("stack"),
+  endpoint: text("endpoint"),
+  method: text("method"),
+  userId: varchar("user_id").references(() => users.id),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  metadata: text("metadata"), // JSON string for additional data
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Admin 2FA
+export const admin2fa = pgTable("admin_2fa", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id).unique(),
+  secret: text("secret").notNull(),
+  isEnabled: boolean("is_enabled").default(false).notNull(),
+  backupCodes: text("backup_codes").array(),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// App versions
+export const appVersions = pgTable("app_versions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  platform: text("platform").notNull(), // web, android, ios
+  version: text("version").notNull(),
+  buildNumber: integer("build_number"),
+  releaseNotes: text("release_notes"),
+  isRequired: boolean("is_required").default(false).notNull(),
+  downloadUrl: text("download_url"),
+  releasedAt: timestamp("released_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ReportedUser = typeof reportedUsers.$inferSelect;
+export type ServerErrorLog = typeof serverErrorLogs.$inferSelect;
+export type Admin2FA = typeof admin2fa.$inferSelect;
+export type AppVersion = typeof appVersions.$inferSelect;
+
 export const emailSubscribers = pgTable("email_subscribers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
