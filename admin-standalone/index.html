@@ -201,6 +201,12 @@
             <label for="password">Lozinka</label>
             <input type="password" id="password" class="input" placeholder="••••••••" required>
           </div>
+          <div class="form-group hidden" id="2fa-group">
+            <label for="twoFactorCode">2FA kod iz Google Authenticator</label>
+            <input type="text" id="twoFactorCode" class="input" placeholder="000000" maxlength="6" 
+                   style="text-align:center;font-size:20px;letter-spacing:6px;font-weight:bold;"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+          </div>
           <button type="submit" class="btn" id="login-btn">Prijavi se</button>
         </form>
         <div class="login-footer">
@@ -2073,23 +2079,46 @@
       }
     }
 
+    let pending2FA = false;
+    
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
+      const twoFactorCode = document.getElementById('twoFactorCode').value;
       const btn = document.getElementById('login-btn');
       const error = document.getElementById('login-error');
+      const twoFAGroup = document.getElementById('2fa-group');
       
       btn.disabled = true;
       btn.textContent = 'Prijava u toku...';
       error.classList.add('hidden');
 
       try {
+        const body = { email, password };
+        if (pending2FA && twoFactorCode) {
+          body.twoFactorCode = twoFactorCode;
+        }
+        
         const data = await api('/api/admin/login', {
           method: 'POST',
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify(body)
         });
         
+        // Check if 2FA is required
+        if (data.requires2FA) {
+          pending2FA = true;
+          twoFAGroup.classList.remove('hidden');
+          document.getElementById('twoFactorCode').focus();
+          error.textContent = data.message;
+          error.style.color = 'var(--primary)';
+          error.classList.remove('hidden');
+          return;
+        }
+        
+        // Login successful
+        pending2FA = false;
+        twoFAGroup.classList.add('hidden');
         token = data.token;
         admin = data.admin;
         localStorage.setItem('admin_token', token);
@@ -2101,6 +2130,7 @@
         document.getElementById('admin-avatar').textContent = (admin.name || 'A').charAt(0).toUpperCase();
         showPage('dashboard');
       } catch (err) {
+        error.style.color = 'var(--error)';
         error.textContent = err.message;
         error.classList.remove('hidden');
       } finally {
@@ -2117,10 +2147,13 @@
       localStorage.removeItem('admin_token');
       token = null;
       admin = null;
+      pending2FA = false;
       document.getElementById('dashboard').classList.add('hidden');
       document.getElementById('login-page').classList.remove('hidden');
       document.getElementById('email').value = '';
       document.getElementById('password').value = '';
+      document.getElementById('twoFactorCode').value = '';
+      document.getElementById('2fa-group').classList.add('hidden');
     });
 
     init();

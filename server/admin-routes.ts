@@ -116,7 +116,7 @@ async function logAdminAction(
 export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, twoFactorCode } = req.body;
       
       if (!email || !password) {
         return res.status(400).json({ message: 'Email i lozinka su obavezni' });
@@ -131,6 +131,40 @@ export function registerAdminRoutes(app: Express) {
       const isValid = await verifyPassword(password, user.password);
       if (!isValid) {
         return res.status(401).json({ message: 'Pogresni kredencijali' });
+      }
+
+      // Check if 2FA is enabled for this user
+      const [twoFa] = await db.select().from(admin2fa).where(eq(admin2fa.userId, user.id));
+      
+      if (twoFa?.isEnabled) {
+        // 2FA is enabled - require code
+        if (!twoFactorCode) {
+          return res.json({
+            requires2FA: true,
+            message: 'Unesite kod iz autentifikator aplikacije'
+          });
+        }
+        
+        // Verify the 2FA code
+        const isCodeValid = verifyTOTP(twoFa.secret, twoFactorCode);
+        if (!isCodeValid) {
+          // Check backup codes
+          const backupIndex = twoFa.backupCodes?.indexOf(twoFactorCode.toUpperCase());
+          if (backupIndex === undefined || backupIndex === -1) {
+            return res.status(401).json({ message: 'Neispravan 2FA kod' });
+          }
+          // Remove used backup code
+          const newBackupCodes = [...(twoFa.backupCodes || [])];
+          newBackupCodes.splice(backupIndex, 1);
+          await db.update(admin2fa)
+            .set({ backupCodes: newBackupCodes, lastUsedAt: new Date() })
+            .where(eq(admin2fa.userId, user.id));
+        } else {
+          // Update last used
+          await db.update(admin2fa)
+            .set({ lastUsedAt: new Date() })
+            .where(eq(admin2fa.userId, user.id));
+        }
       }
 
       const token = await createToken({
