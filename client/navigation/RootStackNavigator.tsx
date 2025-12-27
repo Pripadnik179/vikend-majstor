@@ -22,6 +22,12 @@ import AboutScreen from "@/screens/AboutScreen";
 import LegalScreen from "@/screens/LegalScreen";
 import AdminScreen from "@/screens/AdminScreen";
 import AdminUserDetailScreen from "@/screens/AdminUserDetailScreen";
+import IznajmiAlatScreen from "@/screens/IznajmiAlatScreen";
+import DodajAlatGuideScreen from "@/screens/DodajAlatGuideScreen";
+import KakoFunkcioniseScreen from "@/screens/KakoFunkcioniseScreen";
+import NajcescaPitanjaScreen from "@/screens/NajcescaPitanjaScreen";
+import KontaktScreen from "@/screens/KontaktScreen";
+import ONamaScreen from "@/screens/ONamaScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/hooks/useTheme";
@@ -211,6 +217,66 @@ export default function RootStackNavigator() {
             component={AdminUserDetailScreen}
             options={{ 
               headerTitle: "Korisnik", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
+          />
+          <Stack.Screen
+            name="IznajmiAlat"
+            component={IznajmiAlatScreen}
+            options={{ 
+              headerTitle: "Iznajmi alat", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
+          />
+          <Stack.Screen
+            name="DodajAlatGuide"
+            component={DodajAlatGuideScreen}
+            options={{ 
+              headerTitle: "Dodaj alat", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
+          />
+          <Stack.Screen
+            name="KakoFunkcionise"
+            component={KakoFunkcioniseScreen}
+            options={{ 
+              headerTitle: "Kako funkcionise", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
+          />
+          <Stack.Screen
+            name="NajcescaPitanja"
+            component={NajcescaPitanjaScreen}
+            options={{ 
+              headerTitle: "Najcesca pitanja", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
+          />
+          <Stack.Screen
+            name="Kontakt"
+            component={KontaktScreen}
+            options={{ 
+              headerTitle: "Kontakt", 
+              headerTransparent: false,
+              headerStyle: { backgroundColor: theme.backgroundRoot },
+              contentStyle: { backgroundColor: theme.backgroundRoot },
+            }}
+          />
+          <Stack.Screen
+            name="ONama"
+            component={ONamaScreen}
+            options={{ 
+              headerTitle: "O nama", 
               headerTransparent: false,
               headerStyle: { backgroundColor: theme.backgroundRoot },
               contentStyle: { backgroundColor: theme.backgroundRoot },

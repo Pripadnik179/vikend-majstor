@@ -21,6 +21,12 @@ export type RootStackParamList = {
   Legal: { section?: string } | undefined;
   Admin: undefined;
   AdminUserDetail: { userId: string };
+  IznajmiAlat: undefined;
+  DodajAlatGuide: undefined;
+  KakoFunkcionise: undefined;
+  NajcescaPitanja: undefined;
+  Kontakt: undefined;
+  ONama: undefined;
 };
 
 export type MainTabParamList = {
