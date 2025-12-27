@@ -23,7 +23,18 @@ Key features include:
     - **Subscription Tiers**: "Besplatno" (Free), "Standard", and "Premium" with varying benefits like unlimited ads, advanced categories, and featured listings.
     - **Early Adopter Program**: First 100 registered users receive 1 month of free premium access.
     - **Promotional Modals**: Modals for subscription upgrades and reaching ad limits.
-- **Admin Panel**: A web-based admin panel (`/admin`) and mobile admin screens, accessible only to users with `isAdmin=true`, offering user management (activation, subscription, duration) and statistics.
+- **Admin Panel**: A comprehensive web-based admin panel (`/admin`) and standalone version for `admin.vikendmajstor.rs`, accessible only to users with `isAdmin=true`. Features include:
+    - **Dashboard**: Real-time platform statistics (users, items, activity)
+    - **User Management**: View/suspend/activate users, bulk actions, activity history
+    - **Item Moderation**: Approve/reject/delete items, bulk operations
+    - **Reported Items**: Handle user reports with resolution actions
+    - **Messages Monitoring**: View internal user communications
+    - **Analytics**: Conversion funnel, popular categories, active cities
+    - **Admin Logs**: Complete audit trail of admin actions
+    - **Feature Toggles**: Enable/disable platform features dynamically
+    - **Notifications**: Send push/email notifications to users
+    - **CSV Export**: Export users and items data
+    - **Subscriptions**: View and manage user subscriptions
 - **UI/UX**: The UI is in Serbian (Latin script) with a Caterpillar-inspired black-yellow color palette, aiming for an iOS 26 Liquid Glass design aesthetic with a mobile-first responsive approach. Custom SVG icons are used throughout the application, replacing font-based icons to ensure consistent rendering across platforms.
 - **User Trust & Activation Features**:
     - **Onboarding Screen**: 3-step visual onboarding (Dodaj alat, Iznajmi, Zaradi) shown after registration, stored in AsyncStorage.
