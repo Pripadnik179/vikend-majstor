@@ -1,0 +1,88 @@
+PROMPT ZA REPLIT:
+
+Izmeni landing stranicu za vikendmajstor.rs tako da prati UX MAPU fokusiranu na konverziju i jasno razdvajanje uloga (iznajmljivač vs. vlasnik alata). Nemoj dirati postojeće funkcionalnosti aplikacije (login, search, listing alata), već samo landing i tokove.
+
+CILJ: Klik sa oglasa → razumevanje → akcija u ≤ 30 sekundi.
+
+---
+
+EKRAN 0 – KLIK SA OGLASA
+- Landing mora da ponovi poruku iz oglasa (headline i vizuel).
+- Jasno komunicirati: “Treba mi alat” ili “Imam alat koji stoji”.
+
+---
+
+EKRAN 1 – HERO
+- Naslov: **“Ne kupuj alat koji koristiš povremeno.”**
+- Podnaslov: **“Iznajmi alat u svom kraju ili zaradi od alata koji ti stoji u garaži.”**
+- CTA dugmad:
+  - 🔧 Iznajmi alat → vodi na put A
+  - 💰 Dodaj alat → vodi na put B
+- Mikro-copy ispod: **“Bez provizije · Lokalno · Direktno”**
+- Grešku ukloniti: klik ne sme voditi direktno u aplikaciju bez objašnjenja.
+
+---
+
+EKRAN 2 – IZBOR PUTA
+- Korisnik bira stranu bez razmišljanja:
+  - PUT A → Renters
+  - PUT B → Owners
+
+---
+
+PUT A – IZNAJMLJIVAČI
+EKRAN A1 – Pregled alata (pre registracije)
+- Lista alata sa: naziv, grad/lokacija, cena po danu, slika.
+- Registracija još NE.
+- Cilj: korisnik odmah vidi da ima ono što mu treba.
+
+EKRAN A2 – Detalj alata
+- Prikaz: slike, cena, lokacija, opis, dostupnost.
+- CTA: 🔒 Kontaktiraj vlasnika → vodi na registraciju.
+- Mikro-copy: **“Registruj se da bi kontaktirao vlasnika (1 min)”**
+
+EKRAN A3 – Registracija (minimalna)
+- Polja: email, lozinka.
+- ❌ Bez telefona i dodatnih pitanja.
+
+EKRAN A4 – Kontakt / dogovor
+- Jasno napisano: plaćanje direktno pri preuzimanju, depozit po dogovoru, preporuka za fotografije.
+- Ovo je kraj MVP toka za iznajmljivače.
+
+---
+
+PUT B – VLASNICI ALATA
+EKRAN B1 – “Zaradi od alata”
+- Objašnjenje pre registracije:
+  - Dodavanje traje 2 minuta
+  - Ti određuješ cenu
+  - Bez provizije
+
+EKRAN B2 – Registracija
+- Isto kao za iznajmljivače (email + lozinka).
+
+EKRAN B3 – Dodavanje alata (1/2)
+- Polja: naziv, kategorija, grad, cena.
+- Progress bar: Korak 1 od 2.
+
+EKRAN B4 – Dodavanje alata (2/2)
+- Polja: slike, opis, dostupnost.
+- CTA: 🟢 Objavi alat.
+
+EKRAN B5 – Potvrda
+- Poruka: **“Alat je objavljen. Biće vidljiv korisnicima u tvom gradu.”**
+- Predlog CTA: **“Dodaj još jedan alat”**
+
+---
+
+GLAVNI UX PROBLEMI KOJE OVO REŠAVA
+- Registracija prerano → alati vidljivi bez naloga.
+- Nepoverenje → jasni koraci + mikro-copy.
+- Zbunjenost → jedan izbor, jedan put.
+- Previše razmišljanja → minimalne odluke.
+
+KPI koje pratiti:
+- Klik → pregled alata
+- Pregled alata → registracija
+- Registracija → kontakt
+- Dodavanje alata → objava
