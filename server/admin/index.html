@@ -224,6 +224,8 @@
           <button class="nav-item" data-page="users"><span class="nav-icon">👥</span> Korisnici</button>
           <button class="nav-item" data-page="items"><span class="nav-icon">🔧</span> Oglasi</button>
           <button class="nav-item" data-page="subscriptions"><span class="nav-icon">💳</span> Pretplate</button>
+          <button class="nav-item" data-page="plans"><span class="nav-icon">📋</span> Planovi</button>
+          <button class="nav-item" data-page="item-stats"><span class="nav-icon">📊</span> Statistika oglasa</button>
           <div class="nav-section">Moderacija</div>
           <button class="nav-item" data-page="reports"><span class="nav-icon">🚩</span> Prijave</button>
           <button class="nav-item" data-page="messages"><span class="nav-icon">💬</span> Poruke</button>
@@ -548,6 +550,71 @@
             </div>
           </div>
         </div>
+        
+        <!-- Plans Page -->
+        <div id="page-plans" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Planovi pretplata</h1>
+              <p>Upravljanje planovima i cenama</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm" onclick="showAddPlanModal()">+ Dodaj plan</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Naziv</th>
+                    <th>Cena (RSD)</th>
+                    <th>Trajanje</th>
+                    <th>Max oglasa</th>
+                    <th>Status</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="plans-table">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Item Stats Page -->
+        <div id="page-item-stats" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Statistika oglasa</h1>
+              <p>Pregled pregleda, rezervacija i prihoda</p>
+            </div>
+          </div>
+          <div class="stats-grid" id="item-stats-overview"></div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Top 20 oglasa</h3>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Oglas</th>
+                    <th>Pregledi</th>
+                    <th>Rezervacije</th>
+                    <th>Zavrsene</th>
+                    <th>Cena/dan</th>
+                    <th>Prihod</th>
+                  </tr>
+                </thead>
+                <tbody id="item-stats-table">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   </div>
@@ -596,6 +663,8 @@
         users: loadUsers,
         items: loadItems,
         subscriptions: loadSubscriptions,
+        plans: loadPlans,
+        'item-stats': loadItemStats,
         analytics: loadAnalytics,
         reports: loadReports,
         messages: loadMessages,
@@ -650,7 +719,8 @@
             <td><span class="badge ${u.isActive ? 'badge-success' : 'badge-error'}">${u.isActive ? 'Aktivan' : 'Suspendovan'}</span></td>
             <td>${new Date(u.createdAt).toLocaleDateString('sr-RS')}</td>
             <td>
-            <button class="action-btn action-btn-info" onclick="viewUserActivity('${u.id}')">📋</button>
+            <button class="action-btn action-btn-info" onclick="showUserDetails('${u.id}')" title="Detalji">👤</button>
+            <button class="action-btn action-btn-info" onclick="viewUserActivity('${u.id}')" title="Aktivnosti">📋</button>
             ${u.isActive 
               ? `<button class="action-btn action-btn-error" onclick="suspendUser('${u.id}')">Suspenduj</button>`
               : `<button class="action-btn action-btn-success" onclick="activateUser('${u.id}')">Aktiviraj</button>`}
@@ -1165,6 +1235,276 @@
       } catch (e) {
         alert('Greska: ' + e.message);
       }
+    }
+
+    // ========== Subscription Plans ==========
+    async function loadPlans() {
+      try {
+        const data = await api('/api/admin/subscription-plans');
+        const tbody = document.getElementById('plans-table');
+        if (!data.plans?.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:40px;">Nema planova</td></tr>';
+        } else {
+          tbody.innerHTML = data.plans.map(p => `
+            <tr>
+              <td><strong>${p.displayName}</strong><br><span style="color:var(--text-tertiary);font-size:12px;">${p.name}</span></td>
+              <td>${p.priceRsd.toLocaleString('sr-RS')} RSD</td>
+              <td>${p.durationDays} dana</td>
+              <td>${p.maxAds || 'Bez limita'}</td>
+              <td><span class="badge badge-${p.isActive ? 'success' : 'warning'}">${p.isActive ? 'Aktivan' : 'Neaktivan'}</span></td>
+              <td>
+                <button class="btn btn-sm" onclick="editPlan('${p.id}')">Uredi</button>
+                <button class="btn btn-sm btn-danger" onclick="deletePlan('${p.id}')">Obrisi</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        document.getElementById('plans-table').innerHTML = '<tr><td colspan="6" style="color:var(--error);text-align:center;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    function showAddPlanModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.id = 'plan-modal';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Dodaj novi plan</h3>
+            <button class="modal-close" onclick="closeModal('plan-modal')">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Interni naziv (jedinstveno)</label>
+              <input type="text" id="plan-name" class="input" placeholder="npr. basic">
+            </div>
+            <div class="form-group">
+              <label>Prikazani naziv</label>
+              <input type="text" id="plan-display-name" class="input" placeholder="npr. Standard">
+            </div>
+            <div class="form-group">
+              <label>Opis</label>
+              <textarea id="plan-description" class="input" rows="2"></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Cena (RSD)</label>
+                <input type="number" id="plan-price" class="input" placeholder="500">
+              </div>
+              <div class="form-group">
+                <label>Trajanje (dana)</label>
+                <input type="number" id="plan-duration" class="input" value="30">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Max oglasa (prazno = bez limita)</label>
+              <input type="number" id="plan-max-ads" class="input" placeholder="5">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" onclick="closeModal('plan-modal')">Otkazi</button>
+            <button class="btn btn-primary" onclick="savePlan()">Sacuvaj</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      document.getElementById('modal-overlay').classList.remove('hidden');
+    }
+
+    async function savePlan() {
+      try {
+        const planData = {
+          name: document.getElementById('plan-name').value,
+          displayName: document.getElementById('plan-display-name').value,
+          description: document.getElementById('plan-description').value,
+          priceRsd: parseInt(document.getElementById('plan-price').value) || 0,
+          durationDays: parseInt(document.getElementById('plan-duration').value) || 30,
+          maxAds: document.getElementById('plan-max-ads').value ? parseInt(document.getElementById('plan-max-ads').value) : null
+        };
+        await api('/api/admin/subscription-plans', { method: 'POST', body: JSON.stringify(planData) });
+        closeModal('plan-modal');
+        loadPlans();
+        alert('Plan uspesno kreiran!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function deletePlan(planId) {
+      if (!confirm('Da li ste sigurni da zelite da obrisete ovaj plan?')) return;
+      try {
+        await api(`/api/admin/subscription-plans/${planId}`, { method: 'DELETE' });
+        loadPlans();
+        alert('Plan obrisan!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    function editPlan(planId) {
+      alert('Uredivanje plana ' + planId + ' - implementiraj modal');
+    }
+
+    // ========== Item Statistics ==========
+    async function loadItemStats() {
+      try {
+        const data = await api('/api/admin/items-stats');
+        
+        // Overview stats
+        const overview = document.getElementById('item-stats-overview');
+        overview.innerHTML = `
+          <div class="stat-card">
+            <div class="stat-icon">👁</div>
+            <div class="stat-value">${data.overview.totalViews}</div>
+            <div class="stat-label">Ukupno pregleda</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value">${data.overview.totalBookings}</div>
+            <div class="stat-label">Ukupno rezervacija</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">${data.overview.completedBookings}</div>
+            <div class="stat-label">Zavrsene rezervacije</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value">${data.overview.avgPricePerDay} RSD</div>
+            <div class="stat-label">Prosecna cena/dan</div>
+          </div>
+        `;
+
+        // Items table
+        const tbody = document.getElementById('item-stats-table');
+        if (!data.items?.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:40px;">Nema podataka</td></tr>';
+        } else {
+          tbody.innerHTML = data.items.map(i => `
+            <tr>
+              <td><strong>${i.title}</strong></td>
+              <td>${i.views}</td>
+              <td>${i.bookings}</td>
+              <td>${i.completedBookings}</td>
+              <td>${i.avgPrice} RSD</td>
+              <td><strong>${i.revenue.toLocaleString('sr-RS')} RSD</strong></td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        document.getElementById('item-stats-table').innerHTML = '<tr><td colspan="6" style="color:var(--error);text-align:center;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    // ========== User Management Extended ==========
+    async function showUserDetails(userId) {
+      try {
+        const data = await api(`/api/admin/users/${userId}/details`);
+        const user = data.user;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'user-modal';
+        modal.innerHTML = `
+          <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+              <h3>Korisnik: ${user.name || user.email}</h3>
+              <button class="modal-close" onclick="closeModal('user-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                <div><strong>Email:</strong> ${user.email}</div>
+                <div><strong>Telefon:</strong> ${user.phone || '-'}</div>
+                <div><strong>Grad:</strong> ${user.city || '-'}</div>
+                <div><strong>Oglasi:</strong> ${user.itemsCount}</div>
+                <div><strong>Rezervacije:</strong> ${user.bookingsCount}</div>
+                <div><strong>Registracija:</strong> ${new Date(user.createdAt).toLocaleDateString('sr-RS')}</div>
+              </div>
+              
+              <h4 style="margin-bottom:12px;">Verifikacije</h4>
+              <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <label><input type="checkbox" id="verify-email" ${user.emailVerified ? 'checked' : ''}> Email</label>
+                <label><input type="checkbox" id="verify-phone" ${user.phoneVerified ? 'checked' : ''}> Telefon</label>
+                <label><input type="checkbox" id="verify-document" ${user.documentVerified ? 'checked' : ''}> Dokument</label>
+              </div>
+              
+              <h4 style="margin-bottom:12px;">Pretplata</h4>
+              <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <select id="user-subscription" class="input" style="flex:1;">
+                  <option value="free" ${user.subscriptionType === 'free' ? 'selected' : ''}>Besplatno</option>
+                  <option value="basic" ${user.subscriptionType === 'basic' ? 'selected' : ''}>Standard</option>
+                  <option value="premium" ${user.subscriptionType === 'premium' ? 'selected' : ''}>Premium</option>
+                </select>
+                <input type="number" id="user-sub-days" class="input" value="30" style="width:100px;" placeholder="Dana">
+              </div>
+            </div>
+            <div class="modal-footer" style="display:flex;gap:12px;flex-wrap:wrap;">
+              <button class="btn btn-danger" onclick="resetUserPassword('${userId}')">Reset lozinke</button>
+              <button class="btn" onclick="saveUserVerifications('${userId}')">Sacuvaj verifikacije</button>
+              <button class="btn btn-primary" onclick="saveUserSubscription('${userId}')">Sacuvaj pretplatu</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('modal-overlay').classList.remove('hidden');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function resetUserPassword(userId) {
+      if (!confirm('Da li ste sigurni? Nova privremena lozinka ce biti generisana.')) return;
+      try {
+        const data = await api(`/api/admin/users/${userId}/reset-password`, { method: 'POST' });
+        alert('Nova privremena lozinka: ' + data.tempPassword + '\n\nKopirajte ovu lozinku i prosledite je korisniku.');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function saveUserVerifications(userId) {
+      try {
+        const verifications = [
+          { type: 'email', value: document.getElementById('verify-email').checked },
+          { type: 'phone', value: document.getElementById('verify-phone').checked },
+          { type: 'document', value: document.getElementById('verify-document').checked }
+        ];
+        
+        for (const v of verifications) {
+          await api(`/api/admin/users/${userId}/verify`, {
+            method: 'POST',
+            body: JSON.stringify({ verificationType: v.type, verified: v.value })
+          });
+        }
+        alert('Verifikacije sacuvane!');
+        loadUsers();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function saveUserSubscription(userId) {
+      try {
+        const subscriptionType = document.getElementById('user-subscription').value;
+        const durationDays = parseInt(document.getElementById('user-sub-days').value) || 30;
+        
+        await api(`/api/admin/users/${userId}/subscription`, {
+          method: 'POST',
+          body: JSON.stringify({ subscriptionType, durationDays })
+        });
+        alert('Pretplata sacuvana!');
+        closeModal('user-modal');
+        loadUsers();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.remove();
+      document.getElementById('modal-overlay').classList.add('hidden');
     }
 
     async function checkAuth() {

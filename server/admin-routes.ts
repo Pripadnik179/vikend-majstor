@@ -14,8 +14,13 @@ import {
   messages,
   conversations,
   users,
-  items
+  items,
+  subscriptionPlans,
+  itemViews,
+  bookings,
+  subscriptions
 } from "@shared/schema";
+import { randomBytes } from "crypto";
 
 const scryptAsync = promisify(scrypt);
 
@@ -802,6 +807,309 @@ export function registerAdminRoutes(app: Express) {
     } catch (error) {
       console.error('Export items error:', error);
       res.status(500).json({ message: 'Greska pri eksportovanju oglasa' });
+    }
+  });
+
+  // ============================================
+  // User Management - Extended
+  // ============================================
+  
+  // Change user subscription
+  app.post("/api/admin/users/:id/subscription", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const userId = req.params.id;
+      const { subscriptionType, durationDays } = req.body;
+
+      if (!subscriptionType || !['free', 'basic', 'premium'].includes(subscriptionType)) {
+        return res.status(400).json({ message: 'Invalid subscription type' });
+      }
+
+      const now = new Date();
+      const endDate = new Date(now);
+      endDate.setDate(endDate.getDate() + (durationDays || 30));
+
+      await db.update(users)
+        .set({ 
+          subscriptionType,
+          subscriptionStatus: 'active',
+          subscriptionStartDate: now,
+          subscriptionEndDate: endDate
+        })
+        .where(eq(users.id, userId));
+
+      // Also create a subscription record
+      await db.insert(subscriptions).values({
+        userId,
+        type: subscriptionType,
+        status: 'active',
+        priceRsd: subscriptionType === 'premium' ? 1000 : subscriptionType === 'basic' ? 500 : 0,
+        startDate: now,
+        endDate: endDate
+      });
+
+      await logAdminAction(admin.id, 'change_subscription', 'user', userId, `Changed to ${subscriptionType} for ${durationDays || 30} days`, req.ip);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Change subscription error:', error);
+      res.status(500).json({ message: 'Greska pri promeni pretplate' });
+    }
+  });
+
+  // Reset user password
+  app.post("/api/admin/users/:id/reset-password", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const userId = req.params.id;
+      
+      // Generate a temporary password
+      const tempPassword = randomBytes(8).toString('hex');
+      const salt = randomBytes(16).toString("hex");
+      const hashedBuffer = (await scryptAsync(tempPassword, salt, 64)) as Buffer;
+      const hashedPassword = `${hashedBuffer.toString("hex")}.${salt}`;
+
+      await db.update(users)
+        .set({ password: hashedPassword })
+        .where(eq(users.id, userId));
+
+      await logAdminAction(admin.id, 'reset_password', 'user', userId, 'Password was reset', req.ip);
+
+      res.json({ success: true, tempPassword });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      res.status(500).json({ message: 'Greska pri resetovanju lozinke' });
+    }
+  });
+
+  // Verify user (email, phone, document)
+  app.post("/api/admin/users/:id/verify", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const userId = req.params.id;
+      const { verificationType, verified } = req.body;
+
+      if (!['email', 'phone', 'document'].includes(verificationType)) {
+        return res.status(400).json({ message: 'Invalid verification type' });
+      }
+
+      const updateData: any = {};
+      if (verificationType === 'email') updateData.emailVerified = verified;
+      if (verificationType === 'phone') updateData.phoneVerified = verified;
+      if (verificationType === 'document') updateData.documentVerified = verified;
+
+      await db.update(users)
+        .set(updateData)
+        .where(eq(users.id, userId));
+
+      await logAdminAction(admin.id, `verify_${verificationType}`, 'user', userId, `Set ${verificationType} verified to ${verified}`, req.ip);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Verify user error:', error);
+      res.status(500).json({ message: 'Greska pri verifikaciji korisnika' });
+    }
+  });
+
+  // Get user details for editing
+  app.get("/api/admin/users/:id/details", isAdminAuth, async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'Korisnik nije pronadjen' });
+      }
+
+      // Get user's items count
+      const userItems = await db.select().from(items).where(eq(items.ownerId, userId));
+      
+      // Get user's bookings
+      const userBookings = await db.select().from(bookings).where(eq(bookings.renterId, userId));
+
+      res.json({
+        user: {
+          ...user,
+          password: undefined,
+          itemsCount: userItems.length,
+          bookingsCount: userBookings.length
+        }
+      });
+    } catch (error) {
+      console.error('Get user details error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju korisnika' });
+    }
+  });
+
+  // ============================================
+  // Subscription Plans Management
+  // ============================================
+  
+  app.get("/api/admin/subscription-plans", isAdminAuth, async (req, res) => {
+    try {
+      const plans = await db.select().from(subscriptionPlans).orderBy(subscriptionPlans.sortOrder);
+      res.json({ plans });
+    } catch (error) {
+      console.error('Get subscription plans error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju planova' });
+    }
+  });
+
+  app.post("/api/admin/subscription-plans", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { name, displayName, description, priceRsd, durationDays, maxAds, features } = req.body;
+
+      if (!name || !displayName || priceRsd === undefined) {
+        return res.status(400).json({ message: 'Name, displayName and priceRsd are required' });
+      }
+
+      const [plan] = await db.insert(subscriptionPlans).values({
+        name,
+        displayName,
+        description,
+        priceRsd,
+        durationDays: durationDays || 30,
+        maxAds,
+        features
+      }).returning();
+
+      await logAdminAction(admin.id, 'create_plan', 'subscription_plan', plan.id, `Created plan ${name}`, req.ip);
+
+      res.json({ success: true, plan });
+    } catch (error) {
+      console.error('Create subscription plan error:', error);
+      res.status(500).json({ message: 'Greska pri kreiranju plana' });
+    }
+  });
+
+  app.put("/api/admin/subscription-plans/:id", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const planId = req.params.id;
+      const { displayName, description, priceRsd, durationDays, maxAds, features, isActive } = req.body;
+
+      await db.update(subscriptionPlans)
+        .set({ 
+          displayName, 
+          description, 
+          priceRsd, 
+          durationDays, 
+          maxAds, 
+          features, 
+          isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(subscriptionPlans.id, planId));
+
+      await logAdminAction(admin.id, 'update_plan', 'subscription_plan', planId, 'Updated plan', req.ip);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Update subscription plan error:', error);
+      res.status(500).json({ message: 'Greska pri azuriranju plana' });
+    }
+  });
+
+  app.delete("/api/admin/subscription-plans/:id", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const planId = req.params.id;
+
+      await db.delete(subscriptionPlans).where(eq(subscriptionPlans.id, planId));
+
+      await logAdminAction(admin.id, 'delete_plan', 'subscription_plan', planId, 'Deleted plan', req.ip);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete subscription plan error:', error);
+      res.status(500).json({ message: 'Greska pri brisanju plana' });
+    }
+  });
+
+  // ============================================
+  // Item Statistics
+  // ============================================
+  
+  app.get("/api/admin/items/:id/stats", isAdminAuth, async (req, res) => {
+    try {
+      const itemId = req.params.id;
+      
+      // Get views count
+      const views = await db.select().from(itemViews).where(eq(itemViews.itemId, itemId));
+      
+      // Get bookings for this item
+      const itemBookings = await db.select().from(bookings).where(eq(bookings.itemId, itemId));
+      
+      // Calculate stats
+      const totalViews = views.length;
+      const totalBookings = itemBookings.length;
+      const completedBookings = itemBookings.filter(b => b.status === 'completed').length;
+      const totalRevenue = itemBookings
+        .filter(b => b.status === 'completed')
+        .reduce((sum, b) => sum + b.totalPrice, 0);
+      
+      res.json({
+        stats: {
+          totalViews,
+          totalBookings,
+          completedBookings,
+          conversionRate: totalViews > 0 ? ((totalBookings / totalViews) * 100).toFixed(1) : 0,
+          totalRevenue
+        }
+      });
+    } catch (error) {
+      console.error('Get item stats error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju statistike' });
+    }
+  });
+
+  app.get("/api/admin/items-stats", isAdminAuth, async (req, res) => {
+    try {
+      const allItems = await storage.getItems();
+      const allBookings = await db.select().from(bookings);
+      const allViews = await db.select().from(itemViews);
+
+      // Calculate stats per item
+      const itemStats = allItems.map((item: any) => {
+        const itemBookings = allBookings.filter(b => b.itemId === item.id);
+        const views = allViews.filter(v => v.itemId === item.id);
+        const completedBookings = itemBookings.filter(b => b.status === 'completed');
+        
+        return {
+          id: item.id,
+          title: item.title,
+          views: views.length,
+          bookings: itemBookings.length,
+          completedBookings: completedBookings.length,
+          avgPrice: item.pricePerDay,
+          revenue: completedBookings.reduce((sum, b) => sum + b.totalPrice, 0)
+        };
+      });
+
+      // Sort by bookings desc
+      itemStats.sort((a, b) => b.bookings - a.bookings);
+
+      // Overall stats
+      const totalViews = allViews.length;
+      const totalBookings = allBookings.length;
+      const completedBookings = allBookings.filter(b => b.status === 'completed').length;
+      const avgPricePerDay = allItems.length > 0 
+        ? Math.round(allItems.reduce((sum: number, i: any) => sum + i.pricePerDay, 0) / allItems.length)
+        : 0;
+
+      res.json({
+        overview: {
+          totalViews,
+          totalBookings,
+          completedBookings,
+          avgPricePerDay
+        },
+        items: itemStats.slice(0, 20) // Top 20
+      });
+    } catch (error) {
+      console.error('Get items stats error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju statistike' });
     }
   });
 

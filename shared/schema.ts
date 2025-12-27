@@ -21,6 +21,9 @@ export const users = pgTable("users", {
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0"),
   totalRatings: integer("total_ratings").default(0),
   emailVerified: boolean("email_verified").default(false).notNull(),
+  phoneVerified: boolean("phone_verified").default(false).notNull(),
+  documentVerified: boolean("document_verified").default(false).notNull(),
+  documentUrl: text("document_url"),
   subscriptionType: subscriptionTypeEnum("subscription_type").default("free").notNull(),
   subscriptionStatus: subscriptionStatusEnum("subscription_status").default("active").notNull(),
   subscriptionStartDate: timestamp("subscription_start_date"),
@@ -369,6 +372,45 @@ export const SUBSCRIPTION_PRICES = {
   earlyAdopterFreeDays: 30,
   maxEarlyAdopters: 100
 };
+
+// Subscription plans - admin can manage
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  priceRsd: integer("price_rsd").notNull(),
+  durationDays: integer("duration_days").notNull().default(30),
+  maxAds: integer("max_ads"),
+  features: text("features").array(),
+  isActive: boolean("is_active").default(true).notNull(),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Item views tracking
+export const itemViews = pgTable("item_views", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemId: varchar("item_id").notNull().references(() => items.id, { onDelete: 'cascade' }),
+  viewerId: varchar("viewer_id").references(() => users.id),
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const itemViewsRelations = relations(itemViews, ({ one }) => ({
+  item: one(items, {
+    fields: [itemViews.itemId],
+    references: [items.id],
+  }),
+  viewer: one(users, {
+    fields: [itemViews.viewerId],
+    references: [users.id],
+  }),
+}));
+
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type ItemView = typeof itemViews.$inferSelect;
 
 export const emailSubscribers = pgTable("email_subscribers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
