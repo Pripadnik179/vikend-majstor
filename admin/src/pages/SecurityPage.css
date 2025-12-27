@@ -1,0 +1,88 @@
+.security-page {
+  max-width: 1400px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 10px 20px;
+  background: var(--background-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  background: var(--background-hover);
+}
+
+.tab.active {
+  background: var(--primary);
+  color: var(--secondary);
+  border-color: var(--primary);
+}
+
+.type-icon {
+  font-size: 20px;
+}
+
+.logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.log-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--background);
+  border-radius: 8px;
+}
+
+.log-icon {
+  font-size: 20px;
+}
+
+.log-content {
+  flex: 1;
+}
+
+.log-text {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.log-text strong {
+  color: var(--primary);
+}
+
+.log-text em {
+  color: var(--text-secondary);
+  font-style: normal;
+}
+
+.log-time {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-tertiary);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
