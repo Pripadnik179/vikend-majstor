@@ -1919,47 +1919,41 @@
         
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.qrCodeUrl)}`;
         
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.id = '2fa-modal';
-        modal.innerHTML = `
-          <div class="modal-content" style="max-width:500px;">
-            <div class="modal-header">
-              <h3>Podesavanje 2FA</h3>
-              <button class="modal-close" onclick="closeModal('2fa-modal')">&times;</button>
+        const overlay = document.getElementById('modal-overlay');
+        overlay.innerHTML = `
+          <div class="modal" style="max-width:500px;">
+            <h2>Podesavanje 2FA</h2>
+            <p style="margin-bottom:16px;"><strong>1. Skenirajte QR kod</strong> pomocu Google Authenticator, Authy ili slicne aplikacije:</p>
+            <div style="text-align:center;padding:20px;background:var(--background);border-radius:8px;margin-bottom:16px;">
+              <img src="${qrCodeUrl}" alt="2FA QR Code" style="border-radius:8px;width:200px;height:200px;"/>
             </div>
-            <div class="modal-body">
-              <p style="margin-bottom:16px;"><strong>1. Skenirajte QR kod</strong> pomocu Google Authenticator, Authy ili slicne aplikacije:</p>
-              <div style="text-align:center;padding:20px;background:var(--background);border-radius:8px;margin-bottom:16px;">
-                <img src="${qrCodeUrl}" alt="2FA QR Code" style="border-radius:8px;"/>
-              </div>
-              <p style="margin-bottom:8px;color:var(--text-tertiary);font-size:13px;">Ili rucno unesite tajni kljuc:</p>
-              <div style="text-align:center;padding:12px;background:var(--background);border-radius:8px;margin-bottom:16px;">
-                <code style="font-size:16px;letter-spacing:3px;font-weight:bold;">${data.secret}</code>
-              </div>
-              
-              <p style="margin-bottom:12px;"><strong>2. Unesite 6-cifreni kod</strong> iz aplikacije:</p>
-              <div style="margin-bottom:16px;">
-                <input type="text" id="2fa-code" class="input" placeholder="000000" maxlength="6" 
-                       style="text-align:center;font-size:24px;letter-spacing:8px;font-weight:bold;"
-                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-              </div>
-              
-              <details style="margin-top:16px;">
-                <summary style="cursor:pointer;color:var(--text-tertiary);">Rezervni kodovi (sacuvajte ih)</summary>
-                <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;padding:16px;background:var(--background);border-radius:8px;margin-top:8px;">
-                  ${data.backupCodes.map(c => `<code style="font-size:12px;">${c}</code>`).join('')}
-                </div>
-              </details>
+            <p style="margin-bottom:8px;color:var(--text-tertiary);font-size:13px;">Ili rucno unesite tajni kljuc:</p>
+            <div style="text-align:center;padding:12px;background:var(--background);border-radius:8px;margin-bottom:16px;">
+              <code style="font-size:16px;letter-spacing:3px;font-weight:bold;">${data.secret}</code>
             </div>
-            <div class="modal-footer">
-              <button class="btn" onclick="closeModal('2fa-modal')">Otkazi</button>
+            
+            <p style="margin-bottom:12px;"><strong>2. Unesite 6-cifreni kod</strong> iz aplikacije:</p>
+            <div style="margin-bottom:16px;">
+              <input type="text" id="2fa-code" class="input" placeholder="000000" maxlength="6" 
+                     style="text-align:center;font-size:24px;letter-spacing:8px;font-weight:bold;"
+                     oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+            
+            <details style="margin-top:16px;">
+              <summary style="cursor:pointer;color:var(--text-tertiary);">Rezervni kodovi (sacuvajte ih)</summary>
+              <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;padding:16px;background:var(--background);border-radius:8px;margin-top:8px;">
+                ${data.backupCodes.map(c => `<code style="font-size:12px;">${c}</code>`).join('')}
+              </div>
+            </details>
+            
+            <div class="modal-actions">
+              <button class="btn btn-secondary" onclick="closeModal()">Otkazi</button>
               <button class="btn btn-primary" onclick="enable2FA()">Aktiviraj 2FA</button>
             </div>
           </div>
         `;
-        document.body.appendChild(modal);
-        document.getElementById('modal-overlay').classList.remove('hidden');
+        overlay.classList.remove('hidden');
+        overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
       } catch (e) {
         alert('Greska: ' + e.message);
       }
@@ -1973,7 +1967,7 @@
       }
       try {
         await api('/api/admin/2fa/enable', { method: 'POST', body: JSON.stringify({ code }) });
-        closeModal('2fa-modal');
+        closeModal();
         loadSecurity();
         alert('2FA uspesno aktivirano! Prilikom sledece prijave bice potreban kod iz aplikacije.');
       } catch (e) {
