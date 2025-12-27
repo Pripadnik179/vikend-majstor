@@ -1,0 +1,46 @@
+PROMPT ZA REPLIT:
+
+Izmeni postojeći landing page projekta VikendMajstor tako da bude marketing‑ready i investor‑ready. Implementiraj sledeće izmene:
+
+1. HERO SEKCIJA
+- Naslov: "Ne kupuj alat. Iznajmi ga ili zaradi od njega."
+- Podnaslov: "VikendMajstor povezuje ljude kojima treba alat sa onima koji ga već imaju. Bez provizije. Lokalno. Jednostavno."
+- CTA dugmad: 🟩 "Iznajmi alat" i 🟦 "Dodaj svoj alat i zaradi"
+- Dodaj ilustraciju/fotografiju koja prikazuje razmenu alata (npr. komšija daje bušilicu drugom).
+- CTA dugmad moraju biti kontrastne boje i jasno vidljive na mobilnom i desktopu.
+
+2. KLJUČNE KORISTI (3 kartice sa ikonama)
+- 🛠 "Ne kupuj ono što koristiš retko" – Uštedi novac iznajmljivanjem alata iz komšiluka.
+- 💰 "Zaradi od alata koji stoji" – Tvoj alat može da donosi prihod svaki vikend.
+- 🤝 "Lokalno i direktno" – Bez provizije. Dogovor direktno između korisnika.
+
+3. KAKO RADI (3 koraka)
+1. Pronađi ili dodaj alat  
+2. Dogovori iznajmljivanje  
+3. Uštedi ili zaradi  
+
+4. SOCIJALNI DOKAZ
+- Dodaj sekciju sa brojkama ili soft verziju:
+  ⭐ "Koriste nas ljudi širom Srbije"  
+  🔧 "Najčešće iznajmljeni alati: bušilice, testere, kosačice"  
+  🏙 "Aktivni korisnici u više gradova"  
+- Dodaj testimonials ili recenzije (placeholder ako nema realnih).
+
+5. SEKCIJA ZA OBE GRUPE
+- 🧰 Imaš alat koji ti stoji? Dodaj alat za par minuta, sam određuješ cenu, zarađuješ kad god ga neko iznajmi. Dugme: "Dodaj alat".
+- 🧱 Treba ti alat samo za vikend? Ne kupuješ skupo, uštediš prostor i novac, alat ti je blizu. Dugme: "Pronađi alat".
+
+6. FOOTER / POVERENJE
+- Dodaj FAQ: "Šta ako se alat ošteti?" i "Kako funkcioniše plaćanje?"
+- Dodaj kontakt/podršku.
+- Linkovi ka aplikaciji (Android APK, iOS TestFlight).
+- Trust badge: SSL aktivan + "Stripe plaćanje uskoro dostupno".
+
+7. DODATNO
+- Dodaj lead capture formu: "Ostavi email da te obavestimo kad aplikacija bude dostupna".
+- SEO optimizacija: ključne reči ("iznajmljivanje alata Beograd", "rentiranje bušilice", "zarada od alata").
+- Mobilna optimizacija: CTA dugmad uvek vidljiva, brz load.
+- Brendirani vizuelni identitet: boje, fontovi, ikonice u skladu sa brendom.
+- Gamifikacija: "Postani top majstor u svom gradu".
+
+CILJ: Posetilac mora u prvih 5 sekundi da shvati šta je VikendMajstor i šta da uradi. Stranica mora biti spremna za marketing kampanje, SEO, i investitorsku prezentaciju.
