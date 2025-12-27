@@ -1396,10 +1396,11 @@
     <div class="container">
       <h2>Budi u toku sa novostima</h2>
       <p>Ostavi email da te obavestimo o novim funkcijama i specijalnim ponudama.</p>
-      <form class="lead-form" action="#" method="POST" onsubmit="event.preventDefault(); alert('Hvala! Obavesticemo te o novostima.'); this.reset();">
-        <input type="email" name="email" placeholder="Tvoja email adresa" required>
-        <button type="submit">Prijavi se</button>
+      <form class="lead-form" id="newsletter-form">
+        <input type="email" name="email" id="newsletter-email" placeholder="Tvoja email adresa" required>
+        <button type="submit" id="newsletter-btn">Prijavi se</button>
       </form>
+      <p id="newsletter-message" style="margin-top: 12px; display: none;"></p>
     </div>
   </section>
 
@@ -1534,6 +1535,57 @@
           item.classList.add('active');
         }
       });
+    });
+    
+    // Newsletter subscription
+    document.getElementById('newsletter-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const emailInput = document.getElementById('newsletter-email');
+      const btn = document.getElementById('newsletter-btn');
+      const messageEl = document.getElementById('newsletter-message');
+      const email = emailInput.value.trim();
+      
+      if (!email) return;
+      
+      btn.disabled = true;
+      btn.textContent = 'Slanje...';
+      messageEl.style.display = 'none';
+      
+      try {
+        const response = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, source: 'landing_page' })
+        });
+        
+        const data = await response.json();
+        
+        messageEl.style.display = 'block';
+        if (data.success) {
+          messageEl.style.color = '#22c55e';
+          messageEl.textContent = data.message;
+          emailInput.value = '';
+          
+          // GTM event tracking
+          if (window.dataLayer) {
+            window.dataLayer.push({
+              event: 'newsletter_signup',
+              email_new: data.isNew
+            });
+          }
+        } else {
+          messageEl.style.color = '#ef4444';
+          messageEl.textContent = data.message;
+        }
+      } catch (error) {
+        messageEl.style.display = 'block';
+        messageEl.style.color = '#ef4444';
+        messageEl.textContent = 'Doslo je do greske. Pokusajte ponovo.';
+      }
+      
+      btn.disabled = false;
+      btn.textContent = 'Prijavi se';
     });
   </script>
 </body>
