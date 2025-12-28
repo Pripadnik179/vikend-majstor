@@ -46,7 +46,7 @@ if (Platform.OS === 'ios') {
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
-  const { login, register, loginWithGoogle, loginWithApple, resendVerificationEmail } = useAuth();
+  const { login, register, loginWithGoogle, loginWithApple, resendVerificationEmail, enterGuestMode } = useAuth();
   const { isDesktop, isTablet } = useWebLayout();
   
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -714,6 +714,20 @@ export default function AuthScreen() {
                 </ThemedText>
               </ThemedText>
             </Pressable>
+
+            <View style={styles.guestDivider}>
+              <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+              <ThemedText type="small" style={[styles.dividerText, { color: theme.textTertiary }]}>
+                ili
+              </ThemedText>
+              <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+            </View>
+
+            <Pressable onPress={enterGuestMode} style={[styles.guestButton, { borderColor: theme.border }]}>
+              <ThemedText type="body" style={{ color: theme.textSecondary }}>
+                Pregledaj alate bez registracije
+              </ThemedText>
+            </Pressable>
           </>
         )}
         </View>
@@ -906,5 +920,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.full,
+  },
+  guestDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  guestButton: {
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
   },
 });

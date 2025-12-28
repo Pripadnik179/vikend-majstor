@@ -38,7 +38,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isGuest } = useAuth();
   const { theme } = useTheme();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
 
@@ -70,21 +70,141 @@ export default function RootStackNavigator() {
     );
   }
 
+  if (user && !hasCompletedOnboarding) {
+    return (
+      <Stack.Navigator screenOptions={screenOptions}>
+        <Stack.Screen
+          name="Onboarding"
+          options={{ headerShown: false }}
+        >
+          {() => <OnboardingScreen onComplete={handleOnboardingComplete} />}
+        </Stack.Screen>
+      </Stack.Navigator>
+    );
+  }
+
+  if (!user && !isGuest) {
+    return (
+      <Stack.Navigator screenOptions={screenOptions}>
+        <Stack.Screen
+          name="Auth"
+          component={AuthScreen}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
+    );
+  }
+
   return (
     <Stack.Navigator screenOptions={screenOptions}>
-      {user ? (
-        hasCompletedOnboarding ? (
-          <>
-            <Stack.Screen
-              name="Main"
-              component={MainTabNavigator}
-              options={{ headerShown: false }}
-            />
-          <Stack.Screen
-            name="ItemDetail"
-            component={ItemDetailScreen}
-            options={{ headerTitle: "Detalji" }}
-          />
+      <Stack.Screen
+        name="Main"
+        component={MainTabNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ItemDetail"
+        component={ItemDetailScreen}
+        options={{ headerTitle: "Detalji" }}
+      />
+      <Stack.Screen
+        name="Search"
+        component={SearchScreen}
+        options={{ headerTitle: "Pretraga" }}
+      />
+      <Stack.Screen
+        name="IznajmiAlat"
+        component={IznajmiAlatScreen}
+        options={{ 
+          headerTitle: "Iznajmi alat", 
+          headerTransparent: false,
+          headerStyle: { backgroundColor: theme.backgroundRoot },
+          contentStyle: { backgroundColor: theme.backgroundRoot },
+        }}
+      />
+      <Stack.Screen
+        name="DodajAlatGuide"
+        component={DodajAlatGuideScreen}
+        options={{ 
+          headerTitle: "Dodaj alat", 
+          headerTransparent: false,
+          headerStyle: { backgroundColor: theme.backgroundRoot },
+          contentStyle: { backgroundColor: theme.backgroundRoot },
+        }}
+      />
+      <Stack.Screen
+        name="KakoFunkcionise"
+        component={KakoFunkcioniseScreen}
+        options={{ 
+          headerTitle: "Kako funkcionise", 
+          headerTransparent: false,
+          headerStyle: { backgroundColor: theme.backgroundRoot },
+          contentStyle: { backgroundColor: theme.backgroundRoot },
+        }}
+      />
+      <Stack.Screen
+        name="NajcescaPitanja"
+        component={NajcescaPitanjaScreen}
+        options={{ 
+          headerTitle: "Najcesca pitanja", 
+          headerTransparent: false,
+          headerStyle: { backgroundColor: theme.backgroundRoot },
+          contentStyle: { backgroundColor: theme.backgroundRoot },
+        }}
+      />
+      <Stack.Screen
+        name="Kontakt"
+        component={KontaktScreen}
+        options={{ 
+          headerTitle: "Kontakt", 
+          headerTransparent: false,
+          headerStyle: { backgroundColor: theme.backgroundRoot },
+          contentStyle: { backgroundColor: theme.backgroundRoot },
+        }}
+      />
+      <Stack.Screen
+        name="ONama"
+        component={ONamaScreen}
+        options={{ 
+          headerTitle: "O nama", 
+          headerTransparent: false,
+          headerStyle: { backgroundColor: theme.backgroundRoot },
+          contentStyle: { backgroundColor: theme.backgroundRoot },
+        }}
+      />
+      <Stack.Screen
+        name="Help"
+        component={HelpScreen}
+        options={{ 
+          headerTitle: "Pomoć", 
+          headerTransparent: false,
+          headerStyle: { backgroundColor: theme.backgroundRoot },
+          contentStyle: { backgroundColor: theme.backgroundRoot },
+        }}
+      />
+      <Stack.Screen
+        name="About"
+        component={AboutScreen}
+        options={{ 
+          headerTitle: "O aplikaciji", 
+          headerTransparent: false,
+          headerStyle: { backgroundColor: theme.backgroundRoot },
+          contentStyle: { backgroundColor: theme.backgroundRoot },
+        }}
+      />
+      <Stack.Screen
+        name="Legal"
+        component={LegalScreen}
+        options={{ 
+          headerTitle: "Pravne informacije", 
+          headerTransparent: false,
+          headerStyle: { backgroundColor: theme.backgroundRoot },
+          contentStyle: { backgroundColor: theme.backgroundRoot },
+        }}
+      />
+
+      {user && (
+        <>
           <Stack.Screen
             name="AddItem"
             component={AddItemScreen}
@@ -150,11 +270,6 @@ export default function RootStackNavigator() {
             }}
           />
           <Stack.Screen
-            name="Search"
-            component={SearchScreen}
-            options={{ headerTitle: "Pretraga" }}
-          />
-          <Stack.Screen
             name="Subscription"
             component={SubscriptionScreen}
             options={{ 
@@ -167,36 +282,6 @@ export default function RootStackNavigator() {
             component={EarningsScreen}
             options={{ 
               headerTitle: "Zaradi od alata",
-              headerTransparent: false,
-              headerStyle: { backgroundColor: theme.backgroundRoot },
-              contentStyle: { backgroundColor: theme.backgroundRoot },
-            }}
-          />
-          <Stack.Screen
-            name="Help"
-            component={HelpScreen}
-            options={{ 
-              headerTitle: "Pomoć", 
-              headerTransparent: false,
-              headerStyle: { backgroundColor: theme.backgroundRoot },
-              contentStyle: { backgroundColor: theme.backgroundRoot },
-            }}
-          />
-          <Stack.Screen
-            name="About"
-            component={AboutScreen}
-            options={{ 
-              headerTitle: "O aplikaciji", 
-              headerTransparent: false,
-              headerStyle: { backgroundColor: theme.backgroundRoot },
-              contentStyle: { backgroundColor: theme.backgroundRoot },
-            }}
-          />
-          <Stack.Screen
-            name="Legal"
-            component={LegalScreen}
-            options={{ 
-              headerTitle: "Pravne informacije", 
               headerTransparent: false,
               headerStyle: { backgroundColor: theme.backgroundRoot },
               contentStyle: { backgroundColor: theme.backgroundRoot },
@@ -222,81 +307,7 @@ export default function RootStackNavigator() {
               contentStyle: { backgroundColor: theme.backgroundRoot },
             }}
           />
-          <Stack.Screen
-            name="IznajmiAlat"
-            component={IznajmiAlatScreen}
-            options={{ 
-              headerTitle: "Iznajmi alat", 
-              headerTransparent: false,
-              headerStyle: { backgroundColor: theme.backgroundRoot },
-              contentStyle: { backgroundColor: theme.backgroundRoot },
-            }}
-          />
-          <Stack.Screen
-            name="DodajAlatGuide"
-            component={DodajAlatGuideScreen}
-            options={{ 
-              headerTitle: "Dodaj alat", 
-              headerTransparent: false,
-              headerStyle: { backgroundColor: theme.backgroundRoot },
-              contentStyle: { backgroundColor: theme.backgroundRoot },
-            }}
-          />
-          <Stack.Screen
-            name="KakoFunkcionise"
-            component={KakoFunkcioniseScreen}
-            options={{ 
-              headerTitle: "Kako funkcionise", 
-              headerTransparent: false,
-              headerStyle: { backgroundColor: theme.backgroundRoot },
-              contentStyle: { backgroundColor: theme.backgroundRoot },
-            }}
-          />
-          <Stack.Screen
-            name="NajcescaPitanja"
-            component={NajcescaPitanjaScreen}
-            options={{ 
-              headerTitle: "Najcesca pitanja", 
-              headerTransparent: false,
-              headerStyle: { backgroundColor: theme.backgroundRoot },
-              contentStyle: { backgroundColor: theme.backgroundRoot },
-            }}
-          />
-          <Stack.Screen
-            name="Kontakt"
-            component={KontaktScreen}
-            options={{ 
-              headerTitle: "Kontakt", 
-              headerTransparent: false,
-              headerStyle: { backgroundColor: theme.backgroundRoot },
-              contentStyle: { backgroundColor: theme.backgroundRoot },
-            }}
-          />
-          <Stack.Screen
-            name="ONama"
-            component={ONamaScreen}
-            options={{ 
-              headerTitle: "O nama", 
-              headerTransparent: false,
-              headerStyle: { backgroundColor: theme.backgroundRoot },
-              contentStyle: { backgroundColor: theme.backgroundRoot },
-            }}
-          />
-          </>
-        ) : (
-          <Stack.Screen
-            name="Onboarding"
-            options={{ headerShown: false }}
-          >
-            {() => <OnboardingScreen onComplete={handleOnboardingComplete} />}
-          </Stack.Screen>
-        )
-      ) : (
-        <Stack.Screen
-          name="Auth"
-          component={AuthScreen}
-          options={{ headerShown: false }}
-        />
+        </>
       )}
     </Stack.Navigator>
   );

@@ -41,6 +41,7 @@ interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   isVerified: boolean;
+  isGuest: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, role?: string) => Promise<void>;
   loginWithGoogle: (accessToken: string) => Promise<OAuthResult>;
@@ -48,6 +49,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   resendVerificationEmail: (email?: string) => Promise<boolean>;
+  enterGuestMode: () => void;
+  exitGuestMode: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,6 +58,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
 
   const refreshUser = useCallback(async () => {
     try {
@@ -228,8 +232,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isVerified = user?.emailVerified ?? false;
 
+  const enterGuestMode = useCallback(() => {
+    setIsGuest(true);
+  }, []);
+
+  const exitGuestMode = useCallback(() => {
+    setIsGuest(false);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, isVerified, login, register, loginWithGoogle, loginWithApple, logout, refreshUser, resendVerificationEmail }}>
+    <AuthContext.Provider value={{ user, isLoading, isVerified, isGuest, login, register, loginWithGoogle, loginWithApple, logout, refreshUser, resendVerificationEmail, enterGuestMode, exitGuestMode }}>
       {children}
     </AuthContext.Provider>
   );

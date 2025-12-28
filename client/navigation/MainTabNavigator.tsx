@@ -12,6 +12,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Colors } from "@/constants/theme";
 import type { MainTabParamList } from "./types";
 import { HomeIcon, GridIcon, CalendarIcon, MessageIcon, UserIcon } from "@/components/icons/TabBarIcons";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -20,6 +21,7 @@ const isWeb = Platform.OS === 'web';
 export default function MainTabNavigator() {
   const { theme, isDark } = useTheme();
   const { width } = useWindowDimensions();
+  const { user, isGuest } = useAuth();
   const isDesktop = isWeb && width >= 768;
 
   const webTabBarStyle = isDesktop ? {
@@ -90,31 +92,35 @@ export default function MainTabNavigator() {
             ),
           }}
         />
-        <Tab.Screen
-          name="BookingsTab"
-          component={BookingsStackNavigator}
-          options={{
-            title: "Rezervacije",
-            tabBarIcon: ({ color, size }) => (
-              <CalendarIcon size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="MessagesTab"
-          component={MessagesStackNavigator}
-          options={{
-            title: "Poruke",
-            tabBarIcon: ({ color, size }) => (
-              <MessageIcon size={size} color={color} />
-            ),
-          }}
-        />
+        {user && (
+          <Tab.Screen
+            name="BookingsTab"
+            component={BookingsStackNavigator}
+            options={{
+              title: "Rezervacije",
+              tabBarIcon: ({ color, size }) => (
+                <CalendarIcon size={size} color={color} />
+              ),
+            }}
+          />
+        )}
+        {user && (
+          <Tab.Screen
+            name="MessagesTab"
+            component={MessagesStackNavigator}
+            options={{
+              title: "Poruke",
+              tabBarIcon: ({ color, size }) => (
+                <MessageIcon size={size} color={color} />
+              ),
+            }}
+          />
+        )}
         <Tab.Screen
           name="ProfileTab"
           component={ProfileStackNavigator}
           options={{
-            title: "Profil",
+            title: user ? "Profil" : "Prijava",
             tabBarIcon: ({ color, size }) => (
               <UserIcon size={size} color={color} />
             ),

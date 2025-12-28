@@ -35,7 +35,7 @@ export default function ProfileScreen() {
   const { isDesktop, contentPaddingTop, contentPaddingBottom } = useWebLayout();
   const tabBarHeight = isDesktop ? 0 : (Platform.OS === 'web' ? 0 : 80);
   const { theme, isDark } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, isGuest, exitGuestMode } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { data: subscriptionStatus } = useQuery<SubscriptionStatus>({
@@ -123,6 +123,44 @@ export default function ProfileScreen() {
   const badges = getUserBadges();
   const paddingTop = isDesktop ? contentPaddingTop + Spacing.lg : Spacing.sm;
   const paddingBottom = isDesktop ? contentPaddingBottom + Spacing.xl : tabBarHeight + Spacing.fabSize + Spacing.xl;
+
+  if (isGuest || !user) {
+    return (
+      <View style={[styles.guestContainer, { backgroundColor: theme.backgroundRoot, paddingTop: paddingTop + headerHeight }]}>
+        <View style={styles.guestContent}>
+          <View style={[styles.guestIconCircle, { backgroundColor: theme.primary + '20' }]}>
+            <DynamicIcon name="user" size={48} color={theme.primary} />
+          </View>
+          <ThemedText type="h2" style={styles.guestTitle}>Prijavi se</ThemedText>
+          <ThemedText type="body" style={[styles.guestSubtitle, { color: theme.textSecondary }]}>
+            Da bi rezervisao alate, dodao svoje alate ili komunicirao sa drugim korisnicima, potrebno je da se prijavis.
+          </ThemedText>
+          
+          <View style={styles.guestBenefits}>
+            <View style={styles.guestBenefitRow}>
+              <ShieldIcon size={20} color={Colors.light.success} />
+              <ThemedText type="body" style={{ marginLeft: Spacing.sm }}>Bez provizije - 0%</ThemedText>
+            </View>
+            <View style={styles.guestBenefitRow}>
+              <ClockIcon size={20} color={Colors.light.trust} />
+              <ThemedText type="body" style={{ marginLeft: Spacing.sm }}>Registracija traje 1 minut</ThemedText>
+            </View>
+            <View style={styles.guestBenefitRow}>
+              <StarIcon size={20} color={Colors.light.cta} />
+              <ThemedText type="body" style={{ marginLeft: Spacing.sm }}>Lokalna zajednica</ThemedText>
+            </View>
+          </View>
+
+          <Pressable 
+            onPress={exitGuestMode} 
+            style={[styles.guestLoginButton, { backgroundColor: theme.primary }]}
+          >
+            <ThemedText style={styles.guestLoginButtonText}>Prijavi se / Registruj se</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -460,6 +498,53 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     marginLeft: Spacing.sm,
+    fontWeight: '600',
+  },
+  guestContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  guestContent: {
+    alignItems: 'center',
+    maxWidth: 340,
+  },
+  guestIconCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
+  guestTitle: {
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+  },
+  guestSubtitle: {
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: Spacing.xl,
+  },
+  guestBenefits: {
+    width: '100%',
+    marginBottom: Spacing.xl,
+  },
+  guestBenefitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  guestLoginButton: {
+    width: '100%',
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.sm,
+    alignItems: 'center',
+  },
+  guestLoginButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '600',
   },
 });

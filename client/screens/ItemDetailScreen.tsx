@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Pressable, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -11,6 +11,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { AvailabilityCalendar } from '@/components/AvailabilityCalendar';
+import { AuthPromptModal } from '@/components/AuthPromptModal';
 import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,7 +27,9 @@ export default function ItemDetailScreen() {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();
   const { isDesktop, horizontalPadding } = useWebLayout();
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalType, setAuthModalType] = useState<'booking' | 'message'>('booking');
   
   const contentWidth = Math.min(width, MAX_CONTENT_WIDTH);
   const imageWidth = isDesktop ? contentWidth : width;
@@ -53,6 +56,12 @@ export default function ItemDetailScreen() {
   const handleContactOwner = async () => {
     if (!item || !item.owner) return;
     
+    if (isGuest || !user) {
+      setAuthModalType('message');
+      setShowAuthModal(true);
+      return;
+    }
+    
     try {
       const response = await apiRequest('POST', '/api/conversations', {
         userId: item.ownerId,
@@ -66,6 +75,18 @@ export default function ItemDetailScreen() {
     } catch (error) {
       console.error('Error creating conversation:', error);
     }
+  };
+
+  const handleBooking = () => {
+    if (!item) return;
+    
+    if (isGuest || !user) {
+      setAuthModalType('booking');
+      setShowAuthModal(true);
+      return;
+    }
+    
+    navigation.navigate('BookingFlow', { itemId: item.id });
   };
 
   const getImageUrl = (path: string) => {
@@ -237,7 +258,7 @@ export default function ItemDetailScreen() {
               <ThemedText type="small" style={{ color: theme.textSecondary }}>po danu + {item.deposit} RSD depozit</ThemedText>
             </View>
             <Button
-              onPress={() => navigation.navigate('BookingFlow', { itemId: item.id })}
+              onPress={handleBooking}
               style={styles.bookButton}
             >
               Rezerviši
@@ -245,6 +266,12 @@ export default function ItemDetailScreen() {
           </View>
         </View>
       )}
+
+      <AuthPromptModal
+        visible={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        actionType={authModalType}
+      />
     </View>
   );
 }
