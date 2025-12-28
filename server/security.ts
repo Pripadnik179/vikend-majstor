@@ -206,6 +206,7 @@ export function setupSecurity(app: Express) {
       includeSubDomains: true,
       preload: true
     },
+    frameguard: { action: "deny" },
     noSniff: true,
     xssFilter: true,
   }));
