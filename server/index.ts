@@ -6,6 +6,7 @@ import { registerAdminRoutes } from "./admin-routes";
 import { storage } from "./storage";
 import { setupSecurity } from "./security";
 import { LANDING_PAGE_TEMPLATE } from "./landing-page-template";
+import { seedCategories, migrateItemsToNewCategories } from "./seed-categories";
 import * as fs from "fs";
 import * as path from "path";
 import { scrypt, randomBytes } from "crypto";
@@ -450,6 +451,14 @@ function setupErrorHandler(app: express.Application) {
 
   // Initialize admin account if it doesn't exist
   await initializeAdminAccount();
+
+  // Seed categories and migrate existing items
+  try {
+    await seedCategories();
+    await migrateItemsToNewCategories();
+  } catch (error) {
+    console.error("[SEED] Error seeding categories:", error);
+  }
 
   const port = parseInt(process.env.PORT || "5000", 10);
   server.listen(

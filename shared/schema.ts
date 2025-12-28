@@ -93,6 +93,8 @@ export const items = pgTable("items", {
   description: text("description").notNull(),
   category: text("category").notNull(),
   subCategory: text("sub_category"),
+  categoryId: varchar("category_id"),
+  subcategoryId: varchar("subcategory_id"),
   toolType: text("tool_type"),
   toolSubType: text("tool_sub_type"),
   brand: text("brand"),
@@ -112,6 +114,11 @@ export const items = pgTable("items", {
   totalRatings: integer("total_ratings").default(0),
   expiresAt: timestamp("expires_at"),
   activityTags: text("activity_tags").array(),
+  userType: text("user_type").default("diy"),
+  rentalPeriod: text("rental_period").default("dan"),
+  hasDeposit: boolean("has_deposit").default(true),
+  hasDelivery: boolean("has_delivery").default(false),
+  weight: decimal("weight", { precision: 6, scale: 2 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -294,6 +301,177 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 export type VerificationToken = typeof verificationTokens.$inferSelect;
 
+// ============================================
+// NOVA 3-NIVOKA STRUKTURA KATEGORIJA
+// ============================================
+
+// Level 1 - Glavne kategorije (admin only)
+export const categories = pgTable("categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  slug: text("slug").notNull().unique(),
+  icon: text("icon"),
+  sortOrder: integer("sort_order").default(0),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Level 2 - Podkategorije (admin only)
+export const subcategories = pgTable("subcategories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  categoryId: varchar("category_id").notNull().references(() => categories.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  slug: text("slug").notNull(),
+  icon: text("icon"),
+  sortOrder: integer("sort_order").default(0),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  subcategories: many(subcategories),
+  items: many(items),
+}));
+
+export const subcategoriesRelations = relations(subcategories, ({ one, many }) => ({
+  category: one(categories, {
+    fields: [subcategories.categoryId],
+    references: [categories.id],
+  }),
+  items: many(items),
+}));
+
+export type Category = typeof categories.$inferSelect;
+export type Subcategory = typeof subcategories.$inferSelect;
+
+// Predefinisane kategorije za seeding
+export const PREDEFINED_CATEGORIES = {
+  elektricni: {
+    name: "Električni alati",
+    slug: "elektricni-alati",
+    subcategories: [
+      { name: "Bušilice", slug: "busilice" },
+      { name: "Brusilice", slug: "brusilice" },
+      { name: "Testere", slug: "testere" },
+      { name: "Štemari", slug: "stemari" },
+      { name: "Rendei", slug: "rendei" },
+      { name: "Glodalice", slug: "glodalice" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  akumulatorski: {
+    name: "Akumulatorski (aku) alati",
+    slug: "akumulatorski-alati",
+    subcategories: [
+      { name: "Aku bušilice / odvijači", slug: "aku-busilice-odvijaci" },
+      { name: "Aku brusilice", slug: "aku-brusilice" },
+      { name: "Aku testere", slug: "aku-testere" },
+      { name: "Aku višenamjenski", slug: "aku-visenamjenski" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  rucni: {
+    name: "Ručni alati",
+    slug: "rucni-alati",
+    subcategories: [
+      { name: "Čekići", slug: "cekici" },
+      { name: "Klešta", slug: "klesta" },
+      { name: "Odvijači", slug: "odvijaci" },
+      { name: "Ključevi", slug: "kljucevi" },
+      { name: "Testeri (ručni)", slug: "testeri-rucni" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  bastenski: {
+    name: "Baštenski alati i oprema",
+    slug: "bastenski-alati",
+    subcategories: [
+      { name: "Kosilice", slug: "kosilice" },
+      { name: "Trimeri", slug: "trimeri" },
+      { name: "Lančane testere", slug: "lancane-testere" },
+      { name: "Duvači lišća", slug: "duvaci-lisca" },
+      { name: "Kultivatori", slug: "kultivatori" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  betonski: {
+    name: "Mašine za beton i teške radove",
+    slug: "masine-beton-teski-radovi",
+    subcategories: [
+      { name: "Betonijeri", slug: "betonijeri" },
+      { name: "Vibroploče", slug: "vibroploce" },
+      { name: "Štemači / čekić bušilice", slug: "stemaci-cekic-busilice" },
+      { name: "Mašine za sečenje", slug: "masine-za-secenje" },
+      { name: "Agregati", slug: "agregati" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  stolarski: {
+    name: "Stolarski i obrada materijala",
+    slug: "stolarski-obrada-materijala",
+    subcategories: [
+      { name: "Stoni rendei", slug: "stoni-rendei" },
+      { name: "Stoni brusilice", slug: "stoni-brusilice" },
+      { name: "CNC i glodalice", slug: "cnc-glodalice" },
+      { name: "Stolarsko lepljenje", slug: "stolarsko-lepljenje" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  auto: {
+    name: "Auto i servis",
+    slug: "auto-servis",
+    subcategories: [
+      { name: "Dijagnostika", slug: "dijagnostika" },
+      { name: "Hidraulične dizalice", slug: "hidraulicne-dizalice" },
+      { name: "Vulkanizerska oprema", slug: "vulkanizerska-oprema" },
+      { name: "Lakiranje/poliranje", slug: "lakiranje-poliranje" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  merni: {
+    name: "Merni alati i oprema",
+    slug: "merni-alati-oprema",
+    subcategories: [
+      { name: "Laserski niveliri", slug: "laserski-niveliri" },
+      { name: "Detektori", slug: "detektori" },
+      { name: "Multimetri", slug: "multimetri" },
+      { name: "Merni metri", slug: "merni-metri" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  sigurnosna: {
+    name: "Sigurnosna i zaštitna oprema",
+    slug: "sigurnosna-zastitna-oprema",
+    subcategories: [
+      { name: "Kacige", slug: "kacige" },
+      { name: "Zaštitne naočare", slug: "zastitne-naocare" },
+      { name: "Rukavice", slug: "rukavice" },
+      { name: "Odelo za rad", slug: "odelo-za-rad" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  ciscenje: {
+    name: "Oprema za čišćenje",
+    slug: "oprema-za-ciscenje",
+    subcategories: [
+      { name: "Perači pod pritiskom", slug: "peraci-pod-pritiskom" },
+      { name: "Usisivači", slug: "usisivaci" },
+      { name: "Parni čistači", slug: "parni-cistaci" },
+      { name: "Industrijski usisivači", slug: "industrijski-usisivaci" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  ostalo: {
+    name: "Ostalo / Specijalni alati",
+    slug: "ostalo-specijalni-alati",
+    subcategories: [
+      { name: "Specijalni alati", slug: "specijalni-alati" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+};
+
+// Stara struktura za backward compatibility
 export const CATEGORIES = {
   byProject: {
     gradjevinarstvo: {

@@ -11,7 +11,7 @@ import {
   updateProductionSubscription,
   isProductionAvailable 
 } from "./mysql-db";
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc, and, inArray, asc, sql } from "drizzle-orm";
 import { 
   adminLogs, 
   userActivityLogs, 
@@ -31,7 +31,9 @@ import {
   admin2fa,
   appVersions,
   reviews,
-  emailSubscribers
+  emailSubscribers,
+  categories,
+  subcategories
 } from "@shared/schema";
 import { randomBytes, createHmac } from "crypto";
 import * as crypto from "crypto";
@@ -1735,6 +1737,211 @@ export function registerAdminRoutes(app: Express) {
     } catch (error) {
       console.error('Get deployment status error:', error);
       res.status(500).json({ message: 'Greska pri ucitavanju statusa' });
+    }
+  });
+
+  // ============================================
+  // Categories Management (Admin CRUD)
+  // ============================================
+  
+  app.get("/api/admin/categories", isAdminAuth, async (req, res) => {
+    try {
+      const allCategories = await db.select()
+        .from(categories)
+        .orderBy(asc(categories.sortOrder));
+      
+      const categoriesWithSubs = await Promise.all(
+        allCategories.map(async (cat) => {
+          const subs = await db.select()
+            .from(subcategories)
+            .where(eq(subcategories.categoryId, cat.id))
+            .orderBy(asc(subcategories.sortOrder));
+          
+          const itemCount = await db.select({ count: sql<number>`count(*)` })
+            .from(items)
+            .where(eq(items.categoryId, cat.id));
+          
+          return { 
+            ...cat, 
+            subcategories: subs,
+            itemCount: Number(itemCount[0]?.count || 0)
+          };
+        })
+      );
+      
+      res.json(categoriesWithSubs);
+    } catch (error) {
+      console.error("Error fetching admin categories:", error);
+      res.status(500).json({ message: "Greška pri učitavanju kategorija" });
+    }
+  });
+
+  app.post("/api/admin/categories", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { name, slug, icon, sortOrder } = req.body;
+      
+      if (!name || !slug) {
+        return res.status(400).json({ message: "Naziv i slug su obavezni" });
+      }
+      
+      const [newCategory] = await db.insert(categories).values({
+        name,
+        slug,
+        icon,
+        sortOrder: sortOrder || 0,
+        isActive: true,
+      }).returning();
+      
+      await logAdminAction(admin.id, 'create_category', 'category', newCategory.id, `Created category: ${name}`, req.ip);
+      
+      res.json(newCategory);
+    } catch (error: any) {
+      console.error("Error creating category:", error);
+      if (error.code === '23505') {
+        return res.status(400).json({ message: "Kategorija sa ovim nazivom ili slugom već postoji" });
+      }
+      res.status(500).json({ message: "Greška pri kreiranju kategorije" });
+    }
+  });
+
+  app.put("/api/admin/categories/:id", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { id } = req.params;
+      const { name, slug, icon, sortOrder, isActive } = req.body;
+      
+      const [updated] = await db.update(categories)
+        .set({ name, slug, icon, sortOrder, isActive })
+        .where(eq(categories.id, id))
+        .returning();
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Kategorija nije pronađena" });
+      }
+      
+      await logAdminAction(admin.id, 'update_category', 'category', id, `Updated category: ${name}`, req.ip);
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating category:", error);
+      res.status(500).json({ message: "Greška pri ažuriranju kategorije" });
+    }
+  });
+
+  app.delete("/api/admin/categories/:id", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { id } = req.params;
+      
+      const itemCount = await db.select({ count: sql<number>`count(*)` })
+        .from(items)
+        .where(eq(items.categoryId, id));
+      
+      if (Number(itemCount[0]?.count || 0) > 0) {
+        return res.status(400).json({ 
+          message: "Ne možete obrisati kategoriju koja ima oglase. Prvo premestite oglase u drugu kategoriju." 
+        });
+      }
+      
+      const [deleted] = await db.delete(categories)
+        .where(eq(categories.id, id))
+        .returning();
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Kategorija nije pronađena" });
+      }
+      
+      await logAdminAction(admin.id, 'delete_category', 'category', id, `Deleted category: ${deleted.name}`, req.ip);
+      
+      res.json({ message: "Kategorija uspešno obrisana" });
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      res.status(500).json({ message: "Greška pri brisanju kategorije" });
+    }
+  });
+
+  // Subcategories CRUD
+  app.post("/api/admin/subcategories", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { categoryId, name, slug, icon, sortOrder } = req.body;
+      
+      if (!categoryId || !name || !slug) {
+        return res.status(400).json({ message: "Kategorija, naziv i slug su obavezni" });
+      }
+      
+      const [newSubcategory] = await db.insert(subcategories).values({
+        categoryId,
+        name,
+        slug,
+        icon,
+        sortOrder: sortOrder || 0,
+        isActive: true,
+      }).returning();
+      
+      await logAdminAction(admin.id, 'create_subcategory', 'subcategory', newSubcategory.id, `Created subcategory: ${name}`, req.ip);
+      
+      res.json(newSubcategory);
+    } catch (error) {
+      console.error("Error creating subcategory:", error);
+      res.status(500).json({ message: "Greška pri kreiranju podkategorije" });
+    }
+  });
+
+  app.put("/api/admin/subcategories/:id", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { id } = req.params;
+      const { name, slug, icon, sortOrder, isActive } = req.body;
+      
+      const [updated] = await db.update(subcategories)
+        .set({ name, slug, icon, sortOrder, isActive })
+        .where(eq(subcategories.id, id))
+        .returning();
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Podkategorija nije pronađena" });
+      }
+      
+      await logAdminAction(admin.id, 'update_subcategory', 'subcategory', id, `Updated subcategory: ${name}`, req.ip);
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating subcategory:", error);
+      res.status(500).json({ message: "Greška pri ažuriranju podkategorije" });
+    }
+  });
+
+  app.delete("/api/admin/subcategories/:id", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { id } = req.params;
+      
+      const itemCount = await db.select({ count: sql<number>`count(*)` })
+        .from(items)
+        .where(eq(items.subcategoryId, id));
+      
+      if (Number(itemCount[0]?.count || 0) > 0) {
+        return res.status(400).json({ 
+          message: "Ne možete obrisati podkategoriju koja ima oglase." 
+        });
+      }
+      
+      const [deleted] = await db.delete(subcategories)
+        .where(eq(subcategories.id, id))
+        .returning();
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Podkategorija nije pronađena" });
+      }
+      
+      await logAdminAction(admin.id, 'delete_subcategory', 'subcategory', id, `Deleted subcategory: ${deleted.name}`, req.ip);
+      
+      res.json({ message: "Podkategorija uspešno obrisana" });
+    } catch (error) {
+      console.error("Error deleting subcategory:", error);
+      res.status(500).json({ message: "Greška pri brisanju podkategorije" });
     }
   });
 

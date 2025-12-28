@@ -12,6 +12,9 @@ import {
 import { sendBookingRequestEmail, sendBookingConfirmedEmail } from "./email";
 import { seedDemoData, deleteDemoData, getDemoDataStats } from "./seed-demo";
 import { addProductionSubscriber, isProductionAvailable } from "./mysql-db";
+import { db } from "./db";
+import { categories, subcategories } from "../shared/schema";
+import { eq, asc } from "drizzle-orm";
 import * as path from "path";
 import * as fs from "fs";
 import { fileURLToPath } from "url";
@@ -157,6 +160,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     res.redirect('/');
+  });
+
+  // ============================================
+  // CATEGORIES API ENDPOINTS
+  // ============================================
+  
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const allCategories = await db.select()
+        .from(categories)
+        .where(eq(categories.isActive, true))
+        .orderBy(asc(categories.sortOrder));
+      
+      const categoriesWithSubs = await Promise.all(
+        allCategories.map(async (cat) => {
+          const subs = await db.select()
+            .from(subcategories)
+            .where(eq(subcategories.categoryId, cat.id))
+            .orderBy(asc(subcategories.sortOrder));
+          return { ...cat, subcategories: subs };
+        })
+      );
+      
+      res.json(categoriesWithSubs);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ error: "Greška pri učitavanju kategorija" });
+    }
+  });
+
+  app.get("/api/categories/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const [category] = await db.select()
+        .from(categories)
+        .where(eq(categories.slug, slug))
+        .limit(1);
+      
+      if (!category) {
+        return res.status(404).json({ error: "Kategorija nije pronađena" });
+      }
+      
+      const subs = await db.select()
+        .from(subcategories)
+        .where(eq(subcategories.categoryId, category.id))
+        .orderBy(asc(subcategories.sortOrder));
+      
+      res.json({ ...category, subcategories: subs });
+    } catch (error) {
+      console.error("Error fetching category:", error);
+      res.status(500).json({ error: "Greška pri učitavanju kategorije" });
+    }
+  });
+
+  app.get("/api/subcategories/:categoryId", async (req, res) => {
+    try {
+      const { categoryId } = req.params;
+      const subs = await db.select()
+        .from(subcategories)
+        .where(eq(subcategories.categoryId, categoryId))
+        .orderBy(asc(subcategories.sortOrder));
+      res.json(subs);
+    } catch (error) {
+      console.error("Error fetching subcategories:", error);
+      res.status(500).json({ error: "Greška pri učitavanju podkategorija" });
+    }
   });
 
   app.get("/oauth/google/callback", (req, res) => {
