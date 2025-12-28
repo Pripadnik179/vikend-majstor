@@ -23,8 +23,25 @@ import { uploadFileToStorage, uploadFileToStorageWeb, finalizeUpload, finalizeUp
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
-import { CATEGORIES as SCHEMA_CATEGORIES, POWER_SOURCES, ACTIVITIES } from '@shared/schema';
+import { POWER_SOURCES, ACTIVITIES } from '@shared/schema';
 import { getCityCoordinates } from '@shared/cityCoordinates';
+
+interface Subcategory {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string;
+  sortOrder: number;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string;
+  sortOrder: number;
+  subcategories: Subcategory[];
+}
 
 const FREE_ITEM_LIMIT = 5;
 
@@ -93,6 +110,8 @@ export default function AddItemScreen() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [subCategory, setSubCategory] = useState('');
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [subcategoryId, setSubcategoryId] = useState<string | null>(null);
   const [powerSource, setPowerSource] = useState('');
   const [pricePerDay, setPricePerDay] = useState('');
   const [deposit, setDeposit] = useState('');
@@ -112,27 +131,20 @@ export default function AddItemScreen() {
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
 
-  const allCategories = useMemo(() => {
-    const cats: { key: string; name: string; subcategories: string[] }[] = [];
-    Object.entries(SCHEMA_CATEGORIES.byProject).forEach(([key, c]) => {
-      cats.push({ key, name: c.name, subcategories: c.subcategories });
-    });
-    Object.entries(SCHEMA_CATEGORIES.byToolType).forEach(([key, c]) => {
-      cats.push({ key, name: c.name, subcategories: c.subcategories });
-    });
-    return cats;
-  }, []);
+  const { data: allCategories = [] } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+  });
 
   const selectedCategoryData = useMemo(() => {
-    return allCategories.find(c => c.name === category);
-  }, [allCategories, category]);
+    return allCategories.find(c => c.id === categoryId);
+  }, [allCategories, categoryId]);
 
   const currentStep = useMemo(() => {
     let filledFields = 0;
     const totalFields = 6;
     
     if (title.trim()) filledFields++;
-    if (category) filledFields++;
+    if (categoryId) filledFields++;
     if (pricePerDay) filledFields++;
     if (city.trim()) filledFields++;
     if (description.trim()) filledFields++;
@@ -141,7 +153,7 @@ export default function AddItemScreen() {
     if (filledFields === 0) return 1;
     if (filledFields <= 3) return 1;
     return 2;
-  }, [title, category, pricePerDay, city, description, images]);
+  }, [title, categoryId, pricePerDay, city, description, images]);
 
   const { data: myItems } = useQuery<Item[]>({
     queryKey: ['/api/my-items'],
@@ -189,6 +201,8 @@ export default function AddItemScreen() {
       setDescription(existingItem.description);
       setCategory(existingItem.category);
       setSubCategory(existingItem.subCategory || '');
+      setCategoryId((existingItem as any).categoryId || null);
+      setSubcategoryId((existingItem as any).subcategoryId || null);
       setPowerSource(existingItem.powerSource || '');
       setPricePerDay(existingItem.pricePerDay.toString());
       setDeposit(existingItem.deposit.toString());
@@ -250,14 +264,13 @@ export default function AddItemScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!title || !description || !category || !pricePerDay || !deposit || !city) {
+    if (!title || !description || !categoryId || !pricePerDay || !deposit || !city) {
       Alert.alert('Greška', 'Popunite sva obavezna polja');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Use GPS coordinates if available, otherwise fallback to city coordinates
       let finalLatitude = latitude?.toString() || null;
       let finalLongitude = longitude?.toString() || null;
       
@@ -269,11 +282,16 @@ export default function AddItemScreen() {
         }
       }
       
+      const selectedCategory = allCategories.find(c => c.id === categoryId);
+      const selectedSubcategory = selectedCategory?.subcategories.find(s => s.id === subcategoryId);
+      
       const data = {
         title,
         description,
-        category,
-        subCategory: subCategory || null,
+        category: selectedCategory?.name || category,
+        subCategory: selectedSubcategory?.name || subCategory || null,
+        categoryId,
+        subcategoryId: subcategoryId || null,
         powerSource: powerSource || null,
         pricePerDay: parseInt(pricePerDay),
         deposit: parseInt(deposit),
@@ -449,8 +467,8 @@ export default function AddItemScreen() {
           style={[inputStyle, styles.picker]}
           onPress={() => setShowCategoryPicker(!showCategoryPicker)}
         >
-          <ThemedText type="body" style={{ color: category ? theme.text : theme.textTertiary }}>
-            {category || 'Izaberi kategoriju'}
+          <ThemedText type="body" style={{ color: categoryId ? theme.text : theme.textTertiary }}>
+            {selectedCategoryData?.name || 'Izaberi kategoriju'}
           </ThemedText>
           <ChevronDownIcon size={20} color={theme.textTertiary} />
         </Pressable>
@@ -458,18 +476,20 @@ export default function AddItemScreen() {
           <ScrollView style={[styles.categoryList, { backgroundColor: theme.backgroundDefault, borderColor: theme.border, maxHeight: 250 }]}>
             {allCategories.map((cat) => (
               <Pressable
-                key={cat.key}
+                key={cat.id}
                 style={[
                   styles.categoryItem,
-                  category === cat.name && { backgroundColor: theme.primaryLight },
+                  categoryId === cat.id && { backgroundColor: theme.primaryLight },
                 ]}
                 onPress={() => {
+                  setCategoryId(cat.id);
                   setCategory(cat.name);
+                  setSubcategoryId(null);
                   setSubCategory('');
                   setShowCategoryPicker(false);
                 }}
               >
-                <ThemedText type="body" style={{ color: category === cat.name ? theme.primary : theme.text }}>
+                <ThemedText type="body" style={{ color: categoryId === cat.id ? theme.primary : theme.text }}>
                   {cat.name}
                 </ThemedText>
               </Pressable>
@@ -478,45 +498,47 @@ export default function AddItemScreen() {
         ) : null}
       </View>
 
-      {selectedCategoryData ? (
+      {selectedCategoryData && selectedCategoryData.subcategories.length > 0 ? (
         <View style={styles.section}>
           <ThemedText type="h4" style={styles.label}>Podkategorija</ThemedText>
           <Pressable
             style={[inputStyle, styles.picker]}
             onPress={() => setShowSubCategoryPicker(!showSubCategoryPicker)}
           >
-            <ThemedText type="body" style={{ color: subCategory ? theme.text : theme.textTertiary }}>
-              {subCategory || 'Izaberi podkategoriju'}
+            <ThemedText type="body" style={{ color: subcategoryId ? theme.text : theme.textTertiary }}>
+              {selectedCategoryData.subcategories.find(s => s.id === subcategoryId)?.name || 'Izaberi podkategoriju'}
             </ThemedText>
             <ChevronDownIcon size={20} color={theme.textTertiary} />
           </Pressable>
           {showSubCategoryPicker ? (
             <ScrollView style={[styles.categoryList, { backgroundColor: theme.backgroundDefault, borderColor: theme.border, maxHeight: 200 }]}>
               <Pressable
-                style={[styles.categoryItem, !subCategory && { backgroundColor: theme.primaryLight }]}
+                style={[styles.categoryItem, !subcategoryId && { backgroundColor: theme.primaryLight }]}
                 onPress={() => {
+                  setSubcategoryId(null);
                   setSubCategory('');
                   setShowSubCategoryPicker(false);
                 }}
               >
-                <ThemedText type="body" style={{ color: !subCategory ? theme.primary : theme.text }}>
+                <ThemedText type="body" style={{ color: !subcategoryId ? theme.primary : theme.text }}>
                   Sve
                 </ThemedText>
               </Pressable>
               {selectedCategoryData.subcategories.map((sub) => (
                 <Pressable
-                  key={sub}
+                  key={sub.id}
                   style={[
                     styles.categoryItem,
-                    subCategory === sub && { backgroundColor: theme.primaryLight },
+                    subcategoryId === sub.id && { backgroundColor: theme.primaryLight },
                   ]}
                   onPress={() => {
-                    setSubCategory(sub);
+                    setSubcategoryId(sub.id);
+                    setSubCategory(sub.name);
                     setShowSubCategoryPicker(false);
                   }}
                 >
-                  <ThemedText type="body" style={{ color: subCategory === sub ? theme.primary : theme.text }}>
-                    {sub}
+                  <ThemedText type="body" style={{ color: subcategoryId === sub.id ? theme.primary : theme.text }}>
+                    {sub.name}
                   </ThemedText>
                 </Pressable>
               ))}
