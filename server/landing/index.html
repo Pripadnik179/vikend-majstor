@@ -328,6 +328,109 @@
       line-height: 1.5;
     }
     
+    /* Earnings Calculator Section */
+    .earnings-calculator {
+      background: #0a2a43;
+      padding: 80px 0;
+    }
+    
+    .calculator-wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .calculator-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 12px;
+    }
+    
+    .calculator-subtitle {
+      font-size: 16px;
+      color: #CCCCCC;
+      margin-bottom: 32px;
+    }
+    
+    .calculator-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .calculator-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+    }
+    
+    .calculator-label {
+      color: #CCCCCC;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .calculator-input,
+    .calculator-select {
+      background: #FFFFFF;
+      border: 2px solid #E5E5E5;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 16px;
+      color: #333;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    
+    .calculator-input:focus,
+    .calculator-select:focus {
+      outline: none;
+      border-color: #ff7a00;
+    }
+    
+    .calculator-result-box {
+      background: #FFFFFF;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 24px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+    
+    .calculator-result-label {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    
+    .calculator-result-value {
+      font-size: 36px;
+      font-weight: 800;
+      color: #ff7a00;
+    }
+    
+    .calculator-result-value span {
+      font-size: 20px;
+      font-weight: 600;
+      color: #666;
+    }
+    
+    .calculator-cta {
+      margin-top: 24px;
+    }
+    
+    .calculator-cta .btn-orange {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .calculator-note {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #999;
+    }
+    
     /* New button styles for campaign */
     .btn-orange {
       background: #ff7a00;
@@ -1723,6 +1826,90 @@
       </div>
     </div>
   </section>
+
+  <!-- Earnings Calculator -->
+  <section class="earnings-calculator" id="kalkulator">
+    <div class="container">
+      <div class="calculator-wrapper">
+        <h2 class="calculator-title">Koliko mozes da zaradis?</h2>
+        <p class="calculator-subtitle">Izracunaj potencijalnu zaradu od svog alata</p>
+        
+        <div class="calculator-form">
+          <div class="calculator-input-group">
+            <label class="calculator-label" for="tool-type">Tip alata</label>
+            <select class="calculator-select" id="tool-type">
+              <option value="busilica">Busilica</option>
+              <option value="kosacica">Kosacica</option>
+              <option value="testera">Testera</option>
+              <option value="brusilica">Brusilica</option>
+              <option value="kompresor">Kompresor</option>
+              <option value="varioce">Aparat za varenje</option>
+              <option value="stepenice">Merdevine</option>
+              <option value="ostalo">Ostalo</option>
+            </select>
+          </div>
+          
+          <div class="calculator-input-group">
+            <label class="calculator-label" for="days-count">Broj dana iznajmljivanja mesecno</label>
+            <input type="number" class="calculator-input" id="days-count" placeholder="npr. 4" min="1" max="30" value="4">
+          </div>
+          
+          <div class="calculator-input-group">
+            <label class="calculator-label" for="price-per-day">Cena po danu (RSD)</label>
+            <input type="number" class="calculator-input" id="price-per-day" placeholder="npr. 500" min="100" step="100" value="500">
+          </div>
+        </div>
+        
+        <div class="calculator-result-box">
+          <div class="calculator-result-label">Procena mesecne zarade</div>
+          <div class="calculator-result-value" id="earnings-result">2.000 <span>RSD</span></div>
+        </div>
+        
+        <div class="calculator-cta">
+          <a href="https://app.vikendmajstor.rs" class="btn-orange">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Dodaj alat
+          </a>
+        </div>
+        <p class="calculator-note">Registracija traje manje od 1 minut. Bez provizije.</p>
+      </div>
+    </div>
+  </section>
+  
+  <script>
+    // Earnings Calculator
+    function calculateEarnings() {
+      const days = parseInt(document.getElementById('days-count').value) || 0;
+      const pricePerDay = parseInt(document.getElementById('price-per-day').value) || 0;
+      const earnings = days * pricePerDay;
+      
+      // Format number with dots as thousand separators
+      const formatted = earnings.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      document.getElementById('earnings-result').innerHTML = formatted + ' <span>RSD</span>';
+    }
+    
+    // Add event listeners
+    document.getElementById('days-count').addEventListener('input', calculateEarnings);
+    document.getElementById('price-per-day').addEventListener('input', calculateEarnings);
+    document.getElementById('tool-type').addEventListener('change', function() {
+      // Set suggested prices based on tool type
+      const prices = {
+        'busilica': 500,
+        'kosacica': 1000,
+        'testera': 800,
+        'brusilica': 600,
+        'kompresor': 1500,
+        'varioce': 2000,
+        'stepenice': 400,
+        'ostalo': 500
+      };
+      document.getElementById('price-per-day').value = prices[this.value] || 500;
+      calculateEarnings();
+    });
+    
+    // Calculate on page load
+    calculateEarnings();
+  </script>
 
   <!-- Social Proof -->
   <section class="social-proof">
