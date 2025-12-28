@@ -428,10 +428,9 @@ export default function AuthScreen() {
       contentContainerStyle={[
         styles.container,
         { 
-          paddingTop: insets.top + Spacing['3xl'], 
+          paddingTop: insets.top + Spacing.lg, 
           paddingBottom: insets.bottom + Spacing.xl,
-          justifyContent: (isDesktop || isTablet) ? 'center' : 'flex-start',
-          minHeight: (isDesktop || isTablet) ? '100%' : undefined,
+          justifyContent: 'flex-start',
         },
       ]}
     >
