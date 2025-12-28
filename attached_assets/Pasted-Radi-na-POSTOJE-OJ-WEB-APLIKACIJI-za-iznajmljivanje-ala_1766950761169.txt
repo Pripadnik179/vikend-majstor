@@ -1,0 +1,131 @@
+Radiš na POSTOJEĆOJ WEB APLIKACIJI za iznajmljivanje alata – VikendMajstor.
+Ovo NIJE landing page, već funkcionalna aplikacija sa oglasima, korisnicima,
+formom za dodavanje alata, filtrima i bazom podataka.
+
+ZADATAK:
+Izmeni i standardizuj POSTOJEĆI sistem kategorija alata.
+NE praviti aplikaciju ispočetka.
+NE menjati autentifikaciju, plaćanja, vlasništvo oglasa niti UI osim gde je nužno.
+
+CILJEVI:
+1. Omogućiti vrlo širok asortiman alata (user-generated oglasi)
+2. Sprečiti haos u kategorijama
+3. Podržati i DIY korisnike i profesionalce
+4. Obezbediti skalabilnost bez lomljenja postojećih oglasa
+
+========================
+STRUKTURA KATEGORIJA
+========================
+
+Uvesti STRIKTNU 3-nivo strukturu:
+
+--------------------------------
+LEVEL 1 – GLAVNE KATEGORIJE
+(Admin only – korisnici NE SMEJU da ih dodaju)
+--------------------------------
+
+- Električni alati
+- Akumulatorski (aku) alati
+- Ručni alati
+- Baštenski alati i oprema
+- Mašine za beton i teške radove
+- Stolarski i obrada materijala
+- Auto i servis
+- Merni alati i oprema
+- Sigurnosna i zaštitna oprema
+- Ostalo / Specijalni alati
+
+--------------------------------
+LEVEL 2 – PODKATEGORIJE
+(Definisane unapred, proširive samo od strane admina)
+--------------------------------
+
+Primeri:
+
+Električni alati:
+- Bušilice
+- Brusilice
+- Testere
+- Štemarice
+
+Akumulatorski alati:
+- Aku bušilice / odvijači
+- Aku brusilice
+- Aku testere
+
+Baštenski alati:
+- Kosilice
+- Trimeri
+- Motorne testere
+- Duvači lišća
+
+--------------------------------
+LEVEL 3 – TIP ALATA
+(User-generated, slobodan unos)
+--------------------------------
+
+Korisnik slobodno unosi naziv alata (npr. “Bosch udarna bušilica”),
+ali alat UVEK mora pripadati:
+LEVEL 1 + LEVEL 2 kategoriji.
+
+Ako ne postoji odgovarajuća podkategorija:
+→ automatski dodeliti “Ostalo” unutar izabrane LEVEL 1 kategorije.
+
+========================
+PRAVILA I MIGRACIJA
+========================
+
+- SVI postojeći oglasi MORAJU ostati aktivni
+- Postojeće kategorije mapirati na novu strukturu
+- Ako mapiranje nije jasno → koristiti “Ostalo”
+- NE brisati stare podatke, već izvršiti bezbednu migraciju
+
+========================
+FILTERI (ako već ne postoje)
+========================
+
+Dodati sledeće filtere u aplikaciji:
+
+- Tip korisnika: DIY / Profesionalno
+- Period iznajmljivanja: sat / dan / vikend / dugoročno
+- Snaga / kapacitet (numerički)
+- Težina
+- Kaucija: da / ne
+- Dostava: da / ne
+
+========================
+UX ZA DODAVANJE ALATA
+========================
+
+Forma mora ići korak-po-korak:
+1. Izbor LEVEL 1 kategorije
+2. Izbor LEVEL 2 podkategorije
+3. Unos naziva alata (LEVEL 3)
+
+- Onemogućiti korisnicima kreiranje novih LEVEL 1 i LEVEL 2 kategorija
+- Omogućiti autocomplete / predloge gde ima smisla
+- Dodati breadcrumb navigaciju, npr:
+  Električni alati > Bušilice > Bosch udarna bušilica
+
+========================
+SEO I URL LOGIKA
+========================
+
+- Nazivi kategorija moraju biti na srpskom (latinica)
+- URL-ovi moraju biti čitljivi, npr:
+  /elektricni-alati/busilice
+- Ne koristiti interne ID-jeve u URL-u
+
+========================
+DELIVERABLES
+========================
+
+- Izmenjena šema kategorija u bazi / modelima
+- Logika migracije postojećih oglasa
+- Ažurirana forma za dodavanje alata
+- Ažurirani filteri i pretraga
+- Admin kontrola za LEVEL 1 i LEVEL 2 kategorije
+
+VAŽNO:
+Fokus je ISKLJUČIVO na aplikaciji.
+Ne raditi marketing, landing page, copy ili dizajn van potrebe.
