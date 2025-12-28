@@ -114,6 +114,9 @@ export class DatabaseStorage implements IStorage {
     createdAfter?: Date;
     hasImages?: boolean;
     activityTag?: string;
+    hasDeposit?: boolean;
+    hasDelivery?: boolean;
+    userType?: string;
   }): Promise<Item[]> {
     const now = new Date();
     const conditions = [
@@ -159,6 +162,15 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters?.activityTag) {
       conditions.push(sql`${filters.activityTag} = ANY(${items.activityTags})`);
+    }
+    if (filters?.hasDeposit !== undefined) {
+      conditions.push(eq(items.hasDeposit, filters.hasDeposit));
+    }
+    if (filters?.hasDelivery !== undefined) {
+      conditions.push(eq(items.hasDelivery, filters.hasDelivery));
+    }
+    if (filters?.userType && filters.userType !== 'all') {
+      conditions.push(eq(items.userType, filters.userType));
     }
     
     const result = await db.select().from(items).where(and(...conditions)).orderBy(desc(items.isFeatured), desc(items.createdAt));

@@ -73,6 +73,8 @@ export default function SearchScreen() {
   const [maxDistance, setMaxDistance] = useState<number | null>(null);
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
+  const [hasDelivery, setHasDelivery] = useState(false);
+  const [selectedUserType, setSelectedUserType] = useState<'all' | 'diy' | 'professional' | 'company'>('all');
   
   const { permission: locationPermission, requestPermission: requestLocationPermission, Location } = useLocationPermission();
 
@@ -128,6 +130,8 @@ export default function SearchScreen() {
       url.searchParams.append('lng', userLng.toString());
     }
     if (maxDistance !== null) url.searchParams.append('maxDistance', maxDistance.toString());
+    if (hasDelivery) url.searchParams.append('hasDelivery', 'true');
+    if (selectedUserType !== 'all') url.searchParams.append('userType', selectedUserType);
     return url.toString();
   };
 
@@ -147,6 +151,8 @@ export default function SearchScreen() {
       lat: userLat,
       lng: userLng,
       maxDistance,
+      hasDelivery,
+      userType: selectedUserType,
     }],
     queryFn: async () => {
       const url = buildApiUrl();
@@ -183,6 +189,8 @@ export default function SearchScreen() {
     setHasImagesOnly(false);
     setSelectedActivity('');
     setMaxDistance(null);
+    setHasDelivery(false);
+    setSelectedUserType('all');
   }, []);
 
   const activeFilterCount = [
@@ -197,6 +205,8 @@ export default function SearchScreen() {
     hasImagesOnly ? 'images' : '',
     selectedActivity,
     maxDistance !== null ? 'distance' : '',
+    hasDelivery ? 'delivery' : '',
+    selectedUserType !== 'all' ? selectedUserType : '',
   ].filter(Boolean).length;
 
   const adTypeOptions = [
@@ -458,6 +468,47 @@ export default function SearchScreen() {
               trackColor={{ false: theme.border, true: theme.primary }}
               thumbColor="#FFFFFF"
             />
+          </View>
+
+          <View style={styles.switchRow}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Sa dostavom</ThemedText>
+            <Switch
+              value={hasDelivery}
+              onValueChange={setHasDelivery}
+              trackColor={{ false: theme.border, true: theme.primary }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+
+          <View style={styles.filterRow}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Tip korisnika</ThemedText>
+            <View style={styles.chipRow}>
+              {[
+                { value: 'all', label: 'Svi' },
+                { value: 'diy', label: 'Privatni' },
+                { value: 'professional', label: 'Profesionalci' },
+                { value: 'company', label: 'Firme' },
+              ].map((opt) => (
+                <Pressable
+                  key={opt.value}
+                  style={[
+                    styles.filterChip,
+                    { 
+                      backgroundColor: selectedUserType === opt.value ? theme.primary : theme.backgroundRoot,
+                      borderColor: selectedUserType === opt.value ? theme.primary : theme.border,
+                    },
+                  ]}
+                  onPress={() => setSelectedUserType(opt.value as typeof selectedUserType)}
+                >
+                  <ThemedText 
+                    type="small" 
+                    style={{ color: selectedUserType === opt.value ? '#000' : theme.text }}
+                  >
+                    {opt.label}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
           </View>
 
           {activeFilterCount > 0 ? (

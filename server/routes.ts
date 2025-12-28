@@ -435,7 +435,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/items", async (req, res) => {
     try {
-      const { category, subCategory, toolType, powerSource, city, search, adType, minPrice, maxPrice, period, hasImages, activityTag, lat, lng, maxDistance } = req.query;
+      const { category, subCategory, toolType, powerSource, city, search, adType, minPrice, maxPrice, period, hasImages, activityTag, lat, lng, maxDistance, hasDeposit, hasDelivery, userType } = req.query;
       
       let createdAfter: Date | undefined;
       if (period === 'today') {
@@ -462,6 +462,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAfter,
         hasImages: hasImages === 'true',
         activityTag: activityTag as string | undefined,
+        hasDeposit: hasDeposit === 'true' ? true : hasDeposit === 'false' ? false : undefined,
+        hasDelivery: hasDelivery === 'true' ? true : hasDelivery === 'false' ? false : undefined,
+        userType: userType as string | undefined,
       });
       
       const now = new Date();
