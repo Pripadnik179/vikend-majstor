@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, Pressable, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -6,7 +6,7 @@ import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { ImageIcon, MapPinIcon, StarIcon, MessageIcon } from '@/components/icons/TabBarIcons';
+import { ImageIcon, MapPinIcon, StarIcon, MessageIcon, ChevronRightIcon } from '@/components/icons/TabBarIcons';
 import { ThemedText } from '@/components/ThemedText';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
@@ -20,7 +20,24 @@ import { Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item, User, Review, Booking } from '@shared/schema';
 
-type ItemWithOwner = Item & { owner: User };
+interface Subcategory {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string;
+  sortOrder: number;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string;
+  sortOrder: number;
+  subcategories: Subcategory[];
+}
+
+type ItemWithOwner = Item & { owner: User; categoryId?: string; subcategoryId?: string };
 
 export default function ItemDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -50,6 +67,36 @@ export default function ItemDetailScreen() {
     queryKey: ['/api/items', route.params.itemId, 'bookings'],
     enabled: !!item,
   });
+
+  const { data: allCategories = [] } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+  });
+
+  const breadcrumbData = useMemo(() => {
+    if (!item || !allCategories.length) return null;
+    
+    const categoryFromId = allCategories.find(c => c.id === item.categoryId);
+    const subcategoryFromId = categoryFromId?.subcategories.find(s => s.id === item.subcategoryId);
+    
+    if (categoryFromId) {
+      return {
+        category: categoryFromId,
+        subcategory: subcategoryFromId || null,
+      };
+    }
+    
+    const categoryFromName = allCategories.find(c => c.name === item.category);
+    const subcategoryFromName = categoryFromName?.subcategories.find(s => s.name === item.subCategory);
+    
+    if (categoryFromName) {
+      return {
+        category: categoryFromName,
+        subcategory: subcategoryFromName || null,
+      };
+    }
+    
+    return null;
+  }, [item, allCategories]);
 
   const categoryLabel = CATEGORIES.find(c => c.id === item?.category)?.label || item?.category;
 
@@ -147,6 +194,43 @@ export default function ItemDetailScreen() {
           </ScrollView>
 
           <View style={[styles.content, { paddingHorizontal: isDesktop ? Spacing.xl : Spacing.lg }]}>
+          {breadcrumbData ? (
+            <View style={styles.breadcrumb}>
+              <Pressable 
+                style={styles.breadcrumbItem}
+                onPress={() => navigation.navigate('Main', { screen: 'CategoriesTab' })}
+              >
+                <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                  Kategorije
+                </ThemedText>
+              </Pressable>
+              <ChevronRightIcon size={12} color={theme.textTertiary} />
+              <Pressable 
+                style={styles.breadcrumbItem}
+                onPress={() => navigation.navigate('Search', { category: breadcrumbData.category.name })}
+              >
+                <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                  {breadcrumbData.category.name}
+                </ThemedText>
+              </Pressable>
+              {breadcrumbData.subcategory ? (
+                <>
+                  <ChevronRightIcon size={12} color={theme.textTertiary} />
+                  <Pressable 
+                    style={styles.breadcrumbItem}
+                    onPress={() => navigation.navigate('Search', { 
+                      category: breadcrumbData.category.name, 
+                      subcategory: breadcrumbData.subcategory?.name 
+                    })}
+                  >
+                    <ThemedText type="small" style={{ color: theme.primary, fontWeight: '500' }}>
+                      {breadcrumbData.subcategory.name}
+                    </ThemedText>
+                  </Pressable>
+                </>
+              ) : null}
+            </View>
+          ) : null}
           <View style={styles.header}>
             <View style={styles.titleSection}>
               <ThemedText type="h2">{item.title}</ThemedText>
@@ -294,6 +378,16 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingVertical: Spacing.lg,
+  },
+  breadcrumb: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginBottom: Spacing.md,
+    gap: Spacing.xs,
+  },
+  breadcrumbItem: {
+    paddingVertical: Spacing.xs,
   },
   header: {
     flexDirection: 'row',
