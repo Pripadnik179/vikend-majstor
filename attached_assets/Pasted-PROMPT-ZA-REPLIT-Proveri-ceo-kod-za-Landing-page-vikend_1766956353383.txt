@@ -1,0 +1,56 @@
+PROMPT ZA REPLIT:
+
+Proveri ceo kod za:
+- Landing page (vikendmajstor.rs)
+- Web aplikaciju (app.vikendmajstor.rs)
+- Android aplikaciju
+- iOS aplikaciju
+
+CILJ:
+Identifikovati sve nelogičnosti, duplikate, nepotrebne delove koda nastale tokom izmena, kao i sigurnosne i UX probleme. Fokusiraj se na kvalitet, sigurnost i konzistentnost.
+
+---
+
+TIM STRUČNJAKA (5 oblasti):
+
+1. FRONTEND / UX STRUČNJAK
+- Proveri da li postoje duplikati komponenti ili CSS stilova.
+- Da li su CTA dugmad, forme i navigacija konzistentni?
+- Da li se koristi lazy loading za slike i optimizacija za mobilne uređaje?
+- Da li postoje nepotrebni elementi koji usporavaju render?
+
+2. BACKEND / API STRUČNJAK
+- Proveri da li se poslovna logika ponavlja u više fajlova.
+- Da li su API pozivi optimizovani i bez duplikata?
+- Da li se koristi environment variables (`.env`) umesto hard‑codovanih ključeva?
+- Da li postoje endpointi koji su ostali neiskorišćeni?
+
+3. SIGURNOSNI STRUČNJAK
+- Proveri da li su svi inputi validirani (SQL injection, XSS).
+- Da li su tokeni, lozinke i ključevi pravilno enkriptovani?
+- Da li su dodati sigurnosni headeri (CSP, HSTS, X-Frame-Options)?
+- Da li postoje nepotrebni debug logovi ili komentari koji otkrivaju strukturu?
+
+4. PERFORMANCE / DEVOPS STRUČNJAK
+- Proveri build pipeline: da li se kod minifikuje i obfuskuje?
+- Da li se koristi caching i CDN za statičke fajlove?
+- Da li postoje dupli bundle fajlovi ili library‑ji koji se mogu ukloniti?
+- Da li su Android/iOS aplikacije optimizovane za veličinu paketa?
+
+5. QA / TESTING STRUČNJAK
+- Proveri da li postoje testovi koji se dupliraju ili nedostaju.
+- Da li su edge case‑ovi pokriveni (registracija, login, plaćanje)?
+- Da li su error poruke konzistentne i korisniku jasne?
+- Da li postoje “mrtvi” delovi koda koji se nikada ne pozivaju?
+
+---
+
+REZULTAT:
+Izveštaj mora sadržati:
+- Listu duplikata i nepotrebnog koda.
+- Nelogičnosti u strukturi (frontend, backend, mobilne aplikacije).
+- Sigurnosne propuste.
+- Predloge za optimizaciju performansi.
+- UX i QA preporuke.
+
+Nemoj menjati funkcionalnosti koje rade dobro, samo identifikuj probleme i predloži rešenja.
