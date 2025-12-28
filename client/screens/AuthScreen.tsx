@@ -20,9 +20,18 @@ WebBrowser.maybeCompleteAuthSession();
 
 const GOOGLE_WEB_CLIENT_ID = '45722118252-g4la4n5j2ne1hlb8idmk11mb0brph55f.apps.googleusercontent.com';
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
-const GOOGLE_ANDROID_CLIENT_ID = 'disabled-on-android';
+const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
 
-const isGoogleConfigured = Platform.OS !== 'android';
+const isGoogleConfigured = (() => {
+  if (Platform.OS === 'web') return true;
+  if (Platform.OS === 'ios') return !!GOOGLE_IOS_CLIENT_ID;
+  if (Platform.OS === 'android') return !!GOOGLE_ANDROID_CLIENT_ID;
+  return false;
+})();
+
+if (Platform.OS === 'android' && !GOOGLE_ANDROID_CLIENT_ID) {
+  console.warn('[Auth] EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID not configured - Google Sign-In disabled on Android');
+}
 
 const getRedirectUri = () => {
   if (Platform.OS === 'web') {

@@ -27,28 +27,41 @@ async function hashPasswordForAdmin(password: string): Promise<string> {
 }
 
 async function initializeAdminAccount() {
-  const adminEmail = "admin@vikendmajstor.rs";
-  const adminPassword = "Caralazara13";
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@vikendmajstor.rs";
+  const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD;
   
   try {
     const existingAdmin = await storage.getUserByEmail(adminEmail);
-    if (!existingAdmin) {
-      const hashedPassword = await hashPasswordForAdmin(adminPassword);
-      await storage.createUser({
-        email: adminEmail,
-        password: hashedPassword,
-        name: "Administrator",
-        role: "owner",
-        emailVerified: true,
-        isAdmin: true,
-        isActive: true,
-      });
-      console.log(`[ADMIN] Created admin account: ${adminEmail}`);
-    } else if (!existingAdmin.isAdmin) {
-      // Ensure existing user has admin privileges
-      await storage.updateUserAdmin(existingAdmin.id, { isAdmin: true, isActive: true });
-      console.log(`[ADMIN] Updated existing user to admin: ${adminEmail}`);
+    
+    if (existingAdmin) {
+      // Admin exists - ensure admin privileges
+      if (!existingAdmin.isAdmin) {
+        await storage.updateUserAdmin(existingAdmin.id, { isAdmin: true, isActive: true });
+        console.log(`[ADMIN] Updated existing user to admin: ${adminEmail}`);
+      }
+      return;
     }
+    
+    // No admin exists - need password to create one
+    if (!adminPassword) {
+      console.error("[ADMIN] ERROR: No admin account exists and ADMIN_DEFAULT_PASSWORD not set!");
+      console.error("[ADMIN] Set ADMIN_DEFAULT_PASSWORD environment variable to create initial admin.");
+      return;
+    }
+    
+    // Create new admin account
+    const hashedPassword = await hashPasswordForAdmin(adminPassword);
+    await storage.createUser({
+      email: adminEmail,
+      password: hashedPassword,
+      name: "Administrator",
+      role: "owner",
+      emailVerified: true,
+      isAdmin: true,
+      isActive: true,
+    });
+    console.log(`[ADMIN] Created admin account: ${adminEmail}`);
+    console.warn("[ADMIN] WARNING: Change admin password immediately after first login!");
   } catch (error) {
     console.error("[ADMIN] Error initializing admin account:", error);
   }
@@ -376,9 +389,15 @@ function configureExpoAndLanding(app: express.Application) {
     next();
   });
 
-  app.use("/assets", express.static(path.resolve(process.cwd(), "assets")));
-  app.use("/demo-images", express.static(path.resolve(process.cwd(), "server/public/demo-images")));
-  app.use("/images", express.static(path.resolve(process.cwd(), "server/landing/images")));
+  const staticOptions = {
+    maxAge: '7d',
+    etag: true,
+    lastModified: true,
+  };
+  
+  app.use("/assets", express.static(path.resolve(process.cwd(), "assets"), staticOptions));
+  app.use("/demo-images", express.static(path.resolve(process.cwd(), "server/public/demo-images"), staticOptions));
+  app.use("/images", express.static(path.resolve(process.cwd(), "server/landing/images"), staticOptions));
   
   // Serve Expo web build for app.vikendmajstor.rs
   app.use((req: Request, res: Response, next: NextFunction) => {

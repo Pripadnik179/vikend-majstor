@@ -184,6 +184,9 @@ export default function ItemDetailScreen() {
                   source={{ uri: getImageUrl(image) }}
                   style={[styles.image, { width: imageWidth, aspectRatio: 4/3 }]}
                   contentFit="contain"
+                  cachePolicy="memory-disk"
+                  transition={300}
+                  placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
                 />
               ))
             ) : (

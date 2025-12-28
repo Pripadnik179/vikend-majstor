@@ -27,6 +27,32 @@ import { dirname } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// XSS Sanitization - removes HTML tags and dangerous content
+function sanitizeString(input: string | undefined | null): string | undefined | null {
+  if (input === undefined) return undefined;
+  if (input === null) return null;
+  if (typeof input !== 'string') return input;
+  if (input.trim() === '') return input; // Preserve empty strings for validation layer
+  
+  return input
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/javascript:/gi, '') // Remove javascript: URLs
+    .replace(/on\w+=/gi, '') // Remove event handlers like onclick=
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>') // Decode HTML entities then strip
+    .replace(/<[^>]*>/g, '') // Remove any remaining tags
+    .trim();
+}
+
+function sanitizeItemData(data: any): any {
+  const sanitized = { ...data };
+  if (sanitized.title !== undefined) sanitized.title = sanitizeString(sanitized.title);
+  if (sanitized.description !== undefined) sanitized.description = sanitizeString(sanitized.description);
+  if (sanitized.location !== undefined) sanitized.location = sanitizeString(sanitized.location);
+  if (sanitized.category !== undefined) sanitized.category = sanitizeString(sanitized.category);
+  if (sanitized.subCategory !== undefined) sanitized.subCategory = sanitizeString(sanitized.subCategory);
+  return sanitized;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
@@ -636,8 +662,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      const sanitizedData = sanitizeItemData(req.body);
       const item = await storage.createItem({
-        ...req.body,
+        ...sanitizedData,
         ownerId: freshUser.id,
       });
       
@@ -782,7 +809,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Nemate dozvolu za ovu akciju" });
       }
       
-      const updatedItem = await storage.updateItem(req.params.id, req.body);
+      const sanitizedData = sanitizeItemData(req.body);
+      const updatedItem = await storage.updateItem(req.params.id, sanitizedData);
       res.json(updatedItem);
     } catch (error) {
       console.error("Error updating item:", error);
