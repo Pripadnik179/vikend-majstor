@@ -11,6 +11,7 @@ import {
 } from "./notifications";
 import { sendBookingRequestEmail, sendBookingConfirmedEmail } from "./email";
 import { seedDemoData, deleteDemoData, getDemoDataStats } from "./seed-demo";
+import { addProductionSubscriber, isProductionAvailable } from "./mysql-db";
 import * as path from "path";
 import * as fs from "fs";
 import { fileURLToPath } from "url";
@@ -100,12 +101,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: "Unesite validnu email adresu" });
       }
       
-      const subscriber = await storage.subscribeEmail(email.toLowerCase().trim(), source || 'landing_page');
+      const cleanEmail = email.toLowerCase().trim();
+      const emailSource = source || 'landing_page';
+      let isNew = true;
+      
+      if (isProductionAvailable()) {
+        try {
+          isNew = await addProductionSubscriber(cleanEmail, emailSource);
+        } catch (prodError: any) {
+          console.error("Production subscription error:", prodError);
+        }
+      }
+      
+      try {
+        const subscriber = await storage.subscribeEmail(cleanEmail, emailSource);
+        isNew = subscriber.isNew;
+      } catch (devError: any) {
+        if (devError.message !== 'EMAIL_EXISTS') {
+          console.error("Dev subscription error:", devError);
+        }
+      }
       
       res.json({ 
         success: true, 
         message: "Uspešno ste se prijavili na novosti!",
-        isNew: subscriber.isNew
+        isNew
       });
     } catch (error: any) {
       console.error("Newsletter subscription error:", error);
