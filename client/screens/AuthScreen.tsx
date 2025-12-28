@@ -9,9 +9,7 @@ import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollV
 import { ResponsiveContainer } from '@/components/ResponsiveContainer';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@/components/Button';
-import { FeaturePreview } from '@/components/FeaturePreview';
 import { SocialProof } from '@/components/SocialProof';
-import { TestimonialsCarousel } from '@/components/TestimonialsCarousel';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWebLayout } from '@/hooks/useWebLayout';
@@ -451,11 +449,7 @@ export default function AuthScreen() {
         </View>
 
         {Platform.OS !== 'android' ? (
-          <>
-            <SocialProof />
-            <FeaturePreview />
-            <TestimonialsCarousel compact />
-          </>
+          <SocialProof />
         ) : null}
 
         <View style={[styles.form, (isDesktop || isTablet) && styles.formDesktop]}>
