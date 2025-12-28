@@ -23,7 +23,8 @@ import {
   serverErrorLogs,
   admin2fa,
   appVersions,
-  reviews
+  reviews,
+  emailSubscribers
 } from "@shared/schema";
 import { randomBytes, createHmac } from "crypto";
 import * as crypto from "crypto";
@@ -847,6 +848,64 @@ export function registerAdminRoutes(app: Express) {
     } catch (error) {
       console.error('Export items error:', error);
       res.status(500).json({ message: 'Greska pri eksportovanju oglasa' });
+    }
+  });
+
+  // ============================================
+  // Email Subscribers
+  // ============================================
+  
+  app.get("/api/admin/subscribers", isAdminAuth, async (req, res) => {
+    try {
+      const subscribers = await db.select()
+        .from(emailSubscribers)
+        .orderBy(desc(emailSubscribers.createdAt));
+      
+      res.json({ subscribers });
+    } catch (error) {
+      console.error('Get subscribers error:', error);
+      res.status(500).json({ message: 'Greska pri dobijanju pretplatnika' });
+    }
+  });
+
+  app.get("/api/admin/export/subscribers", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const subscribers = await db.select()
+        .from(emailSubscribers)
+        .orderBy(desc(emailSubscribers.createdAt));
+
+      const csvHeader = 'Email,Izvor,Aktivan,Datum pretplate\n';
+      const csvRows = subscribers.map(s => 
+        `"${s.email}","${s.source || 'unknown'}","${s.isActive ? 'Da' : 'Ne'}","${s.createdAt}"`
+      ).join('\n');
+
+      const csv = csvHeader + csvRows;
+
+      await logAdminAction(admin.id, 'export_subscribers', 'subscribers', undefined, `Exported ${subscribers.length} subscribers`, req.ip);
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=email_subscribers.csv');
+      res.send(csv);
+    } catch (error) {
+      console.error('Export subscribers error:', error);
+      res.status(500).json({ message: 'Greska pri eksportovanju pretplatnika' });
+    }
+  });
+
+  app.delete("/api/admin/subscribers/:id", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const subscriberId = req.params.id;
+
+      await db.delete(emailSubscribers).where(eq(emailSubscribers.id, subscriberId));
+      
+      await logAdminAction(admin.id, 'delete_subscriber', 'subscribers', subscriberId, 'Deleted subscriber', req.ip);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete subscriber error:', error);
+      res.status(500).json({ message: 'Greska pri brisanju pretplatnika' });
     }
   });
 
