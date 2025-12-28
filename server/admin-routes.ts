@@ -4,6 +4,13 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { db } from "./db";
 import * as jose from "jose";
+import { 
+  getProductionSubscribers, 
+  deleteProductionSubscriber, 
+  getProductionSubscriptions,
+  updateProductionSubscription,
+  isProductionAvailable 
+} from "./mysql-db";
 import { eq, desc, and, inArray } from "drizzle-orm";
 import { 
   adminLogs, 
@@ -857,11 +864,22 @@ export function registerAdminRoutes(app: Express) {
   
   app.get("/api/admin/subscribers", isAdminAuth, async (req, res) => {
     try {
-      const subscribers = await db.select()
-        .from(emailSubscribers)
-        .orderBy(desc(emailSubscribers.createdAt));
-      
-      res.json({ subscribers });
+      if (isProductionAvailable()) {
+        const productionSubscribers = await getProductionSubscribers();
+        const subscribers = productionSubscribers.map(s => ({
+          id: s.id.toString(),
+          email: s.email,
+          source: s.source,
+          isActive: s.is_active,
+          createdAt: s.created_at
+        }));
+        res.json({ subscribers, source: 'production' });
+      } else {
+        const subscribers = await db.select()
+          .from(emailSubscribers)
+          .orderBy(desc(emailSubscribers.createdAt));
+        res.json({ subscribers, source: 'development' });
+      }
     } catch (error) {
       console.error('Get subscribers error:', error);
       res.status(500).json({ message: 'Greska pri dobijanju pretplatnika' });
@@ -871,9 +889,21 @@ export function registerAdminRoutes(app: Express) {
   app.get("/api/admin/export/subscribers", isAdminAuth, async (req, res) => {
     try {
       const admin = (req as any).admin;
-      const subscribers = await db.select()
-        .from(emailSubscribers)
-        .orderBy(desc(emailSubscribers.createdAt));
+      let subscribers: any[] = [];
+      
+      if (isProductionAvailable()) {
+        const prodSubscribers = await getProductionSubscribers();
+        subscribers = prodSubscribers.map(s => ({
+          email: s.email,
+          source: s.source,
+          isActive: s.is_active,
+          createdAt: s.created_at
+        }));
+      } else {
+        subscribers = await db.select()
+          .from(emailSubscribers)
+          .orderBy(desc(emailSubscribers.createdAt));
+      }
 
       const csvHeader = 'Email,Izvor,Aktivan,Datum pretplate\n';
       const csvRows = subscribers.map(s => 
@@ -898,7 +928,11 @@ export function registerAdminRoutes(app: Express) {
       const admin = (req as any).admin;
       const subscriberId = req.params.id;
 
-      await db.delete(emailSubscribers).where(eq(emailSubscribers.id, subscriberId));
+      if (isProductionAvailable()) {
+        await deleteProductionSubscriber(parseInt(subscriberId));
+      } else {
+        await db.delete(emailSubscribers).where(eq(emailSubscribers.id, subscriberId));
+      }
       
       await logAdminAction(admin.id, 'delete_subscriber', 'subscribers', subscriberId, 'Deleted subscriber', req.ip);
 
