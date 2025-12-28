@@ -245,6 +245,7 @@
           <button class="nav-item" data-page="app-versions"><span class="nav-icon">📱</span> Verzije aplikacije</button>
           <button class="nav-item" data-page="security"><span class="nav-icon">🔐</span> Bezbednost</button>
           <button class="nav-item" data-page="notifications"><span class="nav-icon">🔔</span> Notifikacije</button>
+          <button class="nav-item" data-page="subscribers"><span class="nav-icon">📧</span> Email pretplatnici</button>
         </nav>
         <div class="sidebar-footer">
           <div class="admin-info">
@@ -561,6 +562,40 @@
           </div>
         </div>
         
+        <!-- Subscribers Page -->
+        <div id="page-subscribers" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Email pretplatnici</h1>
+              <p>Lista korisnika koji su se prijavili za novosti</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm" onclick="exportSubscribers()">📥 Izvezi CSV</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Svi pretplatnici (<span id="subscribers-count">0</span>)</h3>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Izvor</th>
+                    <th>Status</th>
+                    <th>Datum pretplate</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="subscribers-table">
+                  <tr><td colspan="5"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
         <!-- Plans Page -->
         <div id="page-plans" class="hidden">
           <div class="page-header">
@@ -813,7 +848,8 @@
         messages: loadMessages,
         logs: loadLogs,
         settings: loadSettings,
-        notifications: loadNotifications
+        notifications: loadNotifications,
+        subscribers: loadSubscribers
       };
       if (loaders[page]) loaders[page]();
     }
@@ -1204,6 +1240,55 @@
         }
       } catch (e) {
         document.getElementById('notifications-table').innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    async function loadSubscribers() {
+      try {
+        const data = await api('/api/admin/subscribers');
+        const tbody = document.getElementById('subscribers-table');
+        document.getElementById('subscribers-count').textContent = data.subscribers?.length || 0;
+        
+        if (!data.subscribers?.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema pretplatnika</td></tr>';
+        } else {
+          tbody.innerHTML = data.subscribers.map(s => 
+            `<tr>
+            <td><strong>${s.email}</strong></td>
+            <td>${s.source || 'nepoznato'}</td>
+            <td><span class="badge ${s.isActive ? 'badge-success' : 'badge-error'}">${s.isActive ? 'Aktivan' : 'Neaktivan'}</span></td>
+            <td>${new Date(s.createdAt).toLocaleString('sr-RS')}</td>
+            <td>
+              <button class="action-btn action-btn-error" onclick="deleteSubscriber('${s.id}')" title="Obrisi">🗑️</button>
+            </td></tr>`
+          ).join('');
+        }
+      } catch (e) {
+        document.getElementById('subscribers-table').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    async function exportSubscribers() {
+      try {
+        const blob = await api('/api/admin/export/subscribers', { responseType: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `email-subscribers-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Greska pri eksportu: ' + e.message);
+      }
+    }
+
+    async function deleteSubscriber(id) {
+      if (!confirm('Da li ste sigurni da zelite da obrisete ovog pretplatnika?')) return;
+      try {
+        await api('/api/admin/subscribers/' + id, { method: 'DELETE' });
+        loadSubscribers();
+      } catch (e) {
+        alert('Greska: ' + e.message);
       }
     }
 
