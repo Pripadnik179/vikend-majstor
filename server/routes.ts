@@ -1302,16 +1302,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ received: true, message: "Stripe webhook placeholder - konfigurišite Stripe ključeve" });
   });
 
-  app.get("/api/categories", async (_req, res) => {
-    try {
-      const { CATEGORIES, POWER_SOURCES } = await import("../shared/schema");
-      res.json({ categories: CATEGORIES, powerSources: POWER_SOURCES });
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      res.status(500).json({ error: "Greška pri učitavanju kategorija" });
-    }
-  });
-
   // Admin middleware - supports both session and token authentication
   const isAdmin = async (req: any, res: any, next: any) => {
     let user = null;
