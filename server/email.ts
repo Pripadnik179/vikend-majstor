@@ -26,7 +26,7 @@ const getBaseUrl = () => {
 
 export async function sendVerificationEmail(to: string, verificationToken: string, userName: string): Promise<boolean> {
   const baseUrl = getBaseUrl();
-  const verificationUrl = `${baseUrl}/verify?token=${verificationToken}`;
+  const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
   
   const mailOptions = {
     from: `"VikendMajstor" <${process.env.SMTP_USER}>`,
