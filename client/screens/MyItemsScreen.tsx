@@ -11,7 +11,7 @@ import { Card } from '@/components/Card';
 import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
-import { Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
+import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
 
@@ -44,6 +44,10 @@ export default function MyItemsScreen() {
 
   const { data: adStats, refetch: refetchStats } = useQuery<AdStats>({
     queryKey: ['/api/user/ad-stats'],
+  });
+
+  const { data: allCategories = [] } = useQuery<{ id: string; name: string; slug: string }[]>({
+    queryKey: ['/api/categories'],
   });
 
   const getSubscriptionLabel = (type: string) => {
@@ -170,7 +174,8 @@ export default function MyItemsScreen() {
   };
 
   const getCategoryLabel = (categoryId: string) => {
-    return CATEGORIES.find(c => c.id === categoryId)?.label || categoryId;
+    const category = allCategories.find(c => c.id === categoryId || c.slug === categoryId || c.name === categoryId);
+    return category?.name || categoryId;
   };
 
   const renderHeader = () => (

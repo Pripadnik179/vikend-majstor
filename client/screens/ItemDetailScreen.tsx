@@ -16,7 +16,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout, MAX_CONTENT_WIDTH } from '@/hooks/useWebLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
-import { Spacing, BorderRadius, CATEGORIES } from '@/constants/theme';
+import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item, User, Review, Booking } from '@shared/schema';
 
@@ -98,7 +98,7 @@ export default function ItemDetailScreen() {
     return null;
   }, [item, allCategories]);
 
-  const categoryLabel = CATEGORIES.find(c => c.id === item?.category)?.label || item?.category;
+  const categoryLabel = breadcrumbData?.category?.name || item?.category;
 
   const handleContactOwner = async () => {
     if (!item || !item.owner) return;
