@@ -284,7 +284,7 @@ function configureExpoAndLanding(app: express.Application) {
 
   // Legal pages
   app.get("/uslovi-koriscenja", (_req: Request, res: Response) => {
-    const termsPath = path.resolve(process.cwd(), "server", "templates", "terms.html");
+    const termsPath = path.resolve(process.cwd(), "server", "landing", "uslovi-koriscenja.html");
     if (fs.existsSync(termsPath)) {
       res.sendFile(termsPath);
     } else {
@@ -293,7 +293,7 @@ function configureExpoAndLanding(app: express.Application) {
   });
 
   app.get("/politika-privatnosti", (_req: Request, res: Response) => {
-    const privacyPath = path.resolve(process.cwd(), "server", "templates", "privacy.html");
+    const privacyPath = path.resolve(process.cwd(), "server", "landing", "politika-privatnosti.html");
     if (fs.existsSync(privacyPath)) {
       res.sendFile(privacyPath);
     } else {
