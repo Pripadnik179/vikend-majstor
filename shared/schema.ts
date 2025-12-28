@@ -555,62 +555,6 @@ export const PREDEFINED_CATEGORIES = {
   },
 };
 
-// Stara struktura za backward compatibility
-export const CATEGORIES = {
-  byProject: {
-    gradjevinarstvo: {
-      name: "Građevinarstvo",
-      subcategories: ["Betoniranje", "Zidanje", "Rušenje", "Armiranje", "Fasaderski radovi"]
-    },
-    basta: {
-      name: "Bašta",
-      subcategories: ["Košenje", "Orezivanje", "Kopanje", "Navodnjavanje", "Čišćenje"]
-    },
-    renoviranje: {
-      name: "Renoviranje",
-      subcategories: ["Keramika", "Podovi", "Malterisanje", "Gipsarija", "Farbanje"]
-    },
-    drvoprerađivanje: {
-      name: "Obrada drveta",
-      subcategories: ["Tesarenje", "Stolarija", "Rezanje", "Brušenje", "Glodanje"]
-    },
-    autoMehanika: {
-      name: "Auto-mehanika",
-      subcategories: ["Dijagnostika", "Vulkanizerstvo", "Lakiranje", "Poliranje", "Servisiranje"]
-    },
-    ciscenje: {
-      name: "Čišćenje",
-      subcategories: ["Pranje pod pritiskom", "Usisavanje", "Parno čišćenje", "Industrijska čišćenja"]
-    }
-  },
-  byToolType: {
-    elektricni: {
-      name: "Električni alati",
-      subcategories: ["Bušilice", "Brusilice", "Testere", "Rendei", "Glodalice"]
-    },
-    akumulatorski: {
-      name: "Akumulatorski alati",
-      subcategories: ["Bušilice", "Odvijači", "Brusilice", "Pile", "Višenamjenski"]
-    },
-    rucni: {
-      name: "Ručni alati",
-      subcategories: ["Čekići", "Klešta", "Odvijači", "Ključevi", "Testeri"]
-    },
-    pneumatski: {
-      name: "Pneumatski alati",
-      subcategories: ["Pištolji", "Bušilice", "Brusilice", "Kompresori", "Prskalice"]
-    },
-    gradevinskemasine: {
-      name: "Građevinske mašine",
-      subcategories: ["Mini bageri", "Vibroploci", "Mešalice", "Agregati", "Skele"]
-    },
-    merniLaserski: {
-      name: "Merni/laserski",
-      subcategories: ["Laseri", "Niveliri", "Detektori", "Merni metri", "Multimetri"]
-    }
-  }
-};
-
 export const POWER_SOURCES = ["Električni (struja)", "Akumulator", "Benzinski", "Dizel", "Pneumatski", "Ručni"];
 
 export const ACTIVITIES = [

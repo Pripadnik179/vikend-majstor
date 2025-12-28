@@ -14,7 +14,14 @@ import { useTheme } from '@/hooks/useTheme';
 import { Spacing, BorderRadius } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import type { Item } from '@shared/schema';
-import { CATEGORIES, POWER_SOURCES, ACTIVITIES } from '@shared/schema';
+import { POWER_SOURCES, ACTIVITIES } from '@shared/schema';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  subcategories: { id: string; name: string; slug: string }[];
+}
 import { getApiUrl } from '@/lib/query-client';
 
 const isWeb = Platform.OS === 'web';
@@ -169,16 +176,21 @@ export default function SearchScreen() {
     refetchOnWindowFocus: false,
   });
 
+  const { data: categoriesData = [] } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+  });
+
   const allCategories = useMemo(() => {
-    const cats: string[] = [];
-    Object.values(CATEGORIES.byProject).forEach(c => {
-      cats.push(c.name);
-    });
-    Object.values(CATEGORIES.byToolType).forEach(c => {
-      cats.push(c.name);
-    });
-    return [...new Set(cats)];
-  }, []);
+    return categoriesData.map(c => c.name);
+  }, [categoriesData]);
+
+  const selectedCategoryData = useMemo(() => {
+    return categoriesData.find(c => c.name === selectedCategory);
+  }, [categoriesData, selectedCategory]);
+
+  const subcategoriesForSelected = useMemo(() => {
+    return selectedCategoryData?.subcategories?.map(s => s.name) || [];
+  }, [selectedCategoryData]);
 
   const clearFilters = useCallback(() => {
     setSelectedCategory('');
@@ -352,7 +364,10 @@ export default function SearchScreen() {
                       borderColor: selectedCategory === cat ? theme.primary : theme.border,
                     },
                   ]}
-                  onPress={() => setSelectedCategory(cat)}
+                  onPress={() => {
+                    setSelectedCategory(cat);
+                    setSelectedSubcategory('');
+                  }}
                 >
                   <ThemedText 
                     type="small" 
@@ -364,6 +379,37 @@ export default function SearchScreen() {
               )}
             />
           </View>
+
+          {selectedCategory && subcategoriesForSelected.length > 0 ? (
+            <View style={styles.filterRow}>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>Podkategorija</ThemedText>
+              <FlatList
+                horizontal
+                data={['', ...subcategoriesForSelected]}
+                keyExtractor={(item) => item || 'all'}
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item: sub }) => (
+                  <Pressable
+                    style={[
+                      styles.filterChip,
+                      { 
+                        backgroundColor: selectedSubcategory === sub ? theme.primary : theme.backgroundRoot,
+                        borderColor: selectedSubcategory === sub ? theme.primary : theme.border,
+                      },
+                    ]}
+                    onPress={() => setSelectedSubcategory(sub)}
+                  >
+                    <ThemedText 
+                      type="small" 
+                      style={{ color: selectedSubcategory === sub ? '#000' : theme.text }}
+                    >
+                      {sub || 'Sve'}
+                    </ThemedText>
+                  </Pressable>
+                )}
+              />
+            </View>
+          ) : null}
 
           <View style={styles.filterRow}>
             <ThemedText type="small" style={{ color: theme.textSecondary }}>Napajanje</ThemedText>

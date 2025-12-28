@@ -1,24 +1,34 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, Platform, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
-import Animated, { useAnimatedStyle, withSpring, useSharedValue, interpolateColor } from 'react-native-reanimated';
-import { ChevronUpIcon, ChevronDownIcon, ChevronRightIcon, BoxIcon, ToolIcon } from '@/components/icons/TabBarIcons';
+import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-native-reanimated';
+import { ChevronUpIcon, ChevronDownIcon, ChevronRightIcon } from '@/components/icons/TabBarIcons';
 import { DynamicIcon } from '@/components/icons/DynamicIcon';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { useWebLayout } from '@/hooks/useWebLayout';
-import { Spacing, BorderRadius, CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_SEO_NAMES } from '@/constants/theme';
+import { Spacing, BorderRadius, CATEGORY_COLORS, CATEGORY_ICONS } from '@/constants/theme';
 import type { RootStackParamList } from '@/navigation/types';
-import { CATEGORIES } from '@shared/schema';
 import { getApiUrl } from '@/lib/query-client';
 
 const isWeb = Platform.OS === 'web';
 
-type TabType = 'project' | 'toolType';
+interface Subcategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  subcategories: Subcategory[];
+}
 
 interface CategoryCounts {
   [key: string]: number;
@@ -27,7 +37,6 @@ interface CategoryCounts {
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function CategoryCard({ 
-  categoryKey, 
   category, 
   isExpanded, 
   onPress,
@@ -36,8 +45,7 @@ function CategoryCard({
   itemCount,
   theme 
 }: {
-  categoryKey: string;
-  category: { name: string; subcategories: string[] };
+  category: Category;
   isExpanded: boolean;
   onPress: () => void;
   onSubcategoryPress: (category: string, subcategory: string) => void;
@@ -46,9 +54,8 @@ function CategoryCard({
   theme: any;
 }) {
   const scale = useSharedValue(1);
-  const colors = CATEGORY_COLORS[categoryKey] || { primary: theme.primary, secondary: theme.primaryLight, accent: theme.primaryPressed };
-  const iconName = CATEGORY_ICONS[categoryKey] || 'folder';
-  const seoName = CATEGORY_SEO_NAMES[categoryKey] || category.name;
+  const colors = CATEGORY_COLORS[category.name] || { primary: theme.primary, secondary: theme.primaryLight, accent: theme.primaryPressed };
+  const iconName = CATEGORY_ICONS[category.name] || 'folder';
   
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -77,7 +84,7 @@ function CategoryCard({
             borderWidth: isExpanded ? 2 : 1,
           },
         ]}
-        accessibilityLabel={seoName}
+        accessibilityLabel={category.name}
         accessibilityHint={`${itemCount} alata dostupno. Dodirnite za prikaz podkategorija`}
       >
         <View style={[styles.iconContainer, { backgroundColor: colors.secondary }]}>
@@ -107,16 +114,16 @@ function CategoryCard({
         <View style={[styles.subcategories, { backgroundColor: theme.backgroundDefault, borderColor: colors.primary }]}>
           {category.subcategories.map((sub, index) => (
             <Pressable
-              key={index}
+              key={sub.id}
               style={({ pressed }) => [
                 styles.subcategoryItem,
                 { backgroundColor: pressed ? colors.secondary : 'transparent' },
                 index < category.subcategories.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.border },
               ]}
-              onPress={() => onSubcategoryPress(category.name, sub)}
+              onPress={() => onSubcategoryPress(category.name, sub.name)}
             >
               <View style={styles.subcategoryContent}>
-                <ThemedText type="body">{sub}</ThemedText>
+                <ThemedText type="body">{sub.name}</ThemedText>
               </View>
               <ChevronRightIcon size={18} color={theme.textTertiary} />
             </Pressable>
@@ -142,10 +149,13 @@ function CategoryCard({
 export default function CategoriesScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const { isDesktop, contentPaddingTop, contentPaddingBottom, horizontalPadding, gridMaxWidth, sectionPadding } = useWebLayout();
+  const { isDesktop, contentPaddingTop, contentPaddingBottom, horizontalPadding, gridMaxWidth } = useWebLayout();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [activeTab, setActiveTab] = useState<TabType>('project');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+
+  const { data: categories = [], isLoading: isLoadingCategories } = useQuery<Category[]>({
+    queryKey: ['/api/categories'],
+  });
 
   const { data: categoryCounts = {}, isLoading: isLoadingCounts } = useQuery<CategoryCounts>({
     queryKey: ['/api/items/category-counts'],
@@ -159,10 +169,8 @@ export default function CategoriesScreen() {
     staleTime: 60000,
   });
 
-  const categories = activeTab === 'project' ? CATEGORIES.byProject : CATEGORIES.byToolType;
-
-  const handleCategoryPress = useCallback((categoryKey: string) => {
-    setExpandedCategory(prev => prev === categoryKey ? null : categoryKey);
+  const handleCategoryPress = useCallback((categoryId: string) => {
+    setExpandedCategory(prev => prev === categoryId ? null : categoryId);
   }, []);
 
   const handleSubcategoryPress = useCallback((category: string, subcategory: string) => {
@@ -182,6 +190,12 @@ export default function CategoriesScreen() {
     alignSelf: 'center' as const,
   } : undefined;
 
+  const totalItems = useMemo(() => {
+    return Object.values(categoryCounts).reduce((a, b) => a + b, 0);
+  }, [categoryCounts]);
+
+  const isLoading = isLoadingCategories || isLoadingCounts;
+
   return (
     <ThemedView style={[styles.container, { paddingTop }]}>
       <ScrollView 
@@ -200,96 +214,44 @@ export default function CategoriesScreen() {
           <View style={styles.header}>
             <ThemedText type="h2">Kategorije</ThemedText>
             <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: 4 }}>
-              Pronađi alat po delatnosti ili vrsti
+              Pronađi alat po kategoriji
             </ThemedText>
           </View>
 
-          <View style={styles.tabs}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.tab,
-                activeTab === 'project' && styles.activeTab,
-                activeTab === 'project' && { backgroundColor: theme.primary },
-                { 
-                  borderColor: theme.primary,
-                  opacity: pressed ? 0.9 : 1,
-                },
-              ]}
-              onPress={() => setActiveTab('project')}
-            >
-              <DynamicIcon 
-                name="briefcase" 
-                size={16} 
-                color={activeTab === 'project' ? '#FFFFFF' : theme.primary} 
-              />
-              <ThemedText 
-                type="body" 
-                style={[
-                  styles.tabText,
-                  { color: activeTab === 'project' ? '#FFFFFF' : theme.primary }
-                ]}
-              >
-                Po delatnosti
-              </ThemedText>
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [
-                styles.tab,
-                activeTab === 'toolType' && styles.activeTab,
-                activeTab === 'toolType' && { backgroundColor: theme.primary },
-                { 
-                  borderColor: theme.primary,
-                  opacity: pressed ? 0.9 : 1,
-                },
-              ]}
-              onPress={() => setActiveTab('toolType')}
-            >
-              <ToolIcon 
-                size={16} 
-                color={activeTab === 'toolType' ? '#FFFFFF' : theme.primary} 
-              />
-              <ThemedText 
-                type="body" 
-                style={[
-                  styles.tabText,
-                  { color: activeTab === 'toolType' ? '#FFFFFF' : theme.primary }
-                ]}
-              >
-                Po vrsti alata
-              </ThemedText>
-            </Pressable>
-          </View>
-
-          {isLoadingCounts ? (
+          {isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color={theme.primary} />
+              <ActivityIndicator size="large" color={theme.primary} />
+              <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
+                Učitavanje kategorija...
+              </ThemedText>
             </View>
-          ) : null}
+          ) : (
+            <>
+              {categories.map((category) => {
+                const isExpanded = expandedCategory === category.id;
+                const itemCount = categoryCounts[category.name] || 0;
 
-          {Object.entries(categories).map(([key, category]) => {
-            const isExpanded = expandedCategory === key;
-            const itemCount = categoryCounts[category.name] || 0;
-
-            return (
-              <CategoryCard
-                key={key}
-                categoryKey={key}
-                category={category}
-                isExpanded={isExpanded}
-                onPress={() => handleCategoryPress(key)}
-                onSubcategoryPress={handleSubcategoryPress}
-                onViewAllPress={handleViewAllPress}
-                itemCount={itemCount}
-                theme={theme}
-              />
-            );
-          })}
-          
-          <View style={[styles.statsFooter, { backgroundColor: theme.backgroundSecondary }]}>
-            <ThemedText type="small" style={{ color: theme.textSecondary, textAlign: 'center' }}>
-              Ukupno {Object.values(categoryCounts).reduce((a, b) => a + b, 0)} alata dostupno za iznajmljivanje
-            </ThemedText>
-          </View>
+                return (
+                  <CategoryCard
+                    key={category.id}
+                    category={category}
+                    isExpanded={isExpanded}
+                    onPress={() => handleCategoryPress(category.id)}
+                    onSubcategoryPress={handleSubcategoryPress}
+                    onViewAllPress={handleViewAllPress}
+                    itemCount={itemCount}
+                    theme={theme}
+                  />
+                );
+              })}
+              
+              <View style={[styles.statsFooter, { backgroundColor: theme.backgroundSecondary }]}>
+                <ThemedText type="small" style={{ color: theme.textSecondary, textAlign: 'center' }}>
+                  Ukupno {totalItems} alata dostupno za iznajmljivanje
+                </ThemedText>
+              </View>
+            </>
+          )}
         </View>
       </ScrollView>
     </ThemedView>
@@ -304,27 +266,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   loadingContainer: {
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.xl * 2,
     alignItems: 'center',
-  },
-  tabs: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    borderWidth: 2,
-  },
-  activeTab: {},
-  tabText: {
-    fontWeight: '600',
   },
   list: {
     flex: 1,
