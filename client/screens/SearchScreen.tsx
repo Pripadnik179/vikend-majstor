@@ -75,6 +75,7 @@ export default function SearchScreen() {
   const [userLng, setUserLng] = useState<number | null>(null);
   const [hasDelivery, setHasDelivery] = useState(false);
   const [selectedUserType, setSelectedUserType] = useState<'all' | 'diy' | 'professional' | 'company'>('all');
+  const [selectedDeposit, setSelectedDeposit] = useState<'all' | 'yes' | 'no'>('all');
   
   const { permission: locationPermission, requestPermission: requestLocationPermission, Location } = useLocationPermission();
 
@@ -132,6 +133,8 @@ export default function SearchScreen() {
     if (maxDistance !== null) url.searchParams.append('maxDistance', maxDistance.toString());
     if (hasDelivery) url.searchParams.append('hasDelivery', 'true');
     if (selectedUserType !== 'all') url.searchParams.append('userType', selectedUserType);
+    if (selectedDeposit === 'yes') url.searchParams.append('hasDeposit', 'true');
+    if (selectedDeposit === 'no') url.searchParams.append('hasDeposit', 'false');
     return url.toString();
   };
 
@@ -153,6 +156,7 @@ export default function SearchScreen() {
       maxDistance,
       hasDelivery,
       userType: selectedUserType,
+      hasDeposit: selectedDeposit === 'yes' ? true : selectedDeposit === 'no' ? false : undefined,
     }],
     queryFn: async () => {
       const url = buildApiUrl();
@@ -191,6 +195,7 @@ export default function SearchScreen() {
     setMaxDistance(null);
     setHasDelivery(false);
     setSelectedUserType('all');
+    setSelectedDeposit('all');
   }, []);
 
   const activeFilterCount = [
@@ -207,6 +212,7 @@ export default function SearchScreen() {
     maxDistance !== null ? 'distance' : '',
     hasDelivery ? 'delivery' : '',
     selectedUserType !== 'all' ? selectedUserType : '',
+    selectedDeposit !== 'all' ? selectedDeposit : '',
   ].filter(Boolean).length;
 
   const adTypeOptions = [
@@ -503,6 +509,36 @@ export default function SearchScreen() {
                   <ThemedText 
                     type="small" 
                     style={{ color: selectedUserType === opt.value ? '#000' : theme.text }}
+                  >
+                    {opt.label}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.filterRow}>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>Depozit</ThemedText>
+            <View style={styles.chipRow}>
+              {[
+                { value: 'all', label: 'Svi' },
+                { value: 'yes', label: 'Sa depozitom' },
+                { value: 'no', label: 'Bez depozita' },
+              ].map((opt) => (
+                <Pressable
+                  key={opt.value}
+                  style={[
+                    styles.filterChip,
+                    { 
+                      backgroundColor: selectedDeposit === opt.value ? theme.primary : theme.backgroundRoot,
+                      borderColor: selectedDeposit === opt.value ? theme.primary : theme.border,
+                    },
+                  ]}
+                  onPress={() => setSelectedDeposit(opt.value as typeof selectedDeposit)}
+                >
+                  <ThemedText 
+                    type="small" 
+                    style={{ color: selectedDeposit === opt.value ? '#000' : theme.text }}
                   >
                     {opt.label}
                   </ThemedText>
