@@ -334,7 +334,7 @@ export function setupAuth(app: Express) {
         const resetToken = randomBytes(32).toString("hex");
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
         
-        await storage.createVerificationToken(user.id, resetToken, "password_reset", expiresAt);
+        await storage.createVerificationToken(user.id, "password_reset", resetToken, expiresAt);
         await sendPasswordResetEmail(email, resetToken, user.name);
       }
 
