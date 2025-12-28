@@ -7,7 +7,10 @@ import {
   sendBookingRequestNotification, 
   sendBookingRequestConfirmationToRenter,
   sendBookingConfirmedNotification,
-  sendBookingCancelledNotification
+  sendBookingCancelledNotification,
+  sendNewMessageNotification,
+  sendBookingReminderNotification,
+  sendScheduledReminders
 } from "./notifications";
 import { sendBookingRequestEmail, sendBookingConfirmedEmail } from "./email";
 import { seedDemoData, deleteDemoData, getDemoDataStats } from "./seed-demo";
@@ -1062,6 +1065,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isRead: false,
       });
       
+      const sender = await storage.getUser(req.user!.id);
+      sendNewMessageNotification(receiverId, sender?.name || 'Korisnik', req.body.content, req.params.id)
+        .catch(err => console.error('[NOTIFICATION] Failed to send message notification:', err));
+      
       res.status(201).json(message);
     } catch (error) {
       console.error("Error creating message:", error);
@@ -1503,6 +1510,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Greška pri brisanju demo podataka" });
     }
   });
+
+  app.post("/api/admin/send-reminders", isAdmin, async (req, res) => {
+    try {
+      console.log(`[ADMIN] User ${req.user?.email} triggered manual reminder sending`);
+      const result = await sendScheduledReminders();
+      res.json({ 
+        success: result.success, 
+        message: `Poslato ${result.remindersCount || 0} podsetnika`,
+        remindersCount: result.remindersCount
+      });
+    } catch (error) {
+      console.error("Error sending reminders:", error);
+      res.status(500).json({ error: "Greška pri slanju podsetnika" });
+    }
+  });
+
+  const REMINDER_INTERVAL = 6 * 60 * 60 * 1000;
+  setInterval(async () => {
+    console.log('[SCHEDULER] Running scheduled reminder check...');
+    await sendScheduledReminders();
+  }, REMINDER_INTERVAL);
+  
+  setTimeout(async () => {
+    console.log('[SCHEDULER] Initial reminder check on server start...');
+    await sendScheduledReminders();
+  }, 10000);
 
   const httpServer = createServer(app);
 

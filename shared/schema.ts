@@ -768,8 +768,19 @@ export const adminNotifications = pgTable("admin_notifications", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Sent reminders tracking (for deduplication)
+export const sentRemindersLog = pgTable("sent_reminders_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  bookingId: varchar("booking_id").notNull().references(() => bookings.id),
+  reminderType: text("reminder_type").notNull(),
+  sentDate: text("sent_date").notNull(),
+  reminderKey: text("reminder_key").notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export type AdminLog = typeof adminLogs.$inferSelect;
 export type UserActivityLog = typeof userActivityLogs.$inferSelect;
 export type ReportedItem = typeof reportedItems.$inferSelect;
 export type FeatureToggle = typeof featureToggles.$inferSelect;
 export type AdminNotification = typeof adminNotifications.$inferSelect;
+export type SentReminderLog = typeof sentRemindersLog.$inferSelect;
