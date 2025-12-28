@@ -372,7 +372,10 @@ export default function AuthScreen() {
       if (isLogin) {
         await login(email, password);
       } else {
-        await register(email, password, name);
+        const result = await register(email, password, name);
+        if (result.isNewUser && result.emailVerificationSent) {
+          setSuccessMessage('Dobrodosli! Poslali smo vam email za potvrdu. Molimo proverite inbox.');
+        }
       }
       console.log('[Auth] Success');
     } catch (error: any) {

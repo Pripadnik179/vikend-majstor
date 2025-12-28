@@ -43,7 +43,7 @@ interface AuthContextType {
   isVerified: boolean;
   isGuest: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, role?: string) => Promise<void>;
+  register: (email: string, password: string, name: string, role?: string) => Promise<OAuthResult>;
   loginWithGoogle: (accessToken: string) => Promise<OAuthResult>;
   loginWithApple: (identityToken: string, fullName?: { givenName?: string; familyName?: string } | null) => Promise<OAuthResult>;
   logout: () => Promise<void>;
@@ -158,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Login: done');
   };
 
-  const register = async (email: string, password: string, name: string, role?: string) => {
+  const register = async (email: string, password: string, name: string, role?: string): Promise<OAuthResult> => {
     const response = await apiRequest('POST', '/api/auth/register', { 
       email, 
       password, 
@@ -170,6 +170,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await saveAuthToken(userData.authToken);
     }
     setUser(userData);
+    return {
+      isNewUser: userData.isNewUser || false,
+      emailVerificationSent: userData.emailVerificationSent || false,
+    };
   };
 
   const loginWithGoogle = async (accessToken: string): Promise<OAuthResult> => {

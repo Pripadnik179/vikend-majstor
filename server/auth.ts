@@ -200,7 +200,12 @@ export function setupAuth(app: Express) {
       
       const { password: _, ...userWithoutPassword } = user;
       const authToken = generateAuthToken(user.id, sessionSecret);
-      res.status(201).json({ ...userWithoutPassword, authToken });
+      res.status(201).json({ 
+        ...userWithoutPassword, 
+        authToken,
+        isNewUser: true,
+        emailVerificationSent: true 
+      });
     } catch (error) {
       console.error("Registration error:", error);
       res.status(500).json({ error: "Greška pri registraciji" });
