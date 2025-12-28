@@ -411,6 +411,38 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  app.put("/api/admin/subscriptions/:userId", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { userId } = req.params;
+      const { tier, status, endDate } = req.body;
+
+      const updateData: any = {};
+      if (tier) updateData.subscriptionType = tier;
+      if (status) updateData.subscriptionStatus = status;
+      if (endDate) updateData.subscriptionEndDate = new Date(endDate);
+
+      await db.update(users)
+        .set(updateData)
+        .where(eq(users.id, userId));
+
+      if (isProductionAvailable()) {
+        try {
+          await updateProductionSubscription(parseInt(userId), { tier, status, expiresAt: endDate ? new Date(endDate) : undefined });
+        } catch (prodErr) {
+          console.error('Production subscription update error:', prodErr);
+        }
+      }
+
+      await logAdminAction(admin.id, 'update_subscription', 'subscription', userId, `Updated subscription: ${JSON.stringify({ tier, status, endDate })}`, req.ip);
+
+      res.json({ success: true, message: 'Pretplata uspesno azurirana' });
+    } catch (error) {
+      console.error('Admin update subscription error:', error);
+      res.status(500).json({ message: 'Greska pri azuriranju pretplate' });
+    }
+  });
+
   app.get("/api/admin/analytics", isAdminAuth, async (req, res) => {
     try {
       const allUsers = await storage.getAllUsers();

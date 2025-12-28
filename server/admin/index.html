@@ -388,10 +388,11 @@
                     <th>Pocetak</th>
                     <th>Kraj</th>
                     <th>Iznos</th>
+                    <th>Akcije</th>
                   </tr>
                 </thead>
                 <tbody id="subscriptions-table">
-                  <tr><td colspan="7"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                  <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -1003,7 +1004,7 @@
         const tbody = document.getElementById('subscriptions-table');
         
         if (!data.subscriptions?.length) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema aktivnih pretplata</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema aktivnih pretplata</td></tr>';
         } else {
           tbody.innerHTML = data.subscriptions.map(s => 
             `<tr>
@@ -1013,11 +1014,63 @@
             <td><span class="badge badge-success">${s.status}</span></td>
             <td>${new Date(s.startDate).toLocaleDateString('sr-RS')}</td>
             <td>${new Date(s.endDate).toLocaleDateString('sr-RS')}</td>
-            <td>${s.amount} RSD</td></tr>`
+            <td>${s.amount} RSD</td>
+            <td>
+              <button class="action-btn action-btn-info" onclick="showEditSubscriptionModal('${s.userId}', '${s.tier}', '${s.status}', '${s.endDate}')" title="Izmeni">✏️</button>
+            </td></tr>`
           ).join('');
         }
       } catch (e) {
-        document.getElementById('subscriptions-table').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+        document.getElementById('subscriptions-table').innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    function showEditSubscriptionModal(userId, tier, status, endDate) {
+      const endDateFormatted = new Date(endDate).toISOString().split('T')[0];
+      showModal('Izmeni Pretplatu', 'Izmenite parametre pretplate za ovog korisnika', `
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <label style="display: block; margin-bottom: 6px; color: var(--text-secondary);">Tip pretplate</label>
+            <select id="edit-sub-tier" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--background); color: var(--text-primary); border: 1px solid var(--border);">
+              <option value="free" ${tier === 'free' ? 'selected' : ''}>Besplatno</option>
+              <option value="standard" ${tier === 'standard' ? 'selected' : ''}>Standard</option>
+              <option value="premium" ${tier === 'premium' ? 'selected' : ''}>Premium</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 6px; color: var(--text-secondary);">Status</label>
+            <select id="edit-sub-status" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--background); color: var(--text-primary); border: 1px solid var(--border);">
+              <option value="active" ${status === 'active' ? 'selected' : ''}>Aktivan</option>
+              <option value="inactive" ${status === 'inactive' ? 'selected' : ''}>Neaktivan</option>
+              <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>Otkazan</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 6px; color: var(--text-secondary);">Datum isteka</label>
+            <input type="date" id="edit-sub-enddate" value="${endDateFormatted}" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--background); color: var(--text-primary); border: 1px solid var(--border);">
+          </div>
+        </div>
+      `, `
+        <button class="btn btn-secondary" onclick="closeModal()">Otkazi</button>
+        <button class="btn btn-primary" onclick="saveSubscription('${userId}')">Sacuvaj</button>
+      `);
+    }
+
+    async function saveSubscription(userId) {
+      const tier = document.getElementById('edit-sub-tier').value;
+      const status = document.getElementById('edit-sub-status').value;
+      const endDate = document.getElementById('edit-sub-enddate').value;
+      
+      try {
+        await api('/api/admin/subscriptions/' + userId, {
+          method: 'PUT',
+          body: JSON.stringify({ tier, status, endDate })
+        });
+        closeModal();
+        loadSubscriptions();
+        alert('Pretplata uspesno azurirana!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
       }
     }
 
