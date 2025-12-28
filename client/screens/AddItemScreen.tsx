@@ -223,39 +223,64 @@ export default function AddItemScreen() {
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      setIsLoading(true);
-      try {
-        let uploadURL: string;
-        let objectPath: string;
-        
-        if (Platform.OS === 'web') {
-          const response = await fetch(result.assets[0].uri);
-          const blob = await response.blob();
-          const fileName = `image-${Date.now()}.jpg`;
-          const webFile = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
-          uploadURL = await uploadFileToStorageWeb(webFile);
-          objectPath = await finalizeUploadWeb(uploadURL);
-        } else {
-          const file = new ExpoFile(result.assets[0].uri);
-          uploadURL = await uploadFileToStorage(file);
-          objectPath = await finalizeUpload(uploadURL);
+      if (!result.canceled && result.assets[0]) {
+        setIsLoading(true);
+        try {
+          let uploadURL: string;
+          let objectPath: string;
+          const asset = result.assets[0];
+          
+          if (Platform.OS === 'web') {
+            console.log('[UPLOAD] Web platform detected, asset URI:', asset.uri?.substring(0, 50));
+            
+            let webFile: globalThis.File;
+            
+            if ((asset as any).file) {
+              console.log('[UPLOAD] Using asset.file directly');
+              webFile = (asset as any).file;
+            } else {
+              console.log('[UPLOAD] Fetching blob from URI');
+              const response = await window.fetch(asset.uri);
+              if (!response.ok) {
+                throw new Error(`Failed to fetch image: ${response.status}`);
+              }
+              const blob = await response.blob();
+              console.log('[UPLOAD] Blob created, size:', blob.size, 'type:', blob.type);
+              
+              const fileName = `image-${Date.now()}.jpg`;
+              webFile = new globalThis.File([blob], fileName, { type: blob.type || 'image/jpeg' });
+            }
+            
+            console.log('[UPLOAD] Web file ready, name:', webFile.name, 'size:', webFile.size);
+            uploadURL = await uploadFileToStorageWeb(webFile);
+            console.log('[UPLOAD] Got uploadURL:', uploadURL?.substring(0, 50));
+            objectPath = await finalizeUploadWeb(uploadURL);
+            console.log('[UPLOAD] Finalized, objectPath:', objectPath);
+          } else {
+            const file = new ExpoFile(asset.uri);
+            uploadURL = await uploadFileToStorage(file);
+            objectPath = await finalizeUpload(uploadURL);
+          }
+          
+          setImages([...images, objectPath]);
+        } catch (error: any) {
+          console.error('[UPLOAD] Upload error:', error?.message || error);
+          Alert.alert('Greška', `Nije moguće učitati sliku: ${error?.message || 'Nepoznata greška'}`);
+        } finally {
+          setIsLoading(false);
         }
-        
-        setImages([...images, objectPath]);
-      } catch (error) {
-        console.error('Upload error:', error);
-        Alert.alert('Greška', 'Nije moguće učitati sliku');
-      } finally {
-        setIsLoading(false);
       }
+    } catch (error: any) {
+      console.error('[UPLOAD] Image picker error:', error?.message || error);
+      Alert.alert('Greška', 'Nije moguće otvoriti galeriju slika');
     }
   };
 
