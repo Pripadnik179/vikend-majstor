@@ -469,6 +469,90 @@ export const PREDEFINED_CATEGORIES = {
       { name: "Ostalo", slug: "ostalo" },
     ]
   },
+  vodoinstalaterski: {
+    name: "Vodoinstalaterski alati",
+    slug: "vodoinstalaterski-alati",
+    subcategories: [
+      { name: "Ključevi za cevi", slug: "kljucevi-za-cevi" },
+      { name: "Oprema za lemljenje cevi", slug: "oprema-za-lemljenje" },
+      { name: "Čistači odvoda", slug: "cistaci-odvoda" },
+      { name: "Kamere za inspekciju", slug: "kamere-za-inspekciju" },
+      { name: "Pres klešta", slug: "pres-klesta" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  elektroinstalaterski: {
+    name: "Elektroinstalaterski alati",
+    slug: "elektroinstalaterski-alati",
+    subcategories: [
+      { name: "Klešta za kablove", slug: "klesta-za-kablove" },
+      { name: "Detektori kablova", slug: "detektori-kablova" },
+      { name: "Oprema za uvlačenje kablova", slug: "oprema-za-uvlacenje" },
+      { name: "Ispitivači instalacija", slug: "ispitivaci-instalacija" },
+      { name: "Štemalice za zidove", slug: "stemalice-za-zidove" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  farbanje: {
+    name: "Alati za farbanje i dekoraciju",
+    slug: "alati-farbanje-dekoracija",
+    subcategories: [
+      { name: "Kompresori za farbanje", slug: "kompresori-za-farbanje" },
+      { name: "Airless prskalice", slug: "airless-prskalice" },
+      { name: "Brusilice za zidove", slug: "brusilice-za-zidove" },
+      { name: "Stepenice i merdevine", slug: "stepenice-merdevine" },
+      { name: "Mešalice za boje", slug: "mesalice-za-boje" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  grejanje_klima: {
+    name: "Alati za grejanje i klimatizaciju",
+    slug: "alati-grejanje-klima",
+    subcategories: [
+      { name: "Vakuum pumpe", slug: "vakuum-pumpe" },
+      { name: "Manometri", slug: "manometri" },
+      { name: "Detektori curenja", slug: "detektori-curenja" },
+      { name: "Oprema za punjenje", slug: "oprema-za-punjenje" },
+      { name: "Lemilice za bakar", slug: "lemilice-za-bakar" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  podovi: {
+    name: "Alati za podove",
+    slug: "alati-za-podove",
+    subcategories: [
+      { name: "Brusilice za parket", slug: "brusilice-za-parket" },
+      { name: "Mašine za postavljanje", slug: "masine-za-postavljanje" },
+      { name: "Rezači pločica", slug: "rezaci-plocica" },
+      { name: "Lakirke za podove", slug: "lakirke-za-podove" },
+      { name: "Vibro letve", slug: "vibro-letve" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  krov_fasada: {
+    name: "Alati za krov i fasadu",
+    slug: "alati-krov-fasada",
+    subcategories: [
+      { name: "Skele", slug: "skele" },
+      { name: "Ljestve", slug: "ljestve" },
+      { name: "Oprema za krovopokrivače", slug: "oprema-krovopokrivaci" },
+      { name: "Fasaderska oprema", slug: "fasaderska-oprema" },
+      { name: "Dizalice za materijal", slug: "dizalice-za-materijal" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
+  pumpe_voda: {
+    name: "Pumpe i oprema za vodu",
+    slug: "pumpe-oprema-voda",
+    subcategories: [
+      { name: "Potapajuće pumpe", slug: "potapajuce-pumpe" },
+      { name: "Baštenske pumpe", slug: "bastenske-pumpe" },
+      { name: "Pumpe visokog pritiska", slug: "pumpe-visokog-pritiska" },
+      { name: "Creva i priključci", slug: "creva-prikljucci" },
+      { name: "Cisterne za vodu", slug: "cisterne-za-vodu" },
+      { name: "Ostalo", slug: "ostalo" },
+    ]
+  },
 };
 
 // Stara struktura za backward compatibility
