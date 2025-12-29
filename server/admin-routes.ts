@@ -2107,5 +2107,118 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // ============================================
+  // System Settings - Early Adopter Reset & Premium Popup
+  // ============================================
+  
+  app.get("/api/admin/system-settings", isAdminAuth, async (req, res) => {
+    try {
+      const earlyAdopterCount = await db.select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(eq(users.isEarlyAdopter, true));
+      
+      const totalUsersCount = await db.select({ count: sql<number>`count(*)` })
+        .from(users);
+      
+      const premiumPopupToggle = await db.select()
+        .from(featureToggles)
+        .where(eq(featureToggles.name, 'premium_popup'))
+        .limit(1);
+      
+      const earlyAdopterToggle = await db.select()
+        .from(featureToggles)
+        .where(eq(featureToggles.name, 'early_adopter_program'))
+        .limit(1);
+
+      res.json({
+        earlyAdopterCount: Number(earlyAdopterCount[0]?.count || 0),
+        remainingSlots: Math.max(0, 100 - Number(earlyAdopterCount[0]?.count || 0)),
+        totalUsers: Number(totalUsersCount[0]?.count || 0),
+        premiumPopupEnabled: premiumPopupToggle[0]?.isEnabled ?? true,
+        earlyAdopterProgramEnabled: earlyAdopterToggle[0]?.isEnabled ?? true
+      });
+    } catch (error) {
+      console.error('Get system settings error:', error);
+      res.status(500).json({ message: 'Greska pri ucitavanju podesavanja' });
+    }
+  });
+
+  app.post("/api/admin/reset-early-adopter", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      
+      const beforeCount = await db.select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(eq(users.isEarlyAdopter, true));
+      
+      await db.update(users)
+        .set({ 
+          isEarlyAdopter: false,
+          subscriptionType: sql`CASE WHEN subscription_type = 'premium' AND subscription_status = 'active' AND subscription_end_date > NOW() THEN 'premium' ELSE 'free' END`,
+        })
+        .where(eq(users.isEarlyAdopter, true));
+      
+      await logAdminAction(
+        admin.id, 
+        'reset_early_adopter', 
+        'system', 
+        undefined, 
+        `Reset early adopter counter. ${beforeCount[0]?.count || 0} users were reset. Next 100 users will get free premium.`, 
+        req.ip
+      );
+
+      res.json({ 
+        success: true, 
+        message: `Uspesno resetovano! ${beforeCount[0]?.count || 0} korisnika je resetovano. Sledecih 100 novih korisnika dobice besplatno premium clanstvo.`,
+        resetCount: Number(beforeCount[0]?.count || 0)
+      });
+    } catch (error) {
+      console.error('Reset early adopter error:', error);
+      res.status(500).json({ message: 'Greska pri resetovanju early adopter brojaca' });
+    }
+  });
+
+  app.post("/api/admin/toggle-premium-popup", isAdminAuth, async (req, res) => {
+    try {
+      const admin = (req as any).admin;
+      const { enabled } = req.body;
+      
+      const existing = await db.select()
+        .from(featureToggles)
+        .where(eq(featureToggles.name, 'premium_popup'))
+        .limit(1);
+      
+      if (existing.length === 0) {
+        await db.insert(featureToggles).values({
+          name: 'premium_popup',
+          description: 'Prikazuje popup za premium pretplatu korisnicima',
+          isEnabled: enabled,
+          enabledForPercentage: 100
+        });
+      } else {
+        await db.update(featureToggles)
+          .set({ isEnabled: enabled })
+          .where(eq(featureToggles.name, 'premium_popup'));
+      }
+      
+      await logAdminAction(
+        admin.id, 
+        enabled ? 'enable_premium_popup' : 'disable_premium_popup', 
+        'feature_toggle', 
+        'premium_popup', 
+        `Premium popup ${enabled ? 'enabled' : 'disabled'}`, 
+        req.ip
+      );
+
+      res.json({ 
+        success: true, 
+        message: `Premium popup je ${enabled ? 'ukljucen' : 'iskljucen'}.`
+      });
+    } catch (error) {
+      console.error('Toggle premium popup error:', error);
+      res.status(500).json({ message: 'Greska pri promeni podesavanja' });
+    }
+  });
+
   console.log('[ADMIN] Admin panel API routes registered');
 }

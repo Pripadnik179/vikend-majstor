@@ -130,6 +130,7 @@ export async function seedFeatureToggles() {
     { name: "push_notifications", description: "Push notifikacije za mobilnu aplikaciju", isEnabled: false },
     { name: "location_filter", description: "Filtriranje oglasa po lokaciji", isEnabled: true },
     { name: "stripe_payments", description: "Stripe placanje za pretplate", isEnabled: false },
+    { name: "premium_popup", description: "Prikazuje popup za premium pretplatu korisnicima", isEnabled: true },
   ];
   
   for (const toggle of defaultToggles) {
