@@ -1374,17 +1374,30 @@
                                     s.subscriptionType === 'basic' ? 'badge-info' : 'badge-secondary';
           const canDelete = s.type !== 'registered';
           
+          const isRegistered = s.type === 'registered';
+          const realUserId = isRegistered ? s.id.replace('user_', '') : s.id;
+          
+          const subscriptionDropdown = isRegistered ? `
+            <select class="subscription-select" onchange="changeSubscription('${realUserId}', this.value)" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 12px; cursor: pointer;">
+              <option value="free" ${s.subscriptionType === 'free' || !s.subscriptionType ? 'selected' : ''}>Besplatno</option>
+              <option value="basic" ${s.subscriptionType === 'basic' ? 'selected' : ''}>Standard</option>
+              <option value="premium" ${s.subscriptionType === 'premium' ? 'selected' : ''}>Premium</option>
+            </select>
+          ` : `<span class="badge ${subscriptionBadge}">${subscriptionLabel}</span>`;
+          
+          const actionButtons = isRegistered ? `
+            <button class="action-btn" onclick="showSubscriptionModal('${realUserId}', '${s.email}', '${s.subscriptionType || 'free'}')" title="Promeni pretplatu" style="background: var(--warning); color: white;">⚙️</button>
+          ` : (canDelete ? `<button class="action-btn action-btn-error" onclick="deleteSubscriber('${s.id}')" title="Obrisi">🗑️</button>` : '<span style="color: var(--text-tertiary);">-</span>');
+          
           return `<tr>
             <td><span class="badge ${typeBadge}">${typeLabel}</span></td>
             <td><strong>${s.email}</strong></td>
             <td>${s.name || '-'}</td>
             <td>${s.source || 'nepoznato'}</td>
-            <td><span class="badge ${subscriptionBadge}">${subscriptionLabel}</span></td>
+            <td>${subscriptionDropdown}</td>
             <td><span class="badge ${s.isActive ? 'badge-success' : 'badge-error'}">${s.isActive ? 'Aktivan' : 'Neaktivan'}</span></td>
             <td>${s.createdAt && !isNaN(new Date(s.createdAt).getTime()) ? new Date(s.createdAt).toLocaleString('sr-RS') : '-'}</td>
-            <td>
-              ${canDelete ? `<button class="action-btn action-btn-error" onclick="deleteSubscriber('${s.id}')" title="Obrisi">🗑️</button>` : '<span style="color: var(--text-tertiary);">-</span>'}
-            </td></tr>`;
+            <td>${actionButtons}</td></tr>`;
         }).join('');
       }
     }
@@ -1410,6 +1423,58 @@
         loadSubscribers();
       } catch (e) {
         alert('Greska: ' + e.message);
+      }
+    }
+    
+    async function changeSubscription(userId, subscriptionType) {
+      try {
+        await api('/api/admin/users/' + userId + '/subscription', {
+          method: 'POST',
+          body: JSON.stringify({ subscriptionType, durationDays: 30 })
+        });
+        loadSubscribers();
+        alert('Pretplata uspesno promenjena na: ' + (subscriptionType === 'premium' ? 'Premium' : subscriptionType === 'basic' ? 'Standard' : 'Besplatno'));
+      } catch (e) {
+        alert('Greska pri promeni pretplate: ' + e.message);
+        loadSubscribers();
+      }
+    }
+    
+    function showSubscriptionModal(userId, email, currentType) {
+      const content = `
+        <div style="margin: 20px 0;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 500;">Korisnik: ${email}</label>
+          <label style="display: block; margin-bottom: 8px;">Izaberite novu pretplatu:</label>
+          <select id="modal-subscription-type" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); margin-bottom: 16px;">
+            <option value="free" ${currentType === 'free' ? 'selected' : ''}>Besplatno (0 RSD)</option>
+            <option value="basic" ${currentType === 'basic' ? 'selected' : ''}>Standard (500 RSD/mesec)</option>
+            <option value="premium" ${currentType === 'premium' ? 'selected' : ''}>Premium (1000 RSD/mesec)</option>
+          </select>
+          <label style="display: block; margin-bottom: 8px;">Trajanje (dana):</label>
+          <input type="number" id="modal-subscription-days" value="30" min="1" max="365" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary);">
+        </div>
+      `;
+      const actions = `
+        <button class="btn btn-secondary" onclick="closeModal()">Otkazi</button>
+        <button class="btn btn-primary" onclick="applySubscriptionChange('${userId}')">Primeni</button>
+      `;
+      showModal('Promeni pretplatu', 'Izaberite tip pretplate i trajanje', content, actions);
+    }
+    
+    async function applySubscriptionChange(userId) {
+      const subscriptionType = document.getElementById('modal-subscription-type').value;
+      const durationDays = parseInt(document.getElementById('modal-subscription-days').value) || 30;
+      
+      try {
+        await api('/api/admin/users/' + userId + '/subscription', {
+          method: 'POST',
+          body: JSON.stringify({ subscriptionType, durationDays })
+        });
+        closeModal();
+        loadSubscribers();
+        alert('Pretplata uspesno promenjena!');
+      } catch (e) {
+        alert('Greska pri promeni pretplate: ' + e.message);
       }
     }
 
