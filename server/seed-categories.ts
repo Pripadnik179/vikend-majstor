@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { categories, subcategories, PREDEFINED_CATEGORIES } from "../shared/schema";
+import { categories, subcategories, PREDEFINED_CATEGORIES, featureToggles, appVersions } from "../shared/schema";
 import { eq } from "drizzle-orm";
 
 export async function seedCategories() {
@@ -118,4 +118,62 @@ export async function migrateItemsToNewCategories() {
   }
 
   console.log("[MIGRATE] Item migration complete!");
+}
+
+export async function seedFeatureToggles() {
+  console.log("[SEED] Starting feature toggles seeding...");
+  
+  const defaultToggles = [
+    { name: "guest_browsing", description: "Omogucava pregledanje oglasa bez prijave", isEnabled: true },
+    { name: "early_adopter_program", description: "Prvih 100 korisnika dobija premium besplatno 30 dana", isEnabled: true },
+    { name: "email_notifications", description: "Slanje email notifikacija korisnicima", isEnabled: true },
+    { name: "push_notifications", description: "Push notifikacije za mobilnu aplikaciju", isEnabled: false },
+    { name: "location_filter", description: "Filtriranje oglasa po lokaciji", isEnabled: true },
+    { name: "stripe_payments", description: "Stripe placanje za pretplate", isEnabled: false },
+  ];
+  
+  for (const toggle of defaultToggles) {
+    const existing = await db.select().from(featureToggles).where(eq(featureToggles.name, toggle.name)).limit(1);
+    if (existing.length === 0) {
+      await db.insert(featureToggles).values({
+        name: toggle.name,
+        description: toggle.description,
+        isEnabled: toggle.isEnabled,
+        enabledForPercentage: 100,
+      });
+      console.log(`[SEED] Created feature toggle: ${toggle.name}`);
+    } else {
+      console.log(`[SEED] Feature toggle already exists: ${toggle.name}`);
+    }
+  }
+  
+  console.log("[SEED] Feature toggles seeding complete!");
+}
+
+export async function seedAppVersions() {
+  console.log("[SEED] Starting app versions seeding...");
+  
+  const defaultVersions = [
+    { platform: "web", version: "1.0.0", buildNumber: 1, releaseNotes: "Inicijalno izdanje platforme", isRequired: false },
+    { platform: "android", version: "1.0.0", buildNumber: 1, releaseNotes: "Inicijalno izdanje za Android", isRequired: false },
+    { platform: "ios", version: "1.0.0", buildNumber: 1, releaseNotes: "Inicijalno izdanje za iOS", isRequired: false },
+  ];
+  
+  for (const ver of defaultVersions) {
+    const existing = await db.select().from(appVersions).where(eq(appVersions.platform, ver.platform)).limit(1);
+    if (existing.length === 0) {
+      await db.insert(appVersions).values({
+        platform: ver.platform,
+        version: ver.version,
+        buildNumber: ver.buildNumber,
+        releaseNotes: ver.releaseNotes,
+        isRequired: ver.isRequired,
+      });
+      console.log(`[SEED] Created app version: ${ver.platform} v${ver.version}`);
+    } else {
+      console.log(`[SEED] App version already exists: ${ver.platform}`);
+    }
+  }
+  
+  console.log("[SEED] App versions seeding complete!");
 }

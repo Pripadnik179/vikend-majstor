@@ -1278,11 +1278,12 @@
       try {
         const data = await api('/api/admin/feature-toggles');
         const list = document.getElementById('features-list');
+        const toggles = data.toggles || [];
         
-        if (!data.features?.length) {
+        if (!toggles.length) {
           list.innerHTML = `<p style="color: var(--text-tertiary); text-align: center; padding: 20px;">Nema feature togglea. <button class="btn btn-sm" onclick="showAddFeatureModal()">Dodaj prvi</button></p>`;
         } else {
-          list.innerHTML = data.features.map(f => 
+          list.innerHTML = toggles.map(f => 
             `<div style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: var(--background); border-radius: 8px; margin-bottom: 12px;">
               <div>
                 <div style="font-weight: 600;">${f.name}</div>
