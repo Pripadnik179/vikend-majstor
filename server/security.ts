@@ -188,6 +188,7 @@ export function setupSecurity(app: Express) {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
+        scriptSrcAttr: ["'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "https:", "blob:"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
@@ -197,6 +198,7 @@ export function setupSecurity(app: Express) {
         baseUri: ["'self'"],
         formAction: ["'self'"],
         upgradeInsecureRequests: [],
+        frameAncestors: ["'self'"],
       },
     },
     crossOriginEmbedderPolicy: false,
