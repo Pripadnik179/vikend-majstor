@@ -1,0 +1,2432 @@
+export const ADMIN_PANEL_TEMPLATE = `<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>VikendMajstor Admin Panel</title>
+  <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #FFCC00;
+      --primary-dark: #E6B800;
+      --secondary: #1A1A1A;
+      --background: #0D0D0D;
+      --background-card: #1A1A1A;
+      --background-hover: #252525;
+      --text-primary: #FFFFFF;
+      --text-secondary: #A0A0A0;
+      --text-tertiary: #666666;
+      --border: #333333;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --error: #EF4444;
+      --info: #3B82F6;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--background);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--background-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+    }
+    .login-header { text-align: center; margin-bottom: 32px; }
+    .login-logo { font-size: 48px; margin-bottom: 16px; }
+    .login-header h1 { font-size: 24px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .login-header p { color: var(--text-secondary); font-size: 14px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
+    .input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    .input:focus { outline: none; border-color: var(--primary); }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: var(--secondary);
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--primary-dark); }
+    .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .btn-sm { padding: 8px 16px; font-size: 13px; width: auto; }
+    .btn-secondary { background: var(--background-hover); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-error { background: var(--error); color: white; }
+    .error { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error); border-radius: 8px; padding: 12px; color: var(--error); margin-bottom: 20px; font-size: 14px; }
+    .success-msg { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); border-radius: 8px; padding: 12px; color: var(--success); margin-bottom: 20px; font-size: 14px; }
+    .login-footer { margin-top: 24px; text-align: center; }
+    .login-footer p { font-size: 12px; color: var(--text-tertiary); }
+    
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background: var(--background-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; height: 100vh; overflow-y: auto; }
+    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { font-size: 28px; }
+    .logo-text { font-size: 18px; font-weight: 700; color: var(--primary); }
+    .logo-subtitle { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; margin-left: 38px; }
+    .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+    .nav-section { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); padding: 16px 16px 8px; margin-top: 8px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px;
+      background: transparent; border: none; color: var(--text-secondary); font-size: 14px;
+      font-weight: 500; cursor: pointer; text-align: left; width: 100%; transition: all 0.2s;
+    }
+    .nav-item:hover { background: var(--background-hover); color: var(--text-primary); }
+    .nav-item.active { background: var(--primary); color: var(--secondary); }
+    .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+    .main-content { flex: 1; padding: 32px; margin-left: 260px; min-height: 100vh; }
+    .page-header { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+    .page-header-left h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .page-header-left p { color: var(--text-secondary); font-size: 14px; }
+    .page-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 32px; }
+    .stat-card { background: var(--background-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .stat-icon { font-size: 24px; margin-bottom: 12px; }
+    .stat-value { font-size: 36px; font-weight: 700; color: var(--text-primary); }
+    .stat-label { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+    .stat-change { font-size: 12px; margin-top: 8px; }
+    .stat-change.positive { color: var(--success); }
+    .stat-change.negative { color: var(--error); }
+    .card { background: var(--background-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .card h3 { font-size: 16px; font-weight: 600; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .admin-info { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .admin-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: var(--secondary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; }
+    .admin-name { font-weight: 600; font-size: 14px; }
+    .admin-role { font-size: 12px; color: var(--text-tertiary); }
+    .logout-btn { width: 100%; padding: 10px; background: var(--background-hover); border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .logout-btn:hover { background: var(--error); border-color: var(--error); color: white; }
+    
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; background: var(--background); }
+    tr:hover td { background: var(--background-hover); }
+    .badge { display: inline-flex; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge-success { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .badge-error { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+    .badge-info { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+    .hidden { display: none !important; }
+    
+    .action-btn { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; margin-right: 4px; }
+    .action-btn-success { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .action-btn-success:hover { background: var(--success); color: white; }
+    .action-btn-error { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+    .action-btn-error:hover { background: var(--error); color: white; }
+    .action-btn-info { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+    .action-btn-info:hover { background: var(--info); color: white; }
+    
+    .loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--text-tertiary); }
+    .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .modal { background: var(--background-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal h2 { font-size: 20px; margin-bottom: 8px; }
+    .modal p { color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
+    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+    .modal-actions .btn { width: auto; }
+    
+    .toggle-switch { position: relative; width: 48px; height: 26px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 26px; transition: 0.3s; }
+    .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+    .toggle-switch input:checked + .toggle-slider { background: var(--success); }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(22px); }
+    
+    .filter-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-row select, .filter-row input { padding: 10px 14px; background: var(--background); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 14px; }
+    
+    .message-item { padding: 16px; background: var(--background); border-radius: 8px; margin-bottom: 12px; }
+    .message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .message-content { color: var(--text-secondary); font-size: 14px; }
+    
+    .checkbox-row { display: flex; align-items: center; gap: 8px; }
+    .checkbox-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
+    
+    @media (max-width: 768px) {
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .main-content { margin-left: 0; padding: 16px; }
+      .layout { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div id="login-page" class="login-page">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="login-logo">🛠️</div>
+          <h1>VikendMajstor</h1>
+          <p>Admin Panel</p>
+        </div>
+        <div id="login-error" class="error hidden"></div>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="email">Email adresa</label>
+            <input type="email" id="email" class="input" placeholder="admin@vikendmajstor.rs" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Lozinka</label>
+            <input type="password" id="password" class="input" placeholder="••••••••" required>
+          </div>
+          <div class="form-group hidden" id="2fa-group">
+            <label for="twoFactorCode">2FA kod iz Google Authenticator</label>
+            <input type="text" id="twoFactorCode" class="input" placeholder="000000" maxlength="6" 
+                   style="text-align:center;font-size:20px;letter-spacing:6px;font-weight:bold;"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+          </div>
+          <button type="submit" class="btn" id="login-btn">Prijavi se</button>
+        </form>
+        <div class="login-footer">
+          <p>Pristup je ogranicen samo za administratore.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="dashboard" class="layout hidden">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <span class="logo-icon">🛠️</span>
+            <span class="logo-text">VikendMajstor</span>
+          </div>
+          <div class="logo-subtitle">Admin Panel</div>
+        </div>
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</button>
+          <div class="nav-section">Upravljanje</div>
+          <button class="nav-item" data-page="users"><span class="nav-icon">👥</span> Korisnici</button>
+          <button class="nav-item" data-page="items"><span class="nav-icon">🔧</span> Oglasi</button>
+          <button class="nav-item" data-page="subscriptions"><span class="nav-icon">💳</span> Pretplate</button>
+          <button class="nav-item" data-page="plans"><span class="nav-icon">📋</span> Planovi</button>
+          <button class="nav-item" data-page="item-stats"><span class="nav-icon">📊</span> Statistika oglasa</button>
+          <div class="nav-section">Moderacija</div>
+          <button class="nav-item" data-page="reports"><span class="nav-icon">🚩</span> Prijave oglasa</button>
+          <button class="nav-item" data-page="user-reports"><span class="nav-icon">👤</span> Prijave korisnika</button>
+          <button class="nav-item" data-page="messages"><span class="nav-icon">💬</span> Poruke</button>
+          <div class="nav-section">Analitika</div>
+          <button class="nav-item" data-page="analytics"><span class="nav-icon">📈</span> Analitika</button>
+          <button class="nav-item" data-page="logs"><span class="nav-icon">📋</span> Admin logovi</button>
+          <button class="nav-item" data-page="error-logs"><span class="nav-icon">⚠️</span> Logovi gresaka</button>
+          <div class="nav-section">Sistem</div>
+          <button class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span> Podesavanja</button>
+          <button class="nav-item" data-page="app-versions"><span class="nav-icon">📱</span> Verzije aplikacije</button>
+          <button class="nav-item" data-page="security"><span class="nav-icon">🔐</span> Bezbednost</button>
+          <button class="nav-item" data-page="notifications"><span class="nav-icon">🔔</span> Notifikacije</button>
+          <button class="nav-item" data-page="subscribers"><span class="nav-icon">📧</span> Email pretplatnici</button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="admin-info">
+            <div class="admin-avatar" id="admin-avatar">A</div>
+            <div>
+              <div class="admin-name" id="admin-name">Admin</div>
+              <div class="admin-role" id="admin-role">superadmin</div>
+            </div>
+          </div>
+          <button class="logout-btn" id="logout-btn">Odjavi se</button>
+        </div>
+      </aside>
+      
+      <main class="main-content">
+        <!-- Dashboard Page -->
+        <div id="page-dashboard">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Dashboard</h1>
+              <p>Pregled stanja platforme VikendMajstor</p>
+            </div>
+          </div>
+          <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">👥</div>
+              <div class="stat-value" id="stat-users">-</div>
+              <div class="stat-label">Ukupno korisnika</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">✅</div>
+              <div class="stat-value" id="stat-active">-</div>
+              <div class="stat-label">Aktivni korisnici</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🔧</div>
+              <div class="stat-value" id="stat-items">-</div>
+              <div class="stat-label">Ukupno oglasa</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📢</div>
+              <div class="stat-value" id="stat-active-items">-</div>
+              <div class="stat-label">Aktivni oglasi</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Poslednje aktivnosti</h3>
+            </div>
+            <div id="activity-list"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></div>
+          </div>
+        </div>
+        
+        <!-- Users Page -->
+        <div id="page-users" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Korisnici</h1>
+              <p>Upravljanje korisnicima platforme</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm btn-secondary" onclick="exportCSV('users')">📥 Eksportuj CSV</button>
+              <button class="btn btn-sm btn-error" onclick="showBulkSuspendModal()">⛔ Bulk suspenzija</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="select-all-users" onchange="toggleSelectAll('users')"></th>
+                    <th>Korisnik</th>
+                    <th>Email</th>
+                    <th>Uloga</th>
+                    <th>Pretplata</th>
+                    <th>Status</th>
+                    <th>Oglasi/Rez.</th>
+                    <th>Registracija</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table">
+                  <tr><td colspan="9"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Items Page -->
+        <div id="page-items" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Oglasi</h1>
+              <p>Moderacija i upravljanje oglasima</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm btn-secondary" onclick="exportCSV('items')">📥 Eksportuj CSV</button>
+              <button class="btn btn-sm btn-error" onclick="showBulkDeleteModal()">🗑️ Bulk brisanje</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="select-all-items" onchange="toggleSelectAll('items')"></th>
+                    <th>Oglas</th>
+                    <th>Kategorija</th>
+                    <th>Vlasnik</th>
+                    <th>Cena/dan</th>
+                    <th>Pregledi</th>
+                    <th>Status</th>
+                    <th>Datum</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="items-table">
+                  <tr><td colspan="9"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Subscriptions Page -->
+        <div id="page-subscriptions" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Pretplate</h1>
+              <p>Upravljanje pretplatama i planovima</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Korisnik</th>
+                    <th>Email</th>
+                    <th>Plan</th>
+                    <th>Status</th>
+                    <th>Pocetak</th>
+                    <th>Kraj</th>
+                    <th>Iznos</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="subscriptions-table">
+                  <tr><td colspan="9"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Reports Page -->
+        <div id="page-reports" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Prijavljeni oglasi</h1>
+              <p>Pregled i obrada prijava oglasa</p>
+            </div>
+          </div>
+          <div class="filter-row">
+            <select id="reports-filter" onchange="loadReports()">
+              <option value="pending">Na cekanju</option>
+              <option value="resolved">Reseni</option>
+              <option value="all">Svi</option>
+            </select>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Oglas</th>
+                    <th>Prijavio</th>
+                    <th>Razlog</th>
+                    <th>Opis</th>
+                    <th>Status</th>
+                    <th>Datum</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="reports-table">
+                  <tr><td colspan="7"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Messages Page -->
+        <div id="page-messages" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Poruke korisnika</h1>
+              <p>Pregled interne komunikacije</p>
+            </div>
+          </div>
+          <div class="card">
+            <div id="messages-list"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></div>
+          </div>
+        </div>
+        
+        <!-- Analytics Page -->
+        <div id="page-analytics" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Analitika</h1>
+              <p>Pregled performansi platforme</p>
+            </div>
+          </div>
+          <div class="stats-grid" id="analytics-stats"></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div class="card">
+              <div class="card-header">
+                <h3>Popularne kategorije</h3>
+              </div>
+              <div id="categories-list"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3>Aktivni gradovi</h3>
+              </div>
+              <div id="cities-list"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Konverzioni levak</h3>
+            </div>
+            <div id="funnel-chart"></div>
+          </div>
+        </div>
+        
+        <!-- Admin Logs Page -->
+        <div id="page-logs" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Admin logovi</h1>
+              <p>Istorija akcija administratora</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Admin</th>
+                    <th>Akcija</th>
+                    <th>Tip</th>
+                    <th>Detalji</th>
+                    <th>IP Adresa</th>
+                    <th>Datum</th>
+                  </tr>
+                </thead>
+                <tbody id="logs-table">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Settings Page (Feature Toggles) -->
+        <div id="page-settings" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Podesavanja</h1>
+              <p>Upravljanje feature flagovima i sistemskim podesavanjima</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm" onclick="showAddFeatureModal()">+ Dodaj feature</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Feature Toggles</h3>
+            </div>
+            <div id="features-list"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></div>
+          </div>
+        </div>
+        
+        <!-- Notifications Page -->
+        <div id="page-notifications" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Notifikacije</h1>
+              <p>Slanje push i email notifikacija korisnicima</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm" onclick="showSendNotificationModal()">📤 Posalji notifikaciju</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Istorija poslatih notifikacija</h3>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tip</th>
+                    <th>Naslov</th>
+                    <th>Poruka</th>
+                    <th>Ciljna grupa</th>
+                    <th>Poslato</th>
+                    <th>Datum</th>
+                  </tr>
+                </thead>
+                <tbody id="notifications-table">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Subscribers Page -->
+        <div id="page-subscribers" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Email pretplatnici</h1>
+              <p>Svi korisnici platforme i newsletter pretplatnici</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm" onclick="exportSubscribers()">📥 Izvezi CSV</button>
+            </div>
+          </div>
+          <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background: var(--primary);">📧</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stats-newsletter">0</span>
+                <span class="stat-label">Newsletter</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background: var(--success);">👤</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stats-registered">0</span>
+                <span class="stat-label">Registrovani</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background: var(--warning);">📊</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stats-total">0</span>
+                <span class="stat-label">Ukupno</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Svi pretplatnici (<span id="subscribers-count">0</span>)</h3>
+              <div class="filter-group">
+                <select id="subscriber-type-filter" onchange="filterSubscribers()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);">
+                  <option value="all">Svi tipovi</option>
+                  <option value="registered">Registrovani korisnici</option>
+                  <option value="newsletter">Newsletter</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tip</th>
+                    <th>Email</th>
+                    <th>Ime</th>
+                    <th>Izvor</th>
+                    <th>Pretplata</th>
+                    <th>Status</th>
+                    <th>Datum</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="subscribers-table">
+                  <tr><td colspan="9"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Plans Page -->
+        <div id="page-plans" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Planovi pretplata</h1>
+              <p>Upravljanje planovima i cenama</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm" onclick="showAddPlanModal()">+ Dodaj plan</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Naziv</th>
+                    <th>Cena (RSD)</th>
+                    <th>Trajanje</th>
+                    <th>Max oglasa</th>
+                    <th>Status</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="plans-table">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Item Stats Page -->
+        <div id="page-item-stats" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Statistika oglasa</h1>
+              <p>Pregled pregleda, rezervacija i prihoda</p>
+            </div>
+          </div>
+          <div class="stats-grid" id="item-stats-overview"></div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Top 20 oglasa</h3>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Oglas</th>
+                    <th>Pregledi</th>
+                    <th>Rezervacije</th>
+                    <th>Zavrsene</th>
+                    <th>Cena/dan</th>
+                    <th>Prihod</th>
+                  </tr>
+                </thead>
+                <tbody id="item-stats-table">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- User Reports Page -->
+        <div id="page-user-reports" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Prijave korisnika</h1>
+              <p>Pregled prijavljenih korisnika</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Prijavljeni korisnik</th>
+                    <th>Prijavljen od</th>
+                    <th>Razlog</th>
+                    <th>Status</th>
+                    <th>Datum</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="user-reports-table">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Error Logs Page -->
+        <div id="page-error-logs" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Logovi gresaka</h1>
+              <p>Pregled serverskih gresaka</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm btn-danger" onclick="clearErrorLogs()">Obrisi sve</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nivo</th>
+                    <th>Poruka</th>
+                    <th>Endpoint</th>
+                    <th>IP</th>
+                    <th>Datum</th>
+                  </tr>
+                </thead>
+                <tbody id="error-logs-table">
+                  <tr><td colspan="5"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- App Versions Page -->
+        <div id="page-app-versions" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Verzije aplikacije</h1>
+              <p>Upravljanje verzijama za Web, Android i iOS</p>
+            </div>
+            <div class="page-header-actions">
+              <button class="btn btn-sm" onclick="showAddVersionModal()">+ Dodaj verziju</button>
+            </div>
+          </div>
+          <div class="stats-grid" id="version-stats"></div>
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Platforma</th>
+                    <th>Verzija</th>
+                    <th>Build</th>
+                    <th>Obavezno</th>
+                    <th>Objavljeno</th>
+                    <th>Akcije</th>
+                  </tr>
+                </thead>
+                <tbody id="versions-table">
+                  <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Security Page (2FA) -->
+        <div id="page-security" class="hidden">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1>Bezbednost</h1>
+              <p>Dvofaktorska autentifikacija i eksport podataka</p>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+              <h3>Dvofaktorska autentifikacija (2FA)</h3>
+            </div>
+            <div id="2fa-status" style="padding: 20px;">
+              <div class="loading"><div class="spinner"></div>Ucitavanje...</div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+              <h3>Status servera</h3>
+            </div>
+            <div id="server-status" style="padding: 20px;">
+              <div class="loading"><div class="spinner"></div>Ucitavanje...</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Eksport podataka</h3>
+            </div>
+            <div style="padding: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="btn" onclick="exportCSV('users')">📥 Eksportuj korisnike (CSV)</button>
+              <button class="btn" onclick="exportCSV('items')">📥 Eksportuj oglase (CSV)</button>
+              <button class="btn" onclick="exportCSV('transactions')">📥 Eksportuj transakcije (CSV)</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div id="modal-overlay" class="modal-overlay hidden"></div>
+
+  <script>
+    const API_URL = '';
+    let token = localStorage.getItem('admin_token');
+    let admin = null;
+    let selectedUsers = [];
+    let selectedItems = [];
+
+    async function api(endpoint, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...options.headers };
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      
+      try {
+        const res = await fetch(API_URL + endpoint, { ...options, headers, credentials: 'include' });
+        
+        if (options.responseType === 'blob') {
+          if (!res.ok) throw new Error('Eksport nije uspeo');
+          return res.blob();
+        }
+        
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.message || 'Zahtev nije uspeo');
+        }
+        return res.json();
+      } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+      }
+    }
+
+    function showPage(page) {
+      document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.add('hidden'));
+      document.getElementById('page-' + page).classList.remove('hidden');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelector('[data-page="' + page + '"]')?.classList.add('active');
+      
+      const loaders = {
+        dashboard: loadDashboard,
+        users: loadUsers,
+        items: loadItems,
+        subscriptions: loadSubscriptions,
+        plans: loadPlans,
+        'item-stats': loadItemStats,
+        'user-reports': loadUserReports,
+        'error-logs': loadErrorLogs,
+        'app-versions': loadAppVersions,
+        security: loadSecurity,
+        analytics: loadAnalytics,
+        reports: loadReports,
+        messages: loadMessages,
+        logs: loadLogs,
+        settings: loadSettings,
+        notifications: loadNotifications,
+        subscribers: loadSubscribers
+      };
+      if (loaders[page]) loaders[page]();
+    }
+
+    async function loadDashboard() {
+      try {
+        const stats = await api('/api/admin/stats');
+        document.getElementById('stat-users').textContent = stats.totalUsers || 0;
+        document.getElementById('stat-active').textContent = stats.activeUsers || 0;
+        document.getElementById('stat-items').textContent = stats.totalItems || 0;
+        document.getElementById('stat-active-items').textContent = stats.activeItems || 0;
+        
+        const activity = await api('/api/admin/activity');
+        const list = document.getElementById('activity-list');
+        
+        if (!activity.activities?.length) {
+          list.innerHTML = '<p style="color: var(--text-tertiary); text-align: center; padding: 20px;">Nema skorijih aktivnosti</p>';
+        } else {
+          list.innerHTML = activity.activities.map(a => 
+            \`<div style="padding: 14px; background: var(--background); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div><span style="margin-right: 12px;">\${a.icon}</span>\${a.description}</div>
+            <span style="color: var(--text-tertiary); font-size: 12px;">\${a.time}</span></div>\`
+          ).join('');
+        }
+      } catch (e) {
+        document.getElementById('activity-list').innerHTML = '<p style="color: var(--error); text-align: center; padding: 20px;">Greska pri ucitavanju</p>';
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const data = await api('/api/admin/users');
+        const tbody = document.getElementById('users-table');
+        selectedUsers = [];
+        
+        if (!data.users?.length) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema korisnika</td></tr>';
+        } else {
+          tbody.innerHTML = data.users.map(u => 
+            \`<tr style="\${u.isDemo ? 'opacity: 0.6; background: rgba(255,204,0,0.05);' : ''}">
+            <td><input type="checkbox" class="user-checkbox" value="\${u.id}" onchange="updateSelection('users')"></td>
+            <td>
+              <strong>\${u.name || 'Nepoznato'}</strong>
+              \${u.isDemo ? '<br><span class="badge badge-warning" style="font-size:10px;padding:2px 6px;">DEMO</span>' : ''}
+            </td>
+            <td>\${u.email}</td>
+            <td>\${u.role || 'user'}</td>
+            <td><span class="badge badge-\${u.subscriptionType === 'premium' ? 'warning' : u.subscriptionType === 'basic' || u.subscriptionType === 'standard' ? 'info' : 'success'}">\${u.subscriptionType || 'free'}</span></td>
+            <td><span class="badge \${u.isActive ? 'badge-success' : 'badge-error'}">\${u.isActive ? 'Aktivan' : 'Suspendovan'}</span></td>
+            <td>\${u.itemCount || 0} / \${u.bookingCount || 0}</td>
+            <td>\${new Date(u.createdAt).toLocaleDateString('sr-RS')}</td>
+            <td>
+            <button class="action-btn action-btn-info" onclick="showUserDetails('\${u.id}')" title="Detalji">Detalji</button>
+            \${u.isActive 
+              ? \`<button class="action-btn action-btn-error" onclick="suspendUser('\${u.id}')">Suspenduj</button>\`
+              : \`<button class="action-btn action-btn-success" onclick="activateUser('\${u.id}')">Aktiviraj</button>\`}
+            </td></tr>\`
+          ).join('');
+        }
+      } catch (e) {
+        document.getElementById('users-table').innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    async function viewUserActivity(userId) {
+      try {
+        const data = await api(\`/api/admin/users/\${userId}/activity\`);
+        const activities = data.activities || [];
+        
+        const html = activities.length ? 
+          activities.map(a => \`<div style="padding: 12px; background: var(--background); border-radius: 8px; margin-bottom: 8px;">
+            <div style="font-weight: 500;">\${a.action}</div>
+            <div style="color: var(--text-tertiary); font-size: 12px; margin-top: 4px;">\${new Date(a.createdAt).toLocaleString('sr-RS')}</div>
+            \${a.details ? \`<div style="color: var(--text-secondary); font-size: 13px; margin-top: 4px;">\${a.details}</div>\` : ''}
+          </div>\`).join('') :
+          '<p style="color: var(--text-tertiary); text-align: center; padding: 20px;">Nema aktivnosti za ovog korisnika</p>';
+        
+        showModal('Istorija aktivnosti', '', html);
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function suspendUser(userId) {
+      if (!confirm('Da li ste sigurni da zelite da suspendujete ovog korisnika?')) return;
+      try {
+        await api('/api/admin/users/' + userId + '/suspend', { method: 'POST' });
+        loadUsers();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function activateUser(userId) {
+      try {
+        await api('/api/admin/users/' + userId + '/activate', { method: 'POST' });
+        loadUsers();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function loadItems() {
+      try {
+        const data = await api('/api/admin/items');
+        const tbody = document.getElementById('items-table');
+        selectedItems = [];
+        
+        if (!data.items?.length) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema oglasa</td></tr>';
+        } else {
+          tbody.innerHTML = data.items.map(i => 
+            \`<tr>
+            <td><input type="checkbox" class="item-checkbox" value="\${i.id}" onchange="updateSelection('items')"></td>
+            <td><strong>\${i.title}</strong></td>
+            <td>\${i.category || '-'}</td>
+            <td>\${i.ownerName || 'Nepoznato'}</td>
+            <td>\${i.pricePerDay} RSD</td>
+            <td style="text-align:center;">\${i.views || 0}</td>
+            <td><span class="badge \${i.status === 'active' ? 'badge-success' : 'badge-warning'}">\${i.status === 'active' ? 'Aktivan' : 'Na cekanju'}</span></td>
+            <td>\${new Date(i.createdAt).toLocaleDateString('sr-RS')}</td>
+            <td>
+            \${i.status !== 'active' ? \`<button class="action-btn action-btn-success" onclick="approveItem('\${i.id}')">Odobri</button>\` : ''}
+            <button class="action-btn action-btn-error" onclick="deleteItem('\${i.id}')">Obrisi</button>
+            </td></tr>\`
+          ).join('');
+        }
+      } catch (e) {
+        document.getElementById('items-table').innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    async function approveItem(itemId) {
+      try {
+        await api('/api/admin/items/' + itemId + '/approve', { method: 'POST' });
+        loadItems();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function deleteItem(itemId) {
+      if (!confirm('Da li ste sigurni da zelite da obrisete ovaj oglas?')) return;
+      try {
+        await api('/api/admin/items/' + itemId, { method: 'DELETE' });
+        loadItems();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function loadSubscriptions() {
+      try {
+        const data = await api('/api/admin/subscriptions');
+        const tbody = document.getElementById('subscriptions-table');
+        
+        if (!data.subscriptions?.length) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema aktivnih pretplata</td></tr>';
+        } else {
+          tbody.innerHTML = data.subscriptions.map(s => 
+            \`<tr>
+            <td><strong>\${s.userName || 'Nepoznato'}</strong></td>
+            <td>\${s.userEmail || '-'}</td>
+            <td><span class="badge badge-warning">\${s.tier}</span></td>
+            <td><span class="badge badge-success">\${s.status}</span></td>
+            <td>\${new Date(s.startDate).toLocaleDateString('sr-RS')}</td>
+            <td>\${new Date(s.endDate).toLocaleDateString('sr-RS')}</td>
+            <td>\${s.amount} RSD</td>
+            <td>
+              <button class="action-btn action-btn-info" onclick="showEditSubscriptionModal('\${s.userId}', '\${s.tier}', '\${s.status}', '\${s.endDate}')" title="Izmeni">✏️</button>
+            </td></tr>\`
+          ).join('');
+        }
+      } catch (e) {
+        document.getElementById('subscriptions-table').innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    function showEditSubscriptionModal(userId, tier, status, endDate) {
+      const endDateFormatted = new Date(endDate).toISOString().split('T')[0];
+      showModal('Izmeni Pretplatu', 'Izmenite parametre pretplate za ovog korisnika', \`
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <label style="display: block; margin-bottom: 6px; color: var(--text-secondary);">Tip pretplate</label>
+            <select id="edit-sub-tier" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--background); color: var(--text-primary); border: 1px solid var(--border);">
+              <option value="free" \${tier === 'free' ? 'selected' : ''}>Besplatno</option>
+              <option value="standard" \${tier === 'standard' ? 'selected' : ''}>Standard</option>
+              <option value="premium" \${tier === 'premium' ? 'selected' : ''}>Premium</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 6px; color: var(--text-secondary);">Status</label>
+            <select id="edit-sub-status" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--background); color: var(--text-primary); border: 1px solid var(--border);">
+              <option value="active" \${status === 'active' ? 'selected' : ''}>Aktivan</option>
+              <option value="inactive" \${status === 'inactive' ? 'selected' : ''}>Neaktivan</option>
+              <option value="cancelled" \${status === 'cancelled' ? 'selected' : ''}>Otkazan</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 6px; color: var(--text-secondary);">Datum isteka</label>
+            <input type="date" id="edit-sub-enddate" value="\${endDateFormatted}" style="width: 100%; padding: 10px; border-radius: 8px; background: var(--background); color: var(--text-primary); border: 1px solid var(--border);">
+          </div>
+        </div>
+      \`, \`
+        <button class="btn btn-secondary" onclick="closeModal()">Otkazi</button>
+        <button class="btn btn-primary" onclick="saveSubscription('\${userId}')">Sacuvaj</button>
+      \`);
+    }
+
+    async function saveSubscription(userId) {
+      const tier = document.getElementById('edit-sub-tier').value;
+      const status = document.getElementById('edit-sub-status').value;
+      const endDate = document.getElementById('edit-sub-enddate').value;
+      
+      try {
+        await api('/api/admin/subscriptions/' + userId, {
+          method: 'PUT',
+          body: JSON.stringify({ tier, status, endDate })
+        });
+        closeModal();
+        loadSubscriptions();
+        alert('Pretplata uspesno azurirana!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function loadReports() {
+      try {
+        const status = document.getElementById('reports-filter').value;
+        const data = await api('/api/admin/reported-items?status=' + status);
+        const tbody = document.getElementById('reports-table');
+        
+        if (!data.reports?.length) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema prijava</td></tr>';
+        } else {
+          tbody.innerHTML = data.reports.map(r => 
+            \`<tr>
+            <td><strong>\${r.itemTitle || 'Nepoznat oglas'}</strong></td>
+            <td>\${r.reporterName || 'Nepoznato'}</td>
+            <td>\${r.reason}</td>
+            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">\${r.description || '-'}</td>
+            <td><span class="badge \${r.status === 'pending' ? 'badge-warning' : 'badge-success'}">\${r.status === 'pending' ? 'Na cekanju' : 'Resen'}</span></td>
+            <td>\${new Date(r.createdAt).toLocaleDateString('sr-RS')}</td>
+            <td>
+            \${r.status === 'pending' ? \`
+              <button class="action-btn action-btn-success" onclick="resolveReport('\${r.id}', false)">Resi</button>
+              <button class="action-btn action-btn-error" onclick="resolveReport('\${r.id}', true)">Resi + Obrisi</button>
+            \` : '-'}
+            </td></tr>\`
+          ).join('');
+        }
+      } catch (e) {
+        document.getElementById('reports-table').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    async function resolveReport(reportId, removeItem) {
+      if (!confirm(removeItem ? 'Da li zelite da resite prijavu i obrisete oglas?' : 'Da li zelite da resite ovu prijavu?')) return;
+      try {
+        await api('/api/admin/reported-items/' + reportId + '/resolve', { 
+          method: 'POST',
+          body: JSON.stringify({ removeItem })
+        });
+        loadReports();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function loadMessages() {
+      try {
+        const data = await api('/api/admin/messages');
+        const list = document.getElementById('messages-list');
+        
+        if (!data.messages?.length) {
+          list.innerHTML = '<p style="color: var(--text-tertiary); text-align: center; padding: 20px;">Nema poruka</p>';
+        } else {
+          list.innerHTML = data.messages.map(m => 
+            \`<div class="message-item">
+              <div class="message-header">
+                <div><strong>\${m.senderName}</strong> → <strong>\${m.receiverName}</strong></div>
+                <span style="color: var(--text-tertiary); font-size: 12px;">\${new Date(m.createdAt).toLocaleString('sr-RS')}</span>
+              </div>
+              <div class="message-content">\${m.content}</div>
+            </div>\`
+          ).join('');
+        }
+      } catch (e) {
+        document.getElementById('messages-list').innerHTML = '<p style="color: var(--error); text-align: center; padding: 20px;">Greska pri ucitavanju</p>';
+      }
+    }
+
+    async function loadAnalytics() {
+      try {
+        const data = await api('/api/admin/analytics');
+        
+        document.getElementById('analytics-stats').innerHTML = 
+          \`<div class="stat-card"><div class="stat-icon">📅</div><div class="stat-value">\${data.monthlyActiveUsers || 0}</div><div class="stat-label">Mesecno aktivni korisnici</div></div>
+          <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-value">\${data.registrations || 0}</div><div class="stat-label">Ukupne registracije</div></div>
+          <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">\${data.conversions?.completed || 0}</div><div class="stat-label">Zavrsene transakcije</div></div>
+          <div class="stat-card"><div class="stat-icon">🔧</div><div class="stat-value">\${data.conversions?.addedItem || 0}</div><div class="stat-label">Objavljeni oglasi</div></div>\`;
+        
+        const categories = data.popularCategories || [];
+        document.getElementById('categories-list').innerHTML = categories.length ? 
+          categories.map((c, i) => 
+            \`<div style="display: flex; align-items: center; gap: 16px; padding: 14px; background: var(--background); border-radius: 8px; margin-bottom: 8px;">
+            <span style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: var(--secondary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">\${i + 1}</span>
+            <span style="flex: 1; font-weight: 500;">\${c.name}</span>
+            <span style="color: var(--text-tertiary);">\${c.count} oglasa</span></div>\`
+          ).join('') :
+          '<p style="color: var(--text-tertiary); text-align: center; padding: 20px;">Nema podataka</p>';
+        
+        const cities = data.topCities || [];
+        document.getElementById('cities-list').innerHTML = cities.length ?
+          cities.map((c, i) => 
+            \`<div style="display: flex; align-items: center; gap: 16px; padding: 14px; background: var(--background); border-radius: 8px; margin-bottom: 8px;">
+            <span style="width: 32px; height: 32px; border-radius: 50%; background: var(--info); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">\${i + 1}</span>
+            <span style="flex: 1; font-weight: 500;">\${c.name}</span>
+            <span style="color: var(--text-tertiary);">\${c.count} korisnika</span></div>\`
+          ).join('') :
+          '<p style="color: var(--text-tertiary); text-align: center; padding: 20px;">Nema podataka</p>';
+        
+        const conversions = data.conversions || {};
+        const maxVal = Math.max(conversions.registered || 1, 1);
+        document.getElementById('funnel-chart').innerHTML = 
+          \`<div style="padding: 20px;">
+            <div style="margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Registrovani</span><span>\${conversions.registered || 0}</span>
+              </div>
+              <div style="height: 24px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; width: 100%; background: var(--success);"></div>
+              </div>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Objavili oglas</span><span>\${conversions.addedItem || 0}</span>
+              </div>
+              <div style="height: 24px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; width: \${((conversions.addedItem || 0) / maxVal * 100)}%; background: var(--info);"></div>
+              </div>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Napravili rezervaciju</span><span>\${conversions.madeBooking || 0}</span>
+              </div>
+              <div style="height: 24px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; width: \${((conversions.madeBooking || 0) / maxVal * 100)}%; background: var(--warning);"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Zavrsili transakciju</span><span>\${conversions.completed || 0}</span>
+              </div>
+              <div style="height: 24px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; width: \${((conversions.completed || 0) / maxVal * 100)}%; background: var(--primary);"></div>
+              </div>
+            </div>
+          </div>\`;
+      } catch (e) {
+        document.getElementById('analytics-stats').innerHTML = '<div class="stat-card"><p style="color: var(--error);">Greska pri ucitavanju</p></div>';
+      }
+    }
+
+    async function loadLogs() {
+      try {
+        const data = await api('/api/admin/admin-logs');
+        const tbody = document.getElementById('logs-table');
+        
+        if (!data.logs?.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema logova</td></tr>';
+        } else {
+          tbody.innerHTML = data.logs.map(l => 
+            \`<tr>
+            <td>\${l.adminName || 'Nepoznato'}</td>
+            <td><strong>\${l.action}</strong></td>
+            <td>\${l.targetType || '-'}</td>
+            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">\${l.details || '-'}</td>
+            <td>\${l.ipAddress || '-'}</td>
+            <td>\${new Date(l.createdAt).toLocaleString('sr-RS')}</td></tr>\`
+          ).join('');
+        }
+      } catch (e) {
+        document.getElementById('logs-table').innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    async function loadSettings() {
+      try {
+        const data = await api('/api/admin/feature-toggles');
+        const list = document.getElementById('features-list');
+        const toggles = data.toggles || [];
+        
+        if (!toggles.length) {
+          list.innerHTML = \`<p style="color: var(--text-tertiary); text-align: center; padding: 20px;">Nema feature togglea. <button class="btn btn-sm" onclick="showAddFeatureModal()">Dodaj prvi</button></p>\`;
+        } else {
+          list.innerHTML = toggles.map(f => 
+            \`<div style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: var(--background); border-radius: 8px; margin-bottom: 12px;">
+              <div>
+                <div style="font-weight: 600;">\${f.name}</div>
+                <div style="color: var(--text-secondary); font-size: 13px; margin-top: 4px;">\${f.description || 'Bez opisa'}</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" \${f.isEnabled ? 'checked' : ''} onchange="toggleFeature('\${f.id}', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>\`
+          ).join('');
+        }
+      } catch (e) {
+        document.getElementById('features-list').innerHTML = '<p style="color: var(--error); text-align: center; padding: 20px;">Greska pri ucitavanju</p>';
+      }
+    }
+
+    async function toggleFeature(featureId, enabled) {
+      try {
+        await api('/api/admin/feature-toggles/' + featureId, { 
+          method: 'PUT',
+          body: JSON.stringify({ isEnabled: enabled })
+        });
+      } catch (e) {
+        alert('Greska: ' + e.message);
+        loadSettings();
+      }
+    }
+
+    async function loadNotifications() {
+      try {
+        const data = await api('/api/admin/notifications');
+        const tbody = document.getElementById('notifications-table');
+        
+        if (!data.notifications?.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema poslatih notifikacija</td></tr>';
+        } else {
+          tbody.innerHTML = data.notifications.map(n => 
+            \`<tr>
+            <td><span class="badge badge-\${n.type === 'push' ? 'info' : 'warning'}">\${n.type}</span></td>
+            <td><strong>\${n.title}</strong></td>
+            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">\${n.message}</td>
+            <td>\${n.targetType || 'all'}</td>
+            <td>\${n.sentCount || 0}</td>
+            <td>\${new Date(n.createdAt).toLocaleString('sr-RS')}</td></tr>\`
+          ).join('');
+        }
+      } catch (e) {
+        document.getElementById('notifications-table').innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    let allSubscribersData = [];
+    
+    async function loadSubscribers() {
+      try {
+        const data = await api('/api/admin/subscribers');
+        allSubscribersData = data.subscribers || [];
+        
+        if (data.stats) {
+          document.getElementById('stats-newsletter').textContent = data.stats.newsletter || 0;
+          document.getElementById('stats-registered').textContent = data.stats.registered || 0;
+          document.getElementById('stats-total').textContent = data.stats.total || 0;
+        }
+        
+        renderSubscribers(allSubscribersData);
+      } catch (e) {
+        document.getElementById('subscribers-table').innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+    
+    function filterSubscribers() {
+      const filter = document.getElementById('subscriber-type-filter').value;
+      let filtered = allSubscribersData;
+      if (filter !== 'all') {
+        filtered = allSubscribersData.filter(s => s.type === filter);
+      }
+      renderSubscribers(filtered);
+    }
+    
+    function renderSubscribers(subscribers) {
+      const tbody = document.getElementById('subscribers-table');
+      document.getElementById('subscribers-count').textContent = subscribers.length;
+      
+      if (!subscribers.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema pretplatnika</td></tr>';
+      } else {
+        tbody.innerHTML = subscribers.map(s => {
+          const typeLabel = s.type === 'registered' ? 'Registrovan' : 'Newsletter';
+          const typeBadge = s.type === 'registered' ? 'badge-success' : 'badge-info';
+          const subscriptionLabel = s.subscriptionType === 'premium' ? 'Premium' : 
+                                    s.subscriptionType === 'basic' ? 'Standard' : 
+                                    s.type === 'registered' ? 'Besplatno' : '-';
+          const subscriptionBadge = s.subscriptionType === 'premium' ? 'badge-warning' :
+                                    s.subscriptionType === 'basic' ? 'badge-info' : 'badge-secondary';
+          const canDelete = s.type !== 'registered';
+          
+          const isRegistered = s.type === 'registered';
+          const realUserId = isRegistered ? s.id.replace('user_', '') : s.id;
+          
+          const actionButtons = isRegistered ? \`
+            <button class="action-btn" onclick="showSubscriptionModal('\${realUserId}', '\${s.email}', '\${s.subscriptionType || 'free'}')" title="Promeni pretplatu" style="background: var(--warning); color: white;">⚙️</button>
+          \` : (canDelete ? \`<button class="action-btn action-btn-error" onclick="deleteSubscriber('\${s.id}')" title="Obrisi">🗑️</button>\` : '<span style="color: var(--text-tertiary);">-</span>');
+          
+          return \`<tr>
+            <td><span class="badge \${typeBadge}">\${typeLabel}</span></td>
+            <td><strong>\${s.email}</strong></td>
+            <td>\${s.name || '-'}</td>
+            <td>\${s.source || 'nepoznato'}</td>
+            <td><span class="badge \${subscriptionBadge}">\${subscriptionLabel}</span></td>
+            <td><span class="badge \${s.isActive ? 'badge-success' : 'badge-error'}">\${s.isActive ? 'Aktivan' : 'Neaktivan'}</span></td>
+            <td>\${s.createdAt && !isNaN(new Date(s.createdAt).getTime()) ? new Date(s.createdAt).toLocaleString('sr-RS') : '-'}</td>
+            <td>\${actionButtons}</td></tr>\`;
+        }).join('');
+      }
+    }
+
+    async function exportSubscribers() {
+      try {
+        const blob = await api('/api/admin/export/subscribers', { responseType: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = \`email-subscribers-\${new Date().toISOString().split('T')[0]}.csv\`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Greska pri eksportu: ' + e.message);
+      }
+    }
+
+    async function deleteSubscriber(id) {
+      if (!confirm('Da li ste sigurni da zelite da obrisete ovog pretplatnika?')) return;
+      try {
+        await api('/api/admin/subscribers/' + id, { method: 'DELETE' });
+        loadSubscribers();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+    
+    function showSubscriptionModal(userId, email, currentType) {
+      const content = \`
+        <div style="margin: 20px 0;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 500;">Korisnik: \${email}</label>
+          <label style="display: block; margin-bottom: 8px;">Izaberite novu pretplatu:</label>
+          <select id="modal-subscription-type" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); margin-bottom: 16px;">
+            <option value="free" \${currentType === 'free' ? 'selected' : ''}>Besplatno (0 RSD)</option>
+            <option value="basic" \${currentType === 'basic' ? 'selected' : ''}>Standard (500 RSD/mesec)</option>
+            <option value="premium" \${currentType === 'premium' ? 'selected' : ''}>Premium (1000 RSD/mesec)</option>
+          </select>
+          <label style="display: block; margin-bottom: 8px;">Trajanje (dana):</label>
+          <input type="number" id="modal-subscription-days" value="30" min="1" max="365" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary);">
+        </div>
+      \`;
+      const actions = \`
+        <button class="btn btn-secondary" onclick="closeModal()">Otkazi</button>
+        <button class="btn btn-primary" onclick="applySubscriptionChange('\${userId}')">Primeni</button>
+      \`;
+      showModal('Promeni pretplatu', 'Izaberite tip pretplate i trajanje', content, actions);
+    }
+    
+    async function applySubscriptionChange(userId) {
+      const subscriptionType = document.getElementById('modal-subscription-type').value;
+      const durationDays = parseInt(document.getElementById('modal-subscription-days').value) || 30;
+      
+      try {
+        await api('/api/admin/users/' + userId + '/subscription', {
+          method: 'POST',
+          body: JSON.stringify({ subscriptionType, durationDays })
+        });
+        closeModal();
+        loadSubscribers();
+        alert('Pretplata uspesno promenjena!');
+      } catch (e) {
+        alert('Greska pri promeni pretplate: ' + e.message);
+      }
+    }
+
+    function updateSelection(type) {
+      if (type === 'users') {
+        selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(c => c.value);
+      } else {
+        selectedItems = Array.from(document.querySelectorAll('.item-checkbox:checked')).map(c => c.value);
+      }
+    }
+
+    function toggleSelectAll(type) {
+      const checkboxes = document.querySelectorAll(\`.\${type.slice(0, -1)}-checkbox\`);
+      const selectAll = document.getElementById(\`select-all-\${type}\`);
+      checkboxes.forEach(c => c.checked = selectAll.checked);
+      updateSelection(type);
+    }
+
+    async function exportCSV(type) {
+      try {
+        const blob = await api(\`/api/admin/export/\${type}\`, { responseType: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = \`\${type}-export-\${new Date().toISOString().split('T')[0]}.csv\`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Greska pri eksportu: ' + e.message);
+      }
+    }
+
+    function showModal(title, description, content, actions = '') {
+      const overlay = document.getElementById('modal-overlay');
+      overlay.innerHTML = \`<div class="modal">
+        <h2>\${title}</h2>
+        <p>\${description}</p>
+        <div>\${content}</div>
+        <div class="modal-actions">\${actions || \`<button class="btn btn-secondary" onclick="closeModal()">Zatvori</button>\`}</div>
+      </div>\`;
+      overlay.classList.remove('hidden');
+      overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.add('hidden');
+    }
+
+    function showBulkSuspendModal() {
+      if (!selectedUsers.length) {
+        alert('Izaberite korisnike za suspenziju');
+        return;
+      }
+      showModal('Bulk suspenzija', \`Da li zelite da suspendujete \${selectedUsers.length} korisnika?\`, '',
+        \`<button class="btn btn-secondary" onclick="closeModal()">Odustani</button>
+        <button class="btn btn-error" onclick="bulkSuspendUsers()">Suspenduj</button>\`);
+    }
+
+    async function bulkSuspendUsers() {
+      try {
+        await api('/api/admin/bulk/suspend-users', { 
+          method: 'POST',
+          body: JSON.stringify({ userIds: selectedUsers })
+        });
+        closeModal();
+        loadUsers();
+        alert('Korisnici su uspesno suspendovani');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    function showBulkDeleteModal() {
+      if (!selectedItems.length) {
+        alert('Izaberite oglase za brisanje');
+        return;
+      }
+      showModal('Bulk brisanje', \`Da li zelite da obrisete \${selectedItems.length} oglasa?\`, '',
+        \`<button class="btn btn-secondary" onclick="closeModal()">Odustani</button>
+        <button class="btn btn-error" onclick="bulkDeleteItems()">Obrisi</button>\`);
+    }
+
+    async function bulkDeleteItems() {
+      try {
+        await api('/api/admin/bulk/delete-items', { 
+          method: 'POST',
+          body: JSON.stringify({ itemIds: selectedItems })
+        });
+        closeModal();
+        loadItems();
+        alert('Oglasi su uspesno obrisani');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    function showAddFeatureModal() {
+      showModal('Dodaj feature toggle', 'Kreirajte novi feature flag', 
+        \`<div class="form-group">
+          <label>Naziv</label>
+          <input type="text" id="feature-name" class="input" placeholder="npr. dark_mode">
+        </div>
+        <div class="form-group">
+          <label>Opis</label>
+          <input type="text" id="feature-desc" class="input" placeholder="Opis funkcionalnosti">
+        </div>\`,
+        \`<button class="btn btn-secondary" onclick="closeModal()">Odustani</button>
+        <button class="btn" onclick="addFeature()">Dodaj</button>\`);
+    }
+
+    async function addFeature() {
+      const name = document.getElementById('feature-name').value;
+      const description = document.getElementById('feature-desc').value;
+      if (!name) { alert('Unesite naziv'); return; }
+      
+      try {
+        await api('/api/admin/feature-toggles', { 
+          method: 'POST',
+          body: JSON.stringify({ name, description, isEnabled: true })
+        });
+        closeModal();
+        loadSettings();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    function showSendNotificationModal() {
+      showModal('Posalji notifikaciju', 'Posaljite push ili email notifikaciju korisnicima', 
+        \`<div class="form-group">
+          <label>Tip</label>
+          <select id="notif-type" class="input">
+            <option value="push">Push notifikacija</option>
+            <option value="email">Email</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ciljna grupa</label>
+          <select id="notif-target" class="input">
+            <option value="all">Svi korisnici</option>
+            <option value="premium">Premium korisnici</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Naslov</label>
+          <input type="text" id="notif-title" class="input" placeholder="Naslov notifikacije">
+        </div>
+        <div class="form-group">
+          <label>Poruka</label>
+          <textarea id="notif-message" class="input" rows="3" placeholder="Tekst poruke"></textarea>
+        </div>\`,
+        \`<button class="btn btn-secondary" onclick="closeModal()">Odustani</button>
+        <button class="btn" onclick="sendNotification()">Posalji</button>\`);
+    }
+
+    async function sendNotification() {
+      const type = document.getElementById('notif-type').value;
+      const targetType = document.getElementById('notif-target').value;
+      const title = document.getElementById('notif-title').value;
+      const message = document.getElementById('notif-message').value;
+      
+      if (!title || !message) { alert('Unesite naslov i poruku'); return; }
+      
+      try {
+        await api('/api/admin/notifications/send', { 
+          method: 'POST',
+          body: JSON.stringify({ type, targetType, title, message })
+        });
+        closeModal();
+        loadNotifications();
+        alert('Notifikacija je uspesno poslata');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== Subscription Plans ==========
+    async function loadPlans() {
+      try {
+        const data = await api('/api/admin/subscription-plans');
+        const tbody = document.getElementById('plans-table');
+        if (!data.plans?.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:40px;">Nema planova</td></tr>';
+        } else {
+          tbody.innerHTML = data.plans.map(p => \`
+            <tr>
+              <td><strong>\${p.displayName}</strong><br><span style="color:var(--text-tertiary);font-size:12px;">\${p.name}</span></td>
+              <td>\${p.priceRsd.toLocaleString('sr-RS')} RSD</td>
+              <td>\${p.durationDays} dana</td>
+              <td>\${p.maxAds || 'Bez limita'}</td>
+              <td><span class="badge badge-\${p.isActive ? 'success' : 'warning'}">\${p.isActive ? 'Aktivan' : 'Neaktivan'}</span></td>
+              <td>
+                <button class="btn btn-sm" onclick="editPlan('\${p.id}')">Uredi</button>
+                <button class="btn btn-sm btn-danger" onclick="deletePlan('\${p.id}')">Obrisi</button>
+              </td>
+            </tr>
+          \`).join('');
+        }
+      } catch (e) {
+        document.getElementById('plans-table').innerHTML = '<tr><td colspan="6" style="color:var(--error);text-align:center;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    function showAddPlanModal() {
+      showModal('Dodaj novi plan', 'Kreirajte novi plan pretplate', 
+        \`<div class="form-group">
+          <label>Interni naziv (jedinstveno)</label>
+          <input type="text" id="plan-name" class="input" placeholder="npr. basic">
+        </div>
+        <div class="form-group">
+          <label>Prikazani naziv</label>
+          <input type="text" id="plan-display-name" class="input" placeholder="npr. Standard">
+        </div>
+        <div class="form-group">
+          <label>Opis</label>
+          <textarea id="plan-description" class="input" rows="2"></textarea>
+        </div>
+        <div style="display:flex;gap:16px;">
+          <div class="form-group" style="flex:1;">
+            <label>Cena (RSD)</label>
+            <input type="number" id="plan-price" class="input" placeholder="500">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Trajanje (dana)</label>
+            <input type="number" id="plan-duration" class="input" value="30">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Max oglasa (prazno = bez limita)</label>
+          <input type="number" id="plan-max-ads" class="input" placeholder="5">
+        </div>\`,
+        \`<button class="btn btn-secondary" onclick="closeModal()">Odustani</button>
+        <button class="btn" onclick="savePlan()">Sacuvaj plan</button>\`);
+    }
+
+    async function savePlan() {
+      try {
+        const planData = {
+          name: document.getElementById('plan-name').value,
+          displayName: document.getElementById('plan-display-name').value,
+          description: document.getElementById('plan-description').value,
+          priceRsd: parseInt(document.getElementById('plan-price').value) || 0,
+          durationDays: parseInt(document.getElementById('plan-duration').value) || 30,
+          maxAds: document.getElementById('plan-max-ads').value ? parseInt(document.getElementById('plan-max-ads').value) : null
+        };
+        
+        if (!planData.name || !planData.displayName) {
+          alert('Unesite interni naziv i prikazani naziv');
+          return;
+        }
+        
+        await api('/api/admin/subscription-plans', { method: 'POST', body: JSON.stringify(planData) });
+        closeModal();
+        loadPlans();
+        alert('Plan uspesno kreiran!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function deletePlan(planId) {
+      if (!confirm('Da li ste sigurni da zelite da obrisete ovaj plan?')) return;
+      try {
+        await api(\`/api/admin/subscription-plans/\${planId}\`, { method: 'DELETE' });
+        loadPlans();
+        alert('Plan obrisan!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function editPlan(planId) {
+      try {
+        const data = await api('/api/admin/subscription-plans');
+        const plan = data.plans.find(p => p.id === planId);
+        if (!plan) {
+          alert('Plan nije pronadjen');
+          return;
+        }
+        
+        showModal('Uredi plan', 'Izmenite postojeci plan pretplate', 
+          \`<div class="form-group">
+            <label>Interni naziv</label>
+            <input type="text" id="edit-plan-name" class="input" value="\${plan.name}" disabled style="opacity:0.6;">
+          </div>
+          <div class="form-group">
+            <label>Prikazani naziv</label>
+            <input type="text" id="edit-plan-display-name" class="input" value="\${plan.displayName || ''}">
+          </div>
+          <div class="form-group">
+            <label>Opis</label>
+            <textarea id="edit-plan-description" class="input" rows="2">\${plan.description || ''}</textarea>
+          </div>
+          <div style="display:flex;gap:16px;">
+            <div class="form-group" style="flex:1;">
+              <label>Cena (RSD)</label>
+              <input type="number" id="edit-plan-price" class="input" value="\${plan.priceRsd || 0}">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label>Trajanje (dana)</label>
+              <input type="number" id="edit-plan-duration" class="input" value="\${plan.durationDays || 30}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Max oglasa (prazno = bez limita)</label>
+            <input type="number" id="edit-plan-max-ads" class="input" value="\${plan.maxAds || ''}">
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="edit-plan-active" \${plan.isActive !== false ? 'checked' : ''}> Aktivan
+            </label>
+          </div>\`,
+          \`<button class="btn btn-secondary" onclick="closeModal()">Odustani</button>
+          <button class="btn" onclick="updatePlan('\${planId}')">Sacuvaj izmene</button>\`);
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+    
+    async function updatePlan(planId) {
+      try {
+        const planData = {
+          displayName: document.getElementById('edit-plan-display-name').value,
+          description: document.getElementById('edit-plan-description').value,
+          priceRsd: parseInt(document.getElementById('edit-plan-price').value) || 0,
+          durationDays: parseInt(document.getElementById('edit-plan-duration').value) || 30,
+          maxAds: document.getElementById('edit-plan-max-ads').value ? parseInt(document.getElementById('edit-plan-max-ads').value) : null,
+          isActive: document.getElementById('edit-plan-active').checked
+        };
+        
+        await api(\`/api/admin/subscription-plans/\${planId}\`, { method: 'PUT', body: JSON.stringify(planData) });
+        closeModal();
+        loadPlans();
+        alert('Plan uspesno azuriran!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== Item Statistics ==========
+    async function loadItemStats() {
+      try {
+        const data = await api('/api/admin/items-stats');
+        
+        // Overview stats
+        const overview = document.getElementById('item-stats-overview');
+        overview.innerHTML = \`
+          <div class="stat-card">
+            <div class="stat-icon">👁</div>
+            <div class="stat-value">\${data.overview.totalViews}</div>
+            <div class="stat-label">Ukupno pregleda</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value">\${data.overview.totalBookings}</div>
+            <div class="stat-label">Ukupno rezervacija</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">\${data.overview.completedBookings}</div>
+            <div class="stat-label">Zavrsene rezervacije</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value">\${data.overview.avgPricePerDay} RSD</div>
+            <div class="stat-label">Prosecna cena/dan</div>
+          </div>
+        \`;
+
+        // Items table
+        const tbody = document.getElementById('item-stats-table');
+        if (!data.items?.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:40px;">Nema podataka</td></tr>';
+        } else {
+          tbody.innerHTML = data.items.map(i => \`
+            <tr>
+              <td><strong>\${i.title}</strong></td>
+              <td>\${i.views}</td>
+              <td>\${i.bookings}</td>
+              <td>\${i.completedBookings}</td>
+              <td>\${i.avgPrice} RSD</td>
+              <td><strong>\${i.revenue.toLocaleString('sr-RS')} RSD</strong></td>
+            </tr>
+          \`).join('');
+        }
+      } catch (e) {
+        document.getElementById('item-stats-table').innerHTML = '<tr><td colspan="6" style="color:var(--error);text-align:center;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    // ========== User Management Extended ==========
+    async function showUserDetails(userId) {
+      try {
+        const data = await api(\`/api/admin/users/\${userId}/details\`);
+        const user = data.user;
+        
+        const content = \`
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+            <div><strong>Email:</strong> \${user.email}</div>
+            <div><strong>Telefon:</strong> \${user.phone || '-'}</div>
+            <div><strong>Grad:</strong> \${user.city || '-'}</div>
+            <div><strong>Oglasi:</strong> \${user.itemsCount}</div>
+            <div><strong>Rezervacije:</strong> \${user.bookingsCount}</div>
+            <div><strong>Registracija:</strong> \${new Date(user.createdAt).toLocaleDateString('sr-RS')}</div>
+          </div>
+          
+          <h4 style="margin-bottom:12px;">Verifikacije</h4>
+          <div style="display:flex;gap:12px;margin-bottom:20px;">
+            <label><input type="checkbox" id="verify-email" \${user.emailVerified ? 'checked' : ''}> Email</label>
+            <label><input type="checkbox" id="verify-phone" \${user.phoneVerified ? 'checked' : ''}> Telefon</label>
+            <label><input type="checkbox" id="verify-document" \${user.documentVerified ? 'checked' : ''}> Dokument</label>
+          </div>
+          
+          <h4 style="margin-bottom:12px;">Pretplata</h4>
+          <div style="display:flex;gap:12px;margin-bottom:20px;">
+            <select id="user-subscription" class="input" style="flex:1;">
+              <option value="free" \${user.subscriptionType === 'free' ? 'selected' : ''}>Besplatno</option>
+              <option value="basic" \${user.subscriptionType === 'basic' ? 'selected' : ''}>Standard</option>
+              <option value="premium" \${user.subscriptionType === 'premium' ? 'selected' : ''}>Premium</option>
+            </select>
+            <input type="number" id="user-sub-days" class="input" value="30" style="width:100px;" placeholder="Dana">
+          </div>
+        \`;
+        
+        const actions = \`
+          <button class="btn btn-secondary" onclick="closeModal()">Zatvori</button>
+          <button class="btn" onclick="saveUserVerifications('\${userId}')">Sacuvaj verifikacije</button>
+          <button class="btn btn-primary" onclick="saveUserSubscription('\${userId}')">Sacuvaj pretplatu</button>
+        \`;
+        
+        showModal('Korisnik: ' + (user.name || user.email), '', content, actions);
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function resetUserPassword(userId) {
+      if (!confirm('Da li ste sigurni? Nova privremena lozinka ce biti generisana.')) return;
+      try {
+        const data = await api(\`/api/admin/users/\${userId}/reset-password\`, { method: 'POST' });
+        alert('Nova privremena lozinka: ' + data.tempPassword + '\\n\\nKopirajte ovu lozinku i prosledite je korisniku.');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function saveUserVerifications(userId) {
+      try {
+        const verifications = [
+          { type: 'email', value: document.getElementById('verify-email').checked },
+          { type: 'phone', value: document.getElementById('verify-phone').checked },
+          { type: 'document', value: document.getElementById('verify-document').checked }
+        ];
+        
+        for (const v of verifications) {
+          await api(\`/api/admin/users/\${userId}/verify\`, {
+            method: 'POST',
+            body: JSON.stringify({ verificationType: v.type, verified: v.value })
+          });
+        }
+        alert('Verifikacije sacuvane!');
+        closeModal();
+        loadUsers();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function saveUserSubscription(userId) {
+      try {
+        const subscriptionType = document.getElementById('user-subscription').value;
+        const durationDays = parseInt(document.getElementById('user-sub-days').value) || 30;
+        
+        await api(\`/api/admin/users/\${userId}/subscription\`, {
+          method: 'POST',
+          body: JSON.stringify({ subscriptionType, durationDays })
+        });
+        alert('Pretplata sacuvana!');
+        closeModal();
+        loadUsers();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== User Reports ==========
+    async function loadUserReports() {
+      try {
+        const data = await api('/api/admin/reported-users');
+        const tbody = document.getElementById('user-reports-table');
+        
+        if (!data.reports?.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:40px;">Nema prijava korisnika</td></tr>';
+        } else {
+          tbody.innerHTML = data.reports.map(r => \`
+            <tr>
+              <td><strong>\${r.reportedUser?.name || r.reportedUser?.email || 'Nepoznat'}</strong></td>
+              <td>\${r.reporter?.name || r.reporter?.email || 'Nepoznat'}</td>
+              <td>\${r.reason}</td>
+              <td><span class="badge badge-\${r.status === 'resolved' ? 'success' : r.status === 'dismissed' ? 'warning' : 'info'}">\${r.status}</span></td>
+              <td>\${new Date(r.createdAt).toLocaleDateString('sr-RS')}</td>
+              <td>
+                \${r.status === 'pending' ? \`
+                  <button class="btn btn-sm" onclick="resolveUserReport('\${r.id}', 'resolved')">Resi</button>
+                  <button class="btn btn-sm btn-danger" onclick="resolveUserReport('\${r.id}', 'dismissed')">Odbaci</button>
+                \` : '-'}
+              </td>
+            </tr>
+          \`).join('');
+        }
+      } catch (e) {
+        document.getElementById('user-reports-table').innerHTML = '<tr><td colspan="6" style="color:var(--error);text-align:center;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    async function resolveUserReport(reportId, status) {
+      const notes = prompt('Unesite napomenu (opciono):');
+      try {
+        await api(\`/api/admin/reported-users/\${reportId}/resolve\`, {
+          method: 'POST',
+          body: JSON.stringify({ status, adminNotes: notes || '' })
+        });
+        loadUserReports();
+        alert('Prijava resena!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== Error Logs ==========
+    async function loadErrorLogs() {
+      try {
+        const data = await api('/api/admin/error-logs');
+        const tbody = document.getElementById('error-logs-table');
+        
+        if (!data.logs?.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-tertiary);padding:40px;">Nema logova gresaka</td></tr>';
+        } else {
+          tbody.innerHTML = data.logs.map(l => \`
+            <tr>
+              <td><span class="badge badge-\${l.level === 'error' ? 'error' : l.level === 'warning' ? 'warning' : 'info'}">\${l.level}</span></td>
+              <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;">\${l.message}</td>
+              <td>\${l.endpoint || '-'}</td>
+              <td>\${l.ipAddress || '-'}</td>
+              <td>\${new Date(l.createdAt).toLocaleString('sr-RS')}</td>
+            </tr>
+          \`).join('');
+        }
+      } catch (e) {
+        document.getElementById('error-logs-table').innerHTML = '<tr><td colspan="5" style="color:var(--error);text-align:center;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    async function clearErrorLogs() {
+      if (!confirm('Da li ste sigurni da zelite da obrisete sve logove gresaka?')) return;
+      try {
+        await api('/api/admin/error-logs/clear', { method: 'DELETE' });
+        loadErrorLogs();
+        alert('Logovi obrisani!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== App Versions ==========
+    async function loadAppVersions() {
+      try {
+        const data = await api('/api/admin/app-versions');
+        const tbody = document.getElementById('versions-table');
+        const stats = document.getElementById('version-stats');
+        
+        // Version stats
+        const webVersion = data.versions?.find(v => v.platform === 'web')?.version || 'N/A';
+        const androidVersion = data.versions?.find(v => v.platform === 'android')?.version || 'N/A';
+        const iosVersion = data.versions?.find(v => v.platform === 'ios')?.version || 'N/A';
+        
+        stats.innerHTML = \`
+          <div class="stat-card">
+            <div class="stat-icon">🌐</div>
+            <div class="stat-value">\${webVersion}</div>
+            <div class="stat-label">Web verzija</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-value">\${androidVersion}</div>
+            <div class="stat-label">Android verzija</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🍎</div>
+            <div class="stat-value">\${iosVersion}</div>
+            <div class="stat-label">iOS verzija</div>
+          </div>
+        \`;
+        
+        if (!data.versions?.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:40px;">Nema verzija</td></tr>';
+        } else {
+          tbody.innerHTML = data.versions.map(v => \`
+            <tr>
+              <td><span class="badge badge-\${v.platform === 'web' ? 'info' : v.platform === 'android' ? 'success' : 'warning'}">\${v.platform}</span></td>
+              <td><strong>\${v.version}</strong></td>
+              <td>\${v.buildNumber || '-'}</td>
+              <td>\${v.isRequired ? 'Da' : 'Ne'}</td>
+              <td>\${new Date(v.releasedAt).toLocaleDateString('sr-RS')}</td>
+              <td>
+                <button class="btn btn-sm btn-danger" onclick="deleteVersion('\${v.id}')">Obrisi</button>
+              </td>
+            </tr>
+          \`).join('');
+        }
+      } catch (e) {
+        document.getElementById('versions-table').innerHTML = '<tr><td colspan="6" style="color:var(--error);text-align:center;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+
+    function showAddVersionModal() {
+      const content = \`
+        <div class="form-group">
+          <label>Platforma</label>
+          <select id="version-platform" class="input" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);">
+            <option value="web">Web</option>
+            <option value="android">Android</option>
+            <option value="ios">iOS</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Verzija (npr. 1.0.0)</label>
+          <input type="text" id="version-number" class="input" placeholder="1.0.0" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);">
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Build broj</label>
+          <input type="number" id="version-build" class="input" placeholder="1" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);">
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Napomene o izdanju</label>
+          <textarea id="version-notes" class="input" rows="2" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);"></textarea>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label><input type="checkbox" id="version-required"> Obavezno azuriranje</label>
+        </div>
+      \`;
+      const actions = \`
+        <button class="btn btn-secondary" onclick="closeModal()">Otkazi</button>
+        <button class="btn btn-primary" onclick="saveVersion()">Sacuvaj</button>
+      \`;
+      showModal('Dodaj novu verziju', 'Unesite informacije o novoj verziji aplikacije', content, actions);
+    }
+
+    async function saveVersion() {
+      try {
+        const versionData = {
+          platform: document.getElementById('version-platform').value,
+          version: document.getElementById('version-number').value,
+          buildNumber: parseInt(document.getElementById('version-build').value) || null,
+          releaseNotes: document.getElementById('version-notes').value,
+          isRequired: document.getElementById('version-required').checked
+        };
+        await api('/api/admin/app-versions', { method: 'POST', body: JSON.stringify(versionData) });
+        closeModal();
+        loadAppVersions();
+        alert('Verzija uspesno dodata!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function deleteVersion(versionId) {
+      if (!confirm('Da li ste sigurni da zelite da obrisete ovu verziju?')) return;
+      try {
+        await api(\`/api/admin/app-versions/\${versionId}\`, { method: 'DELETE' });
+        loadAppVersions();
+        alert('Verzija obrisana!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== Security (2FA) ==========
+    async function loadSecurity() {
+      try {
+        // Load 2FA status
+        const twoFaData = await api('/api/admin/2fa/status');
+        const twoFaDiv = document.getElementById('2fa-status');
+        
+        if (twoFaData.enabled) {
+          twoFaDiv.innerHTML = \`
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <span class="badge badge-success">Aktivno</span>
+              <span>Dvofaktorska autentifikacija je ukljucena</span>
+            </div>
+            <button class="btn btn-danger" onclick="disable2FA()">Iskljuci 2FA</button>
+          \`;
+        } else {
+          twoFaDiv.innerHTML = \`
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <span class="badge badge-warning">Neaktivno</span>
+              <span>Dvofaktorska autentifikacija nije ukljucena</span>
+            </div>
+            <button class="btn btn-primary" onclick="setup2FA()">Podesi 2FA</button>
+          \`;
+        }
+
+        // Load server status
+        const statusData = await api('/api/admin/deployment-status');
+        const statusDiv = document.getElementById('server-status');
+        
+        const uptimeHours = Math.floor(statusData.status.uptime / 3600);
+        const uptimeMinutes = Math.floor((statusData.status.uptime % 3600) / 60);
+        const memoryMB = Math.round(statusData.status.memoryUsage.heapUsed / 1024 / 1024);
+        
+        statusDiv.innerHTML = \`
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+            <div style="padding:16px;background:var(--background);border-radius:8px;">
+              <div style="font-weight:500;margin-bottom:4px;">Server status</div>
+              <span class="badge badge-success">\${statusData.status.server}</span>
+            </div>
+            <div style="padding:16px;background:var(--background);border-radius:8px;">
+              <div style="font-weight:500;margin-bottom:4px;">Baza podataka</div>
+              <span class="badge badge-success">\${statusData.status.database}</span>
+            </div>
+            <div style="padding:16px;background:var(--background);border-radius:8px;">
+              <div style="font-weight:500;margin-bottom:4px;">Uptime</div>
+              <span>\${uptimeHours}h \${uptimeMinutes}m</span>
+            </div>
+            <div style="padding:16px;background:var(--background);border-radius:8px;">
+              <div style="font-weight:500;margin-bottom:4px;">Memorija</div>
+              <span>\${memoryMB} MB</span>
+            </div>
+            <div style="padding:16px;background:var(--background);border-radius:8px;">
+              <div style="font-weight:500;margin-bottom:4px;">Node.js</div>
+              <span>\${statusData.status.nodeVersion}</span>
+            </div>
+          </div>
+        \`;
+      } catch (e) {
+        document.getElementById('2fa-status').innerHTML = '<p style="color:var(--error);">Greska pri ucitavanju</p>';
+      }
+    }
+
+    let current2FASecret = '';
+    
+    async function setup2FA() {
+      try {
+        const data = await api('/api/admin/2fa/setup', { method: 'POST' });
+        current2FASecret = data.secret;
+        
+        const qrCodeUrl = \`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=\${encodeURIComponent(data.qrCodeUrl)}\`;
+        
+        const overlay = document.getElementById('modal-overlay');
+        overlay.innerHTML = \`
+          <div class="modal" style="max-width:500px;">
+            <h2>Podesavanje 2FA</h2>
+            <p style="margin-bottom:16px;"><strong>1. Skenirajte QR kod</strong> pomocu Google Authenticator, Authy ili slicne aplikacije:</p>
+            <div style="text-align:center;padding:20px;background:var(--background);border-radius:8px;margin-bottom:16px;">
+              <img src="\${qrCodeUrl}" alt="2FA QR Code" style="border-radius:8px;width:200px;height:200px;"/>
+            </div>
+            <p style="margin-bottom:8px;color:var(--text-tertiary);font-size:13px;">Ili rucno unesite tajni kljuc:</p>
+            <div style="text-align:center;padding:12px;background:var(--background);border-radius:8px;margin-bottom:16px;">
+              <code style="font-size:16px;letter-spacing:3px;font-weight:bold;">\${data.secret}</code>
+            </div>
+            
+            <p style="margin-bottom:12px;"><strong>2. Unesite 6-cifreni kod</strong> iz aplikacije:</p>
+            <div style="margin-bottom:16px;">
+              <input type="text" id="2fa-code" class="input" placeholder="000000" maxlength="6" 
+                     style="text-align:center;font-size:24px;letter-spacing:8px;font-weight:bold;"
+                     oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+            
+            <details style="margin-top:16px;">
+              <summary style="cursor:pointer;color:var(--text-tertiary);">Rezervni kodovi (sacuvajte ih)</summary>
+              <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;padding:16px;background:var(--background);border-radius:8px;margin-top:8px;">
+                \${data.backupCodes.map(c => \`<code style="font-size:12px;">\${c}</code>\`).join('')}
+              </div>
+            </details>
+            
+            <div class="modal-actions">
+              <button class="btn btn-secondary" onclick="closeModal()">Otkazi</button>
+              <button class="btn btn-primary" onclick="enable2FA()">Aktiviraj 2FA</button>
+            </div>
+          </div>
+        \`;
+        overlay.classList.remove('hidden');
+        overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function enable2FA() {
+      const code = document.getElementById('2fa-code')?.value;
+      if (!code || code.length !== 6) {
+        alert('Unesite 6-cifreni kod iz aplikacije');
+        return;
+      }
+      try {
+        await api('/api/admin/2fa/enable', { method: 'POST', body: JSON.stringify({ code }) });
+        closeModal();
+        loadSecurity();
+        alert('2FA uspesno aktivirano! Prilikom sledece prijave bice potreban kod iz aplikacije.');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function disable2FA() {
+      if (!confirm('Da li ste sigurni da zelite da iskljucite 2FA?')) return;
+      try {
+        await api('/api/admin/2fa/disable', { method: 'POST' });
+        loadSecurity();
+        alert('2FA deaktivirano!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    // ========== CSV Export ==========
+    async function exportCSV(type) {
+      try {
+        const blob = await api(\`/api/admin/export/\${type}\`, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = \`\${type}_export.csv\`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Greska pri eksportovanju: ' + e.message);
+      }
+    }
+
+    // ========== User Reputation ==========
+    async function showUserReputation(userId) {
+      try {
+        const data = await api(\`/api/admin/users/\${userId}/reputation\`);
+        const rep = data.reputation;
+        
+        const content = \`
+          <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:48px;font-weight:bold;color:var(--primary);">\${rep.score}</div>
+            <div style="color:var(--text-tertiary);">Reputation Score</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div><strong>Prosecna ocena:</strong> \${rep.avgRating}/5</div>
+            <div><strong>Ukupno recenzija:</strong> \${rep.totalReviews}</div>
+            <div><strong>Kao vlasnik:</strong> \${rep.completedAsOwner} transakcija</div>
+            <div><strong>Kao zakupac:</strong> \${rep.completedAsRenter} transakcija</div>
+            <div><strong>Oglasa:</strong> \${rep.itemsCount}</div>
+            <div><strong>Clan od:</strong> \${new Date(rep.memberSince).toLocaleDateString('sr-RS')}</div>
+          </div>
+          <div style="margin-top:16px;">
+            <strong>Verifikacije:</strong>
+            \${rep.emailVerified ? '<span class="badge badge-success">Email</span>' : ''}
+            \${rep.phoneVerified ? '<span class="badge badge-success">Telefon</span>' : ''}
+            \${rep.documentVerified ? '<span class="badge badge-success">Dokument</span>' : ''}
+          </div>
+        \`;
+        
+        showModal('Reputacija korisnika', '', content, \`<button class="btn btn-secondary" onclick="closeModal()">Zatvori</button>\`);
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+
+    async function checkAuth() {
+      if (!token) return false;
+      try {
+        const data = await api('/api/admin/me');
+        admin = data.admin;
+        return true;
+      } catch (e) {
+        localStorage.removeItem('admin_token');
+        token = null;
+        return false;
+      }
+    }
+
+    async function init() {
+      const isAuth = await checkAuth();
+      if (isAuth) {
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        document.getElementById('admin-name').textContent = admin.name || 'Admin';
+        document.getElementById('admin-role').textContent = admin.role || 'admin';
+        document.getElementById('admin-avatar').textContent = (admin.name || 'A').charAt(0).toUpperCase();
+        showPage('dashboard');
+      }
+    }
+
+    let pending2FA = false;
+    
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const twoFactorCode = document.getElementById('twoFactorCode').value;
+      const btn = document.getElementById('login-btn');
+      const error = document.getElementById('login-error');
+      const twoFAGroup = document.getElementById('2fa-group');
+      
+      btn.disabled = true;
+      btn.textContent = 'Prijava u toku...';
+      error.classList.add('hidden');
+
+      try {
+        const body = { email, password };
+        if (pending2FA && twoFactorCode) {
+          body.twoFactorCode = twoFactorCode;
+        }
+        
+        const data = await api('/api/admin/login', {
+          method: 'POST',
+          body: JSON.stringify(body)
+        });
+        
+        // Check if 2FA is required
+        if (data.requires2FA) {
+          pending2FA = true;
+          twoFAGroup.classList.remove('hidden');
+          document.getElementById('twoFactorCode').focus();
+          error.textContent = data.message;
+          error.style.color = 'var(--primary)';
+          error.classList.remove('hidden');
+          return;
+        }
+        
+        // Login successful
+        pending2FA = false;
+        twoFAGroup.classList.add('hidden');
+        token = data.token;
+        admin = data.admin;
+        localStorage.setItem('admin_token', token);
+        
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        document.getElementById('admin-name').textContent = admin.name || 'Admin';
+        document.getElementById('admin-role').textContent = admin.role || 'admin';
+        document.getElementById('admin-avatar').textContent = (admin.name || 'A').charAt(0).toUpperCase();
+        showPage('dashboard');
+      } catch (err) {
+        error.style.color = 'var(--error)';
+        error.textContent = err.message;
+        error.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Prijavi se';
+      }
+    });
+
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => showPage(btn.dataset.page));
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('admin_token');
+      token = null;
+      admin = null;
+      pending2FA = false;
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('login-page').classList.remove('hidden');
+      document.getElementById('email').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('twoFactorCode').value = '';
+      document.getElementById('2fa-group').classList.add('hidden');
+    });
+
+    init();
+  </script>
+</body>
+</html>
+`;

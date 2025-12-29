@@ -6,6 +6,7 @@ import { registerAdminRoutes } from "./admin-routes";
 import { storage } from "./storage";
 import { setupSecurity } from "./security";
 import { LANDING_PAGE_TEMPLATE } from "./landing-page-template";
+import { ADMIN_PANEL_TEMPLATE } from "./admin-panel-template";
 import { seedCategories, migrateItemsToNewCategories, seedFeatureToggles, seedAppVersions } from "./seed-categories";
 import * as fs from "fs";
 import * as path from "path";
@@ -251,31 +252,25 @@ function configureExpoAndLanding(app: express.Application) {
     "landing",
     "index.html",
   );
-  const adminPanelPath = path.resolve(
-    process.cwd(),
-    "server",
-    "admin",
-    "index.html",
-  );
   // Use embedded template instead of reading from file system
   const landingPageTemplate = LANDING_PAGE_TEMPLATE;
+  const adminPanelTemplate = ADMIN_PANEL_TEMPLATE;
   const appName = getAppName();
   
   const hasCustomLanding = fs.existsSync(customLandingPath);
-  const hasAdminPanel = fs.existsSync(adminPanelPath);
 
   log("Serving static Expo files with dynamic manifest routing");
   
-  // Serve admin panel at /admin
-  if (hasAdminPanel) {
-    app.get("/admin", (_req: Request, res: Response) => {
-      res.sendFile(adminPanelPath);
-    });
-    app.get("/admin/*", (_req: Request, res: Response) => {
-      res.sendFile(adminPanelPath);
-    });
-    log("Admin panel available at /admin");
-  }
+  // Serve admin panel at /admin using embedded template (works in production)
+  app.get("/admin", (_req: Request, res: Response) => {
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(adminPanelTemplate);
+  });
+  app.get("/admin/*", (_req: Request, res: Response) => {
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(adminPanelTemplate);
+  });
+  log("Admin panel available at /admin");
 
   // Serve favicon
   app.get("/favicon.png", (_req: Request, res: Response) => {
