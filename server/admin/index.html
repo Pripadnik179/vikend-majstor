@@ -1856,51 +1856,41 @@
         const data = await api(`/api/admin/users/${userId}/details`);
         const user = data.user;
         
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.id = 'user-modal';
-        modal.innerHTML = `
-          <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-              <h3>Korisnik: ${user.name || user.email}</h3>
-              <button class="modal-close" onclick="closeModal('user-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-                <div><strong>Email:</strong> ${user.email}</div>
-                <div><strong>Telefon:</strong> ${user.phone || '-'}</div>
-                <div><strong>Grad:</strong> ${user.city || '-'}</div>
-                <div><strong>Oglasi:</strong> ${user.itemsCount}</div>
-                <div><strong>Rezervacije:</strong> ${user.bookingsCount}</div>
-                <div><strong>Registracija:</strong> ${new Date(user.createdAt).toLocaleDateString('sr-RS')}</div>
-              </div>
-              
-              <h4 style="margin-bottom:12px;">Verifikacije</h4>
-              <div style="display:flex;gap:12px;margin-bottom:20px;">
-                <label><input type="checkbox" id="verify-email" ${user.emailVerified ? 'checked' : ''}> Email</label>
-                <label><input type="checkbox" id="verify-phone" ${user.phoneVerified ? 'checked' : ''}> Telefon</label>
-                <label><input type="checkbox" id="verify-document" ${user.documentVerified ? 'checked' : ''}> Dokument</label>
-              </div>
-              
-              <h4 style="margin-bottom:12px;">Pretplata</h4>
-              <div style="display:flex;gap:12px;margin-bottom:20px;">
-                <select id="user-subscription" class="input" style="flex:1;">
-                  <option value="free" ${user.subscriptionType === 'free' ? 'selected' : ''}>Besplatno</option>
-                  <option value="basic" ${user.subscriptionType === 'basic' ? 'selected' : ''}>Standard</option>
-                  <option value="premium" ${user.subscriptionType === 'premium' ? 'selected' : ''}>Premium</option>
-                </select>
-                <input type="number" id="user-sub-days" class="input" value="30" style="width:100px;" placeholder="Dana">
-              </div>
-            </div>
-            <div class="modal-footer" style="display:flex;gap:12px;flex-wrap:wrap;">
-              <button class="btn btn-danger" onclick="resetUserPassword('${userId}')">Reset lozinke</button>
-              <button class="btn" onclick="saveUserVerifications('${userId}')">Sacuvaj verifikacije</button>
-              <button class="btn btn-primary" onclick="saveUserSubscription('${userId}')">Sacuvaj pretplatu</button>
-            </div>
+        const content = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+            <div><strong>Email:</strong> ${user.email}</div>
+            <div><strong>Telefon:</strong> ${user.phone || '-'}</div>
+            <div><strong>Grad:</strong> ${user.city || '-'}</div>
+            <div><strong>Oglasi:</strong> ${user.itemsCount}</div>
+            <div><strong>Rezervacije:</strong> ${user.bookingsCount}</div>
+            <div><strong>Registracija:</strong> ${new Date(user.createdAt).toLocaleDateString('sr-RS')}</div>
+          </div>
+          
+          <h4 style="margin-bottom:12px;">Verifikacije</h4>
+          <div style="display:flex;gap:12px;margin-bottom:20px;">
+            <label><input type="checkbox" id="verify-email" ${user.emailVerified ? 'checked' : ''}> Email</label>
+            <label><input type="checkbox" id="verify-phone" ${user.phoneVerified ? 'checked' : ''}> Telefon</label>
+            <label><input type="checkbox" id="verify-document" ${user.documentVerified ? 'checked' : ''}> Dokument</label>
+          </div>
+          
+          <h4 style="margin-bottom:12px;">Pretplata</h4>
+          <div style="display:flex;gap:12px;margin-bottom:20px;">
+            <select id="user-subscription" class="input" style="flex:1;">
+              <option value="free" ${user.subscriptionType === 'free' ? 'selected' : ''}>Besplatno</option>
+              <option value="basic" ${user.subscriptionType === 'basic' ? 'selected' : ''}>Standard</option>
+              <option value="premium" ${user.subscriptionType === 'premium' ? 'selected' : ''}>Premium</option>
+            </select>
+            <input type="number" id="user-sub-days" class="input" value="30" style="width:100px;" placeholder="Dana">
           </div>
         `;
-        document.body.appendChild(modal);
-        document.getElementById('modal-overlay').classList.remove('hidden');
+        
+        const actions = `
+          <button class="btn btn-secondary" onclick="closeModal()">Zatvori</button>
+          <button class="btn" onclick="saveUserVerifications('${userId}')">Sacuvaj verifikacije</button>
+          <button class="btn btn-primary" onclick="saveUserSubscription('${userId}')">Sacuvaj pretplatu</button>
+        `;
+        
+        showModal('Korisnik: ' + (user.name || user.email), '', content, actions);
       } catch (e) {
         alert('Greska: ' + e.message);
       }
@@ -1931,6 +1921,7 @@
           });
         }
         alert('Verifikacije sacuvane!');
+        closeModal();
         loadUsers();
       } catch (e) {
         alert('Greska: ' + e.message);
@@ -1947,17 +1938,11 @@
           body: JSON.stringify({ subscriptionType, durationDays })
         });
         alert('Pretplata sacuvana!');
-        closeModal('user-modal');
+        closeModal();
         loadUsers();
       } catch (e) {
         alert('Greska: ' + e.message);
       }
-    }
-
-    function closeModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) modal.remove();
-      document.getElementById('modal-overlay').classList.add('hidden');
     }
 
     // ========== User Reports ==========
@@ -2091,48 +2076,36 @@
     }
 
     function showAddVersionModal() {
-      const modal = document.createElement('div');
-      modal.className = 'modal';
-      modal.id = 'version-modal';
-      modal.innerHTML = `
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>Dodaj novu verziju</h3>
-            <button class="modal-close" onclick="closeModal('version-modal')">&times;</button>
-          </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label>Platforma</label>
-              <select id="version-platform" class="input">
-                <option value="web">Web</option>
-                <option value="android">Android</option>
-                <option value="ios">iOS</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Verzija (npr. 1.0.0)</label>
-              <input type="text" id="version-number" class="input" placeholder="1.0.0">
-            </div>
-            <div class="form-group">
-              <label>Build broj</label>
-              <input type="number" id="version-build" class="input" placeholder="1">
-            </div>
-            <div class="form-group">
-              <label>Napomene o izdanju</label>
-              <textarea id="version-notes" class="input" rows="2"></textarea>
-            </div>
-            <div class="form-group">
-              <label><input type="checkbox" id="version-required"> Obavezno azuriranje</label>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn" onclick="closeModal('version-modal')">Otkazi</button>
-            <button class="btn btn-primary" onclick="saveVersion()">Sacuvaj</button>
-          </div>
+      const content = `
+        <div class="form-group">
+          <label>Platforma</label>
+          <select id="version-platform" class="input" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);">
+            <option value="web">Web</option>
+            <option value="android">Android</option>
+            <option value="ios">iOS</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Verzija (npr. 1.0.0)</label>
+          <input type="text" id="version-number" class="input" placeholder="1.0.0" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);">
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Build broj</label>
+          <input type="number" id="version-build" class="input" placeholder="1" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);">
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Napomene o izdanju</label>
+          <textarea id="version-notes" class="input" rows="2" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);"></textarea>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label><input type="checkbox" id="version-required"> Obavezno azuriranje</label>
         </div>
       `;
-      document.body.appendChild(modal);
-      document.getElementById('modal-overlay').classList.remove('hidden');
+      const actions = `
+        <button class="btn btn-secondary" onclick="closeModal()">Otkazi</button>
+        <button class="btn btn-primary" onclick="saveVersion()">Sacuvaj</button>
+      `;
+      showModal('Dodaj novu verziju', 'Unesite informacije o novoj verziji aplikacije', content, actions);
     }
 
     async function saveVersion() {
@@ -2145,7 +2118,7 @@
           isRequired: document.getElementById('version-required').checked
         };
         await api('/api/admin/app-versions', { method: 'POST', body: JSON.stringify(versionData) });
-        closeModal('version-modal');
+        closeModal();
         loadAppVersions();
         alert('Verzija uspesno dodata!');
       } catch (e) {
@@ -2323,42 +2296,28 @@
         const data = await api(`/api/admin/users/${userId}/reputation`);
         const rep = data.reputation;
         
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.id = 'reputation-modal';
-        modal.innerHTML = `
-          <div class="modal-content" style="max-width:500px;">
-            <div class="modal-header">
-              <h3>Reputacija korisnika</h3>
-              <button class="modal-close" onclick="closeModal('reputation-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
-              <div style="text-align:center;margin-bottom:20px;">
-                <div style="font-size:48px;font-weight:bold;color:var(--primary);">${rep.score}</div>
-                <div style="color:var(--text-tertiary);">Reputation Score</div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                <div><strong>Prosecna ocena:</strong> ${rep.avgRating}/5</div>
-                <div><strong>Ukupno recenzija:</strong> ${rep.totalReviews}</div>
-                <div><strong>Kao vlasnik:</strong> ${rep.completedAsOwner} transakcija</div>
-                <div><strong>Kao zakupac:</strong> ${rep.completedAsRenter} transakcija</div>
-                <div><strong>Oglasa:</strong> ${rep.itemsCount}</div>
-                <div><strong>Clan od:</strong> ${new Date(rep.memberSince).toLocaleDateString('sr-RS')}</div>
-              </div>
-              <div style="margin-top:16px;">
-                <strong>Verifikacije:</strong>
-                ${rep.emailVerified ? '<span class="badge badge-success">Email</span>' : ''}
-                ${rep.phoneVerified ? '<span class="badge badge-success">Telefon</span>' : ''}
-                ${rep.documentVerified ? '<span class="badge badge-success">Dokument</span>' : ''}
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button class="btn" onclick="closeModal('reputation-modal')">Zatvori</button>
-            </div>
+        const content = `
+          <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:48px;font-weight:bold;color:var(--primary);">${rep.score}</div>
+            <div style="color:var(--text-tertiary);">Reputation Score</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div><strong>Prosecna ocena:</strong> ${rep.avgRating}/5</div>
+            <div><strong>Ukupno recenzija:</strong> ${rep.totalReviews}</div>
+            <div><strong>Kao vlasnik:</strong> ${rep.completedAsOwner} transakcija</div>
+            <div><strong>Kao zakupac:</strong> ${rep.completedAsRenter} transakcija</div>
+            <div><strong>Oglasa:</strong> ${rep.itemsCount}</div>
+            <div><strong>Clan od:</strong> ${new Date(rep.memberSince).toLocaleDateString('sr-RS')}</div>
+          </div>
+          <div style="margin-top:16px;">
+            <strong>Verifikacije:</strong>
+            ${rep.emailVerified ? '<span class="badge badge-success">Email</span>' : ''}
+            ${rep.phoneVerified ? '<span class="badge badge-success">Telefon</span>' : ''}
+            ${rep.documentVerified ? '<span class="badge badge-success">Dokument</span>' : ''}
           </div>
         `;
-        document.body.appendChild(modal);
-        document.getElementById('modal-overlay').classList.remove('hidden');
+        
+        showModal('Reputacija korisnika', '', content, `<button class="btn btn-secondary" onclick="closeModal()">Zatvori</button>`);
       } catch (e) {
         alert('Greska: ' + e.message);
       }
