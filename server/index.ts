@@ -342,6 +342,24 @@ function configureExpoAndLanding(app: express.Application) {
     }
   });
 
+  app.get("/refund-policy", (_req: Request, res: Response) => {
+    const refundPath = path.resolve(process.cwd(), "server", "templates", "refund.html");
+    if (fs.existsSync(refundPath)) {
+      res.sendFile(refundPath);
+    } else {
+      res.status(404).send("Page not found");
+    }
+  });
+
+  app.get("/contact", (_req: Request, res: Response) => {
+    const contactPath = path.resolve(process.cwd(), "server", "templates", "contact.html");
+    if (fs.existsSync(contactPath)) {
+      res.sendFile(contactPath);
+    } else {
+      res.status(404).send("Page not found");
+    }
+  });
+
   app.get("/auth/google/callback", (_req: Request, res: Response) => {
     const callbackPath = path.resolve(process.cwd(), "server", "templates", "google-callback.html");
     if (fs.existsSync(callbackPath)) {
