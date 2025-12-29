@@ -1377,14 +1377,6 @@
           const isRegistered = s.type === 'registered';
           const realUserId = isRegistered ? s.id.replace('user_', '') : s.id;
           
-          const subscriptionDropdown = isRegistered ? `
-            <select class="subscription-select" onchange="changeSubscription('${realUserId}', this.value)" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 12px; cursor: pointer;">
-              <option value="free" ${s.subscriptionType === 'free' || !s.subscriptionType ? 'selected' : ''}>Besplatno</option>
-              <option value="basic" ${s.subscriptionType === 'basic' ? 'selected' : ''}>Standard</option>
-              <option value="premium" ${s.subscriptionType === 'premium' ? 'selected' : ''}>Premium</option>
-            </select>
-          ` : `<span class="badge ${subscriptionBadge}">${subscriptionLabel}</span>`;
-          
           const actionButtons = isRegistered ? `
             <button class="action-btn" onclick="showSubscriptionModal('${realUserId}', '${s.email}', '${s.subscriptionType || 'free'}')" title="Promeni pretplatu" style="background: var(--warning); color: white;">⚙️</button>
           ` : (canDelete ? `<button class="action-btn action-btn-error" onclick="deleteSubscriber('${s.id}')" title="Obrisi">🗑️</button>` : '<span style="color: var(--text-tertiary);">-</span>');
@@ -1394,7 +1386,7 @@
             <td><strong>${s.email}</strong></td>
             <td>${s.name || '-'}</td>
             <td>${s.source || 'nepoznato'}</td>
-            <td>${subscriptionDropdown}</td>
+            <td><span class="badge ${subscriptionBadge}">${subscriptionLabel}</span></td>
             <td><span class="badge ${s.isActive ? 'badge-success' : 'badge-error'}">${s.isActive ? 'Aktivan' : 'Neaktivan'}</span></td>
             <td>${s.createdAt && !isNaN(new Date(s.createdAt).getTime()) ? new Date(s.createdAt).toLocaleString('sr-RS') : '-'}</td>
             <td>${actionButtons}</td></tr>`;
@@ -1423,20 +1415,6 @@
         loadSubscribers();
       } catch (e) {
         alert('Greska: ' + e.message);
-      }
-    }
-    
-    async function changeSubscription(userId, subscriptionType) {
-      try {
-        await api('/api/admin/users/' + userId + '/subscription', {
-          method: 'POST',
-          body: JSON.stringify({ subscriptionType, durationDays: 30 })
-        });
-        loadSubscribers();
-        alert('Pretplata uspesno promenjena na: ' + (subscriptionType === 'premium' ? 'Premium' : subscriptionType === 'basic' ? 'Standard' : 'Besplatno'));
-      } catch (e) {
-        alert('Greska pri promeni pretplate: ' + e.message);
-        loadSubscribers();
       }
     }
     
