@@ -568,29 +568,62 @@
           <div class="page-header">
             <div class="page-header-left">
               <h1>Email pretplatnici</h1>
-              <p>Lista korisnika koji su se prijavili za novosti</p>
+              <p>Svi korisnici platforme i newsletter pretplatnici</p>
             </div>
             <div class="page-header-actions">
               <button class="btn btn-sm" onclick="exportSubscribers()">📥 Izvezi CSV</button>
             </div>
           </div>
+          <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background: var(--primary);">📧</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stats-newsletter">0</span>
+                <span class="stat-label">Newsletter</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background: var(--success);">👤</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stats-registered">0</span>
+                <span class="stat-label">Registrovani</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background: var(--warning);">📊</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stats-total">0</span>
+                <span class="stat-label">Ukupno</span>
+              </div>
+            </div>
+          </div>
           <div class="card">
             <div class="card-header">
               <h3>Svi pretplatnici (<span id="subscribers-count">0</span>)</h3>
+              <div class="filter-group">
+                <select id="subscriber-type-filter" onchange="filterSubscribers()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);">
+                  <option value="all">Svi tipovi</option>
+                  <option value="registered">Registrovani korisnici</option>
+                  <option value="newsletter">Newsletter</option>
+                </select>
+              </div>
             </div>
             <div class="table-container">
               <table>
                 <thead>
                   <tr>
+                    <th>Tip</th>
                     <th>Email</th>
+                    <th>Ime</th>
                     <th>Izvor</th>
+                    <th>Pretplata</th>
                     <th>Status</th>
-                    <th>Datum pretplate</th>
+                    <th>Datum</th>
                     <th>Akcije</th>
                   </tr>
                 </thead>
                 <tbody id="subscribers-table">
-                  <tr><td colspan="5"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                  <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -1296,28 +1329,63 @@
       }
     }
 
+    let allSubscribersData = [];
+    
     async function loadSubscribers() {
       try {
         const data = await api('/api/admin/subscribers');
-        const tbody = document.getElementById('subscribers-table');
-        document.getElementById('subscribers-count').textContent = data.subscribers?.length || 0;
+        allSubscribersData = data.subscribers || [];
         
-        if (!data.subscribers?.length) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema pretplatnika</td></tr>';
-        } else {
-          tbody.innerHTML = data.subscribers.map(s => 
-            `<tr>
-            <td><strong>${s.email}</strong></td>
-            <td>${s.source || 'nepoznato'}</td>
-            <td><span class="badge ${s.isActive ? 'badge-success' : 'badge-error'}">${s.isActive ? 'Aktivan' : 'Neaktivan'}</span></td>
-            <td>${new Date(s.createdAt).toLocaleString('sr-RS')}</td>
-            <td>
-              <button class="action-btn action-btn-error" onclick="deleteSubscriber('${s.id}')" title="Obrisi">🗑️</button>
-            </td></tr>`
-          ).join('');
+        if (data.stats) {
+          document.getElementById('stats-newsletter').textContent = data.stats.newsletter || 0;
+          document.getElementById('stats-registered').textContent = data.stats.registered || 0;
+          document.getElementById('stats-total').textContent = data.stats.total || 0;
         }
+        
+        renderSubscribers(allSubscribersData);
       } catch (e) {
-        document.getElementById('subscribers-table').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+        document.getElementById('subscribers-table').innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+      }
+    }
+    
+    function filterSubscribers() {
+      const filter = document.getElementById('subscriber-type-filter').value;
+      let filtered = allSubscribersData;
+      if (filter !== 'all') {
+        filtered = allSubscribersData.filter(s => s.type === filter);
+      }
+      renderSubscribers(filtered);
+    }
+    
+    function renderSubscribers(subscribers) {
+      const tbody = document.getElementById('subscribers-table');
+      document.getElementById('subscribers-count').textContent = subscribers.length;
+      
+      if (!subscribers.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema pretplatnika</td></tr>';
+      } else {
+        tbody.innerHTML = subscribers.map(s => {
+          const typeLabel = s.type === 'registered' ? 'Registrovan' : 'Newsletter';
+          const typeBadge = s.type === 'registered' ? 'badge-success' : 'badge-info';
+          const subscriptionLabel = s.subscriptionType === 'premium' ? 'Premium' : 
+                                    s.subscriptionType === 'basic' ? 'Standard' : 
+                                    s.type === 'registered' ? 'Besplatno' : '-';
+          const subscriptionBadge = s.subscriptionType === 'premium' ? 'badge-warning' :
+                                    s.subscriptionType === 'basic' ? 'badge-info' : 'badge-secondary';
+          const canDelete = s.type !== 'registered';
+          
+          return `<tr>
+            <td><span class="badge ${typeBadge}">${typeLabel}</span></td>
+            <td><strong>${s.email}</strong></td>
+            <td>${s.name || '-'}</td>
+            <td>${s.source || 'nepoznato'}</td>
+            <td><span class="badge ${subscriptionBadge}">${subscriptionLabel}</span></td>
+            <td><span class="badge ${s.isActive ? 'badge-success' : 'badge-error'}">${s.isActive ? 'Aktivan' : 'Neaktivan'}</span></td>
+            <td>${s.createdAt && !isNaN(new Date(s.createdAt).getTime()) ? new Date(s.createdAt).toLocaleString('sr-RS') : '-'}</td>
+            <td>
+              ${canDelete ? `<button class="action-btn action-btn-error" onclick="deleteSubscriber('${s.id}')" title="Obrisi">🗑️</button>` : '<span style="color: var(--text-tertiary);">-</span>'}
+            </td></tr>`;
+        }).join('');
       }
     }
 

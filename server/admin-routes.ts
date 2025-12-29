@@ -898,22 +898,78 @@ export function registerAdminRoutes(app: Express) {
   
   app.get("/api/admin/subscribers", isAdminAuth, async (req, res) => {
     try {
+      let newsletterSubscribers: any[] = [];
+      let source = 'development';
+      
       if (isProductionAvailable()) {
         const productionSubscribers = await getProductionSubscribers();
-        const subscribers = productionSubscribers.map(s => ({
+        newsletterSubscribers = productionSubscribers.map(s => ({
           id: s.id.toString(),
           email: s.email,
           source: s.source,
           isActive: s.is_active,
-          createdAt: s.created_at
+          createdAt: s.created_at,
+          type: 'newsletter'
         }));
-        res.json({ subscribers, source: 'production' });
+        source = 'production';
       } else {
-        const subscribers = await db.select()
+        const devSubscribers = await db.select()
           .from(emailSubscribers)
           .orderBy(desc(emailSubscribers.createdAt));
-        res.json({ subscribers, source: 'development' });
+        newsletterSubscribers = devSubscribers.map(s => {
+          const idValue = typeof s.id === 'object' && s.id !== null 
+            ? ((s.id as any).value || JSON.stringify(s.id)) 
+            : String(s.id || '');
+          return {
+            id: idValue,
+            email: s.email,
+            source: s.source,
+            isActive: s.isActive,
+            createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : (s.createdAt ? String(s.createdAt) : null),
+            type: 'newsletter'
+          };
+        });
       }
+      
+      const allUsers = await storage.getAllUsers();
+      const registeredUsers = allUsers.map(u => {
+        let dateStr: string | null = null;
+        if (u.createdAt) {
+          dateStr = u.createdAt instanceof Date ? u.createdAt.toISOString() : String(u.createdAt);
+        } else if (u.subscriptionStartDate) {
+          dateStr = u.subscriptionStartDate instanceof Date ? u.subscriptionStartDate.toISOString() : String(u.subscriptionStartDate);
+        }
+        return {
+          id: `user_${u.id}`,
+          email: u.email,
+          name: u.name || '',
+          source: 'registracija',
+          isActive: u.isActive !== false,
+          createdAt: dateStr,
+          type: 'registered',
+          subscriptionType: u.subscriptionType || 'free',
+          subscriptionStatus: u.subscriptionStatus || 'inactive'
+        };
+      });
+      
+      const allSubscribers = [...newsletterSubscribers, ...registeredUsers];
+      allSubscribers.sort((a, b) => {
+        if (!a.createdAt) return 1;
+        if (!b.createdAt) return -1;
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA);
+      });
+      
+      res.json({ 
+        subscribers: allSubscribers, 
+        source,
+        stats: {
+          newsletter: newsletterSubscribers.length,
+          registered: registeredUsers.length,
+          total: allSubscribers.length
+        }
+      });
     } catch (error) {
       console.error('Get subscribers error:', error);
       res.status(500).json({ message: 'Greska pri dobijanju pretplatnika' });
@@ -923,30 +979,54 @@ export function registerAdminRoutes(app: Express) {
   app.get("/api/admin/export/subscribers", isAdminAuth, async (req, res) => {
     try {
       const admin = (req as any).admin;
-      let subscribers: any[] = [];
+      let allSubscribers: any[] = [];
       
       if (isProductionAvailable()) {
         const prodSubscribers = await getProductionSubscribers();
-        subscribers = prodSubscribers.map(s => ({
+        allSubscribers = prodSubscribers.map(s => ({
           email: s.email,
+          name: '',
           source: s.source,
+          type: 'newsletter',
           isActive: s.is_active,
           createdAt: s.created_at
         }));
       } else {
-        subscribers = await db.select()
+        const devSubscribers = await db.select()
           .from(emailSubscribers)
           .orderBy(desc(emailSubscribers.createdAt));
+        allSubscribers = devSubscribers.map(s => ({
+          email: s.email,
+          name: '',
+          source: s.source,
+          type: 'newsletter',
+          isActive: s.isActive,
+          createdAt: s.createdAt
+        }));
       }
+      
+      const allUsers = await storage.getAllUsers();
+      const registeredUsers = allUsers.map(u => ({
+        email: u.email,
+        name: u.name || '',
+        source: 'registracija',
+        type: 'registered',
+        isActive: u.isActive !== false,
+        createdAt: u.createdAt,
+        subscriptionType: u.subscriptionType || 'free'
+      }));
+      
+      allSubscribers = [...allSubscribers, ...registeredUsers];
+      allSubscribers.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-      const csvHeader = 'Email,Izvor,Aktivan,Datum pretplate\n';
-      const csvRows = subscribers.map(s => 
-        `"${s.email}","${s.source || 'unknown'}","${s.isActive ? 'Da' : 'Ne'}","${s.createdAt}"`
+      const csvHeader = 'Email,Ime,Tip,Izvor,Pretplata,Aktivan,Datum\n';
+      const csvRows = allSubscribers.map(s => 
+        `"${s.email}","${s.name || ''}","${s.type === 'registered' ? 'Registrovan' : 'Newsletter'}","${s.source || 'unknown'}","${s.subscriptionType || '-'}","${s.isActive ? 'Da' : 'Ne'}","${s.createdAt}"`
       ).join('\n');
 
       const csv = csvHeader + csvRows;
 
-      await logAdminAction(admin.id, 'export_subscribers', 'subscribers', undefined, `Exported ${subscribers.length} subscribers`, req.ip);
+      await logAdminAction(admin.id, 'export_subscribers', 'subscribers', undefined, `Exported ${allSubscribers.length} subscribers`, req.ip);
 
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'attachment; filename=email_subscribers.csv');
