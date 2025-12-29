@@ -321,12 +321,13 @@
                     <th>Uloga</th>
                     <th>Pretplata</th>
                     <th>Status</th>
+                    <th>Oglasi/Rez.</th>
                     <th>Registracija</th>
                     <th>Akcije</th>
                   </tr>
                 </thead>
                 <tbody id="users-table">
-                  <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                  <tr><td colspan="9"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -355,13 +356,14 @@
                     <th>Kategorija</th>
                     <th>Vlasnik</th>
                     <th>Cena/dan</th>
+                    <th>Pregledi</th>
                     <th>Status</th>
                     <th>Datum</th>
                     <th>Akcije</th>
                   </tr>
                 </thead>
                 <tbody id="items-table">
-                  <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                  <tr><td colspan="9"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -392,7 +394,7 @@
                   </tr>
                 </thead>
                 <tbody id="subscriptions-table">
-                  <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                  <tr><td colspan="9"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -623,7 +625,7 @@
                   </tr>
                 </thead>
                 <tbody id="subscribers-table">
-                  <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
+                  <tr><td colspan="9"><div class="loading"><div class="spinner"></div>Ucitavanje...</div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -920,20 +922,23 @@
         selectedUsers = [];
         
         if (!data.users?.length) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema korisnika</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema korisnika</td></tr>';
         } else {
           tbody.innerHTML = data.users.map(u => 
-            `<tr>
+            `<tr style="${u.isDemo ? 'opacity: 0.6; background: rgba(255,204,0,0.05);' : ''}">
             <td><input type="checkbox" class="user-checkbox" value="${u.id}" onchange="updateSelection('users')"></td>
-            <td><strong>${u.name || 'Nepoznato'}</strong></td>
+            <td>
+              <strong>${u.name || 'Nepoznato'}</strong>
+              ${u.isDemo ? '<br><span class="badge badge-warning" style="font-size:10px;padding:2px 6px;">DEMO</span>' : ''}
+            </td>
             <td>${u.email}</td>
             <td>${u.role || 'user'}</td>
-            <td><span class="badge badge-${u.subscriptionTier === 'premium' ? 'warning' : u.subscriptionTier === 'standard' ? 'info' : 'success'}">${u.subscriptionTier || 'free'}</span></td>
+            <td><span class="badge badge-${u.subscriptionType === 'premium' ? 'warning' : u.subscriptionType === 'basic' || u.subscriptionType === 'standard' ? 'info' : 'success'}">${u.subscriptionType || 'free'}</span></td>
             <td><span class="badge ${u.isActive ? 'badge-success' : 'badge-error'}">${u.isActive ? 'Aktivan' : 'Suspendovan'}</span></td>
+            <td>${u.itemCount || 0} / ${u.bookingCount || 0}</td>
             <td>${new Date(u.createdAt).toLocaleDateString('sr-RS')}</td>
             <td>
-            <button class="action-btn action-btn-info" onclick="showUserDetails('${u.id}')" title="Detalji">👤</button>
-            <button class="action-btn action-btn-info" onclick="viewUserActivity('${u.id}')" title="Aktivnosti">📋</button>
+            <button class="action-btn action-btn-info" onclick="showUserDetails('${u.id}')" title="Detalji">Detalji</button>
             ${u.isActive 
               ? `<button class="action-btn action-btn-error" onclick="suspendUser('${u.id}')">Suspenduj</button>`
               : `<button class="action-btn action-btn-success" onclick="activateUser('${u.id}')">Aktiviraj</button>`}
@@ -941,7 +946,7 @@
           ).join('');
         }
       } catch (e) {
-        document.getElementById('users-table').innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+        document.getElementById('users-table').innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
       }
     }
 
@@ -990,7 +995,7 @@
         selectedItems = [];
         
         if (!data.items?.length) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema oglasa</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-tertiary); padding: 40px;">Nema oglasa</td></tr>';
         } else {
           tbody.innerHTML = data.items.map(i => 
             `<tr>
@@ -999,6 +1004,7 @@
             <td>${i.category || '-'}</td>
             <td>${i.ownerName || 'Nepoznato'}</td>
             <td>${i.pricePerDay} RSD</td>
+            <td style="text-align:center;">${i.views || 0}</td>
             <td><span class="badge ${i.status === 'active' ? 'badge-success' : 'badge-warning'}">${i.status === 'active' ? 'Aktivan' : 'Na cekanju'}</span></td>
             <td>${new Date(i.createdAt).toLocaleDateString('sr-RS')}</td>
             <td>
@@ -1008,7 +1014,7 @@
           ).join('');
         }
       } catch (e) {
-        document.getElementById('items-table').innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
+        document.getElementById('items-table').innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--error); padding: 40px;">Greska pri ucitavanju</td></tr>';
       }
     }
 
@@ -1657,51 +1663,35 @@
     }
 
     function showAddPlanModal() {
-      const modal = document.createElement('div');
-      modal.className = 'modal';
-      modal.id = 'plan-modal';
-      modal.innerHTML = `
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>Dodaj novi plan</h3>
-            <button class="modal-close" onclick="closeModal('plan-modal')">&times;</button>
+      showModal('Dodaj novi plan', 'Kreirajte novi plan pretplate', 
+        `<div class="form-group">
+          <label>Interni naziv (jedinstveno)</label>
+          <input type="text" id="plan-name" class="input" placeholder="npr. basic">
+        </div>
+        <div class="form-group">
+          <label>Prikazani naziv</label>
+          <input type="text" id="plan-display-name" class="input" placeholder="npr. Standard">
+        </div>
+        <div class="form-group">
+          <label>Opis</label>
+          <textarea id="plan-description" class="input" rows="2"></textarea>
+        </div>
+        <div style="display:flex;gap:16px;">
+          <div class="form-group" style="flex:1;">
+            <label>Cena (RSD)</label>
+            <input type="number" id="plan-price" class="input" placeholder="500">
           </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label>Interni naziv (jedinstveno)</label>
-              <input type="text" id="plan-name" class="input" placeholder="npr. basic">
-            </div>
-            <div class="form-group">
-              <label>Prikazani naziv</label>
-              <input type="text" id="plan-display-name" class="input" placeholder="npr. Standard">
-            </div>
-            <div class="form-group">
-              <label>Opis</label>
-              <textarea id="plan-description" class="input" rows="2"></textarea>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Cena (RSD)</label>
-                <input type="number" id="plan-price" class="input" placeholder="500">
-              </div>
-              <div class="form-group">
-                <label>Trajanje (dana)</label>
-                <input type="number" id="plan-duration" class="input" value="30">
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Max oglasa (prazno = bez limita)</label>
-              <input type="number" id="plan-max-ads" class="input" placeholder="5">
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn" onclick="closeModal('plan-modal')">Otkazi</button>
-            <button class="btn btn-primary" onclick="savePlan()">Sacuvaj</button>
+          <div class="form-group" style="flex:1;">
+            <label>Trajanje (dana)</label>
+            <input type="number" id="plan-duration" class="input" value="30">
           </div>
         </div>
-      `;
-      document.body.appendChild(modal);
-      document.getElementById('modal-overlay').classList.remove('hidden');
+        <div class="form-group">
+          <label>Max oglasa (prazno = bez limita)</label>
+          <input type="number" id="plan-max-ads" class="input" placeholder="5">
+        </div>`,
+        `<button class="btn btn-secondary" onclick="closeModal()">Odustani</button>
+        <button class="btn" onclick="savePlan()">Sacuvaj plan</button>`);
     }
 
     async function savePlan() {
@@ -1714,8 +1704,14 @@
           durationDays: parseInt(document.getElementById('plan-duration').value) || 30,
           maxAds: document.getElementById('plan-max-ads').value ? parseInt(document.getElementById('plan-max-ads').value) : null
         };
+        
+        if (!planData.name || !planData.displayName) {
+          alert('Unesite interni naziv i prikazani naziv');
+          return;
+        }
+        
         await api('/api/admin/subscription-plans', { method: 'POST', body: JSON.stringify(planData) });
-        closeModal('plan-modal');
+        closeModal();
         loadPlans();
         alert('Plan uspesno kreiran!');
       } catch (e) {
@@ -1734,8 +1730,72 @@
       }
     }
 
-    function editPlan(planId) {
-      alert('Uredivanje plana ' + planId + ' - implementiraj modal');
+    async function editPlan(planId) {
+      try {
+        const data = await api('/api/admin/subscription-plans');
+        const plan = data.plans.find(p => p.id === planId);
+        if (!plan) {
+          alert('Plan nije pronadjen');
+          return;
+        }
+        
+        showModal('Uredi plan', 'Izmenite postojeci plan pretplate', 
+          `<div class="form-group">
+            <label>Interni naziv</label>
+            <input type="text" id="edit-plan-name" class="input" value="${plan.name}" disabled style="opacity:0.6;">
+          </div>
+          <div class="form-group">
+            <label>Prikazani naziv</label>
+            <input type="text" id="edit-plan-display-name" class="input" value="${plan.displayName || ''}">
+          </div>
+          <div class="form-group">
+            <label>Opis</label>
+            <textarea id="edit-plan-description" class="input" rows="2">${plan.description || ''}</textarea>
+          </div>
+          <div style="display:flex;gap:16px;">
+            <div class="form-group" style="flex:1;">
+              <label>Cena (RSD)</label>
+              <input type="number" id="edit-plan-price" class="input" value="${plan.priceRsd || 0}">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label>Trajanje (dana)</label>
+              <input type="number" id="edit-plan-duration" class="input" value="${plan.durationDays || 30}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Max oglasa (prazno = bez limita)</label>
+            <input type="number" id="edit-plan-max-ads" class="input" value="${plan.maxAds || ''}">
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="edit-plan-active" ${plan.isActive !== false ? 'checked' : ''}> Aktivan
+            </label>
+          </div>`,
+          `<button class="btn btn-secondary" onclick="closeModal()">Odustani</button>
+          <button class="btn" onclick="updatePlan('${planId}')">Sacuvaj izmene</button>`);
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
+    }
+    
+    async function updatePlan(planId) {
+      try {
+        const planData = {
+          displayName: document.getElementById('edit-plan-display-name').value,
+          description: document.getElementById('edit-plan-description').value,
+          priceRsd: parseInt(document.getElementById('edit-plan-price').value) || 0,
+          durationDays: parseInt(document.getElementById('edit-plan-duration').value) || 30,
+          maxAds: document.getElementById('edit-plan-max-ads').value ? parseInt(document.getElementById('edit-plan-max-ads').value) : null,
+          isActive: document.getElementById('edit-plan-active').checked
+        };
+        
+        await api(`/api/admin/subscription-plans/${planId}`, { method: 'PUT', body: JSON.stringify(planData) });
+        closeModal();
+        loadPlans();
+        alert('Plan uspesno azuriran!');
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      }
     }
 
     // ========== Item Statistics ==========

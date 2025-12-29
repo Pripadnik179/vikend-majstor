@@ -206,8 +206,10 @@ export function registerAdminRoutes(app: Express) {
 
   app.get("/api/admin/stats", isAdminAuth, async (req, res) => {
     try {
-      const allUsers = await storage.getAllUsers();
-      const allItems = await storage.getItems();
+      // Use Drizzle to get real data from database
+      const allUsers = await db.select().from(users);
+      const allItems = await db.select().from(items);
+      const allBookings = await db.select().from(bookings);
       
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -216,7 +218,7 @@ export function registerAdminRoutes(app: Express) {
         u.createdAt && new Date(u.createdAt) >= today
       ).length;
       
-      const newItemsToday = allItems.filter((i: any) => 
+      const newItemsToday = allItems.filter((i) => 
         i.createdAt && new Date(i.createdAt) >= today
       ).length;
 
@@ -226,16 +228,20 @@ export function registerAdminRoutes(app: Express) {
       const activeUsers = allUsers.filter(u => 
         u.createdAt && new Date(u.createdAt) >= thirtyDaysAgo
       ).length;
+      
+      const pendingBookings = allBookings.filter(b => b.status === 'pending').length;
+      const completedBookings = allBookings.filter(b => b.status === 'completed');
+      const totalRevenue = completedBookings.reduce((sum, b) => sum + b.totalPrice, 0);
 
       res.json({
         totalUsers: allUsers.length,
         activeUsers: activeUsers || allUsers.length,
         totalItems: allItems.length,
-        activeItems: allItems.filter((i: any) => i.status === 'active').length,
-        totalBookings: 0,
-        pendingBookings: 0,
-        totalRevenue: 0,
-        monthlyRevenue: 0,
+        activeItems: allItems.filter((i) => i.isAvailable).length,
+        totalBookings: allBookings.length,
+        pendingBookings,
+        totalRevenue,
+        monthlyRevenue: totalRevenue,
         newUsersToday,
         newItemsToday
       });
@@ -247,19 +253,41 @@ export function registerAdminRoutes(app: Express) {
 
   app.get("/api/admin/activity", isAdminAuth, async (req, res) => {
     try {
-      const allUsers = await storage.getAllUsers();
-      const recentUsers = allUsers
-        .filter(u => u.createdAt)
-        .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
-        .slice(0, 5);
+      // Use Drizzle to get real data
+      const recentUsers = await db.select()
+        .from(users)
+        .orderBy(desc(users.createdAt))
+        .limit(5);
+      
+      const recentItems = await db.select()
+        .from(items)
+        .orderBy(desc(items.createdAt))
+        .limit(5);
 
-      const activities = recentUsers.map(u => ({
-        icon: '👤',
-        description: `Novi korisnik: ${u.name || u.email}`,
-        time: new Date(u.createdAt!).toLocaleString('sr-RS')
-      }));
+      const activities: any[] = [];
+      
+      recentUsers.forEach(u => {
+        activities.push({
+          icon: 'user',
+          description: `Novi korisnik: ${u.name || u.email}`,
+          time: u.createdAt ? new Date(u.createdAt).toLocaleString('sr-RS') : '',
+          timestamp: u.createdAt ? new Date(u.createdAt).getTime() : 0
+        });
+      });
+      
+      recentItems.forEach(i => {
+        activities.push({
+          icon: 'item',
+          description: `Novi oglas: ${i.title}`,
+          time: i.createdAt ? new Date(i.createdAt).toLocaleString('sr-RS') : '',
+          timestamp: i.createdAt ? new Date(i.createdAt).getTime() : 0
+        });
+      });
+      
+      // Sort by timestamp and take top 10
+      activities.sort((a, b) => b.timestamp - a.timestamp);
 
-      res.json({ activities });
+      res.json({ activities: activities.slice(0, 10) });
     } catch (error) {
       console.error('Admin activity error:', error);
       res.status(500).json({ message: 'Greska pri dobijanju aktivnosti' });
@@ -268,26 +296,37 @@ export function registerAdminRoutes(app: Express) {
 
   app.get("/api/admin/users", isAdminAuth, async (req, res) => {
     try {
-      const allUsers = await storage.getAllUsers();
-      const allItems = await storage.getItems();
+      // Use Drizzle to get real users from database
+      const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+      const allItems = await db.select().from(items);
+      const allBookings = await db.select().from(bookings);
       
-      const users = await Promise.all(allUsers.map(async (u) => {
-        const userItems = allItems.filter((i: any) => i.ownerId === u.id);
+      // Demo emails pattern - users created for testing/demo purposes
+      const demoEmailPatterns = ['demo@', 'test@', 'primer@', 'example@'];
+      
+      const usersList = allUsers.map((u) => {
+        const userItems = allItems.filter((i) => i.ownerId === u.id);
+        const userBookings = allBookings.filter((b) => b.renterId === u.id || b.ownerId === u.id);
+        
+        // Check if this is a demo account
+        const isDemo = demoEmailPatterns.some(pattern => u.email.toLowerCase().includes(pattern));
+        
         return {
           id: u.id,
           email: u.email,
           name: u.name,
           role: u.role || 'renter',
-          subscriptionTier: u.subscriptionType || 'free',
+          subscriptionType: u.subscriptionType || 'free',
           isActive: u.isActive !== false,
           isVerified: u.emailVerified || false,
+          isDemo: isDemo,
           createdAt: u.createdAt,
           itemCount: userItems.length,
-          bookingCount: 0
+          bookingCount: userBookings.length
         };
-      }));
+      });
 
-      res.json({ users });
+      res.json({ users: usersList });
     } catch (error) {
       console.error('Admin users error:', error);
       res.status(500).json({ message: 'Greska pri dobijanju korisnika' });
@@ -298,7 +337,12 @@ export function registerAdminRoutes(app: Express) {
     try {
       const userId = req.params.id;
       const admin = (req as any).admin;
-      await storage.updateUser(userId, { isActive: false });
+      
+      // Use Drizzle to update user in real database
+      await db.update(users)
+        .set({ isActive: false })
+        .where(eq(users.id, userId));
+      
       await logAdminAction(admin.id, 'suspend_user', 'user', userId, 'User suspended', req.ip);
       res.json({ success: true });
     } catch (error) {
@@ -311,7 +355,12 @@ export function registerAdminRoutes(app: Express) {
     try {
       const userId = req.params.id;
       const admin = (req as any).admin;
-      await storage.updateUser(userId, { isActive: true });
+      
+      // Use Drizzle to update user in real database
+      await db.update(users)
+        .set({ isActive: true })
+        .where(eq(users.id, userId));
+      
       await logAdminAction(admin.id, 'activate_user', 'user', userId, 'User activated', req.ip);
       res.json({ success: true });
     } catch (error) {
@@ -322,11 +371,17 @@ export function registerAdminRoutes(app: Express) {
 
   app.get("/api/admin/items", isAdminAuth, async (req, res) => {
     try {
-      const allItems = await storage.getItems();
-      const allUsers = await storage.getAllUsers();
+      // Use Drizzle to get real items from database
+      const allItems = await db.select().from(items).orderBy(desc(items.createdAt));
+      const allUsers = await db.select().from(users);
+      const allViews = await db.select().from(itemViews);
+      const allBookings = await db.select().from(bookings);
       
-      const items = allItems.map((item: any) => {
+      const itemsList = allItems.map((item) => {
         const owner = allUsers.find(u => u.id === item.ownerId);
+        const viewCount = allViews.filter(v => v.itemId === item.id).length;
+        const bookingCount = allBookings.filter(b => b.itemId === item.id).length;
+        
         return {
           id: item.id,
           title: item.title,
@@ -336,14 +391,15 @@ export function registerAdminRoutes(app: Express) {
           status: item.isAvailable ? 'active' : 'pending',
           ownerName: owner?.name || 'Nepoznato',
           ownerEmail: owner?.email || '',
-          views: 0,
-          bookings: 0,
+          ownerId: item.ownerId,
+          views: viewCount,
+          bookings: bookingCount,
           createdAt: item.createdAt,
           images: item.images || []
         };
       });
 
-      res.json({ items });
+      res.json({ items: itemsList });
     } catch (error) {
       console.error('Admin items error:', error);
       res.status(500).json({ message: 'Greska pri dobijanju oglasa' });
@@ -354,7 +410,12 @@ export function registerAdminRoutes(app: Express) {
     try {
       const itemId = req.params.id;
       const admin = (req as any).admin;
-      await storage.updateItem(itemId, { isAvailable: true });
+      
+      // Use Drizzle to update item in real database
+      await db.update(items)
+        .set({ isAvailable: true })
+        .where(eq(items.id, itemId));
+      
       await logAdminAction(admin.id, 'approve_item', 'item', itemId, 'Item approved', req.ip);
       res.json({ success: true });
     } catch (error) {
@@ -367,7 +428,12 @@ export function registerAdminRoutes(app: Express) {
     try {
       const itemId = req.params.id;
       const admin = (req as any).admin;
-      await storage.updateItem(itemId, { isAvailable: false });
+      
+      // Use Drizzle to update item in real database
+      await db.update(items)
+        .set({ isAvailable: false })
+        .where(eq(items.id, itemId));
+      
       await logAdminAction(admin.id, 'reject_item', 'item', itemId, 'Item rejected', req.ip);
       res.json({ success: true });
     } catch (error) {
@@ -380,7 +446,16 @@ export function registerAdminRoutes(app: Express) {
     try {
       const itemId = req.params.id;
       const admin = (req as any).admin;
-      await storage.deleteItem(itemId);
+      
+      // Use Drizzle to delete item and related data from real database
+      // First delete related records
+      await db.delete(itemViews).where(eq(itemViews.itemId, itemId));
+      await db.delete(bookings).where(eq(bookings.itemId, itemId));
+      await db.delete(reportedItems).where(eq(reportedItems.itemId, itemId));
+      
+      // Then delete the item
+      await db.delete(items).where(eq(items.id, itemId));
+      
       await logAdminAction(admin.id, 'delete_item', 'item', itemId, 'Item deleted', req.ip);
       res.json({ success: true });
     } catch (error) {
@@ -391,8 +466,10 @@ export function registerAdminRoutes(app: Express) {
 
   app.get("/api/admin/subscriptions", isAdminAuth, async (req, res) => {
     try {
-      const allUsers = await storage.getAllUsers();
-      const subscriptions = allUsers
+      // Use Drizzle to get real users with subscriptions
+      const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+      
+      const subscriptionsList = allUsers
         .filter(u => u.subscriptionType && u.subscriptionType !== 'free')
         .map(u => ({
           id: u.id,
@@ -403,10 +480,10 @@ export function registerAdminRoutes(app: Express) {
           status: u.subscriptionStatus || 'active',
           startDate: u.subscriptionStartDate || u.createdAt,
           endDate: u.subscriptionEndDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          amount: u.subscriptionType === 'premium' ? 999 : 499
+          amount: u.subscriptionType === 'premium' ? 1000 : u.subscriptionType === 'basic' ? 500 : 0
         }));
 
-      res.json({ subscriptions });
+      res.json({ subscriptions: subscriptionsList });
     } catch (error) {
       console.error('Admin subscriptions error:', error);
       res.status(500).json({ message: 'Greska pri dobijanju pretplata' });
@@ -1397,7 +1474,12 @@ export function registerAdminRoutes(app: Express) {
       let deletedCount = 0;
       for (const itemId of itemIds) {
         try {
-          await storage.deleteItem(itemId);
+          // Delete related records first
+          await db.delete(itemViews).where(eq(itemViews.itemId, itemId));
+          await db.delete(bookings).where(eq(bookings.itemId, itemId));
+          await db.delete(reportedItems).where(eq(reportedItems.itemId, itemId));
+          // Delete the item
+          await db.delete(items).where(eq(items.id, itemId));
           deletedCount++;
         } catch (err) {
           console.error(`Failed to delete item ${itemId}:`, err);
