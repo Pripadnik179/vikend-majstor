@@ -522,6 +522,17 @@ export const ADMIN_PANEL_TEMPLATE = `<!DOCTYPE html>
               <button class="btn btn-sm" onclick="showAddFeatureModal()">+ Dodaj feature</button>
             </div>
           </div>
+          
+          <!-- System Settings Card -->
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <h3>Sistemska podesavanja</h3>
+            </div>
+            <div id="system-settings-content">
+              <div class="loading"><div class="spinner"></div>Ucitavanje...</div>
+            </div>
+          </div>
+          
           <div class="card">
             <div class="card-header">
               <h3>Feature Toggles</h3>
@@ -1276,6 +1287,10 @@ export const ADMIN_PANEL_TEMPLATE = `<!DOCTYPE html>
 
     async function loadSettings() {
       try {
+        // Load system settings
+        loadSystemSettings();
+        
+        // Load feature toggles
         const data = await api('/api/admin/feature-toggles');
         const list = document.getElementById('features-list');
         const toggles = data.toggles || [];
@@ -1298,6 +1313,102 @@ export const ADMIN_PANEL_TEMPLATE = `<!DOCTYPE html>
         }
       } catch (e) {
         document.getElementById('features-list').innerHTML = '<p style="color: var(--error); text-align: center; padding: 20px;">Greska pri ucitavanju</p>';
+      }
+    }
+
+    async function loadSystemSettings() {
+      try {
+        const data = await api('/api/admin/system-settings');
+        const container = document.getElementById('system-settings-content');
+        
+        container.innerHTML = \`
+          <div style="display: grid; gap: 20px;">
+            <!-- Early Adopter Section -->
+            <div style="padding: 20px; background: var(--background); border-radius: 12px; border: 1px solid var(--border);">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <span style="font-size: 28px;">🎉</span>
+                <div>
+                  <div style="font-weight: 600; font-size: 16px;">Early Adopter Program</div>
+                  <div style="color: var(--text-secondary); font-size: 13px;">Prvih 100 korisnika dobija besplatno premium 30 dana</div>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
+                <div style="text-align: center; padding: 16px; background: var(--background-card); border-radius: 8px;">
+                  <div style="font-size: 28px; font-weight: 700; color: var(--primary);">\${data.earlyAdopterCount}</div>
+                  <div style="font-size: 12px; color: var(--text-secondary);">Iskorisceno</div>
+                </div>
+                <div style="text-align: center; padding: 16px; background: var(--background-card); border-radius: 8px;">
+                  <div style="font-size: 28px; font-weight: 700; color: var(--success);">\${data.remainingSlots}</div>
+                  <div style="font-size: 12px; color: var(--text-secondary);">Preostalo</div>
+                </div>
+                <div style="text-align: center; padding: 16px; background: var(--background-card); border-radius: 8px;">
+                  <div style="font-size: 28px; font-weight: 700;">\${data.totalUsers}</div>
+                  <div style="font-size: 12px; color: var(--text-secondary);">Ukupno korisnika</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <button class="btn btn-error btn-sm" onclick="confirmResetEarlyAdopter()" id="reset-ea-btn">
+                  Resetuj brojac (sledecih 100 korisnika dobija premium)
+                </button>
+                <span style="color: var(--text-tertiary); font-size: 12px;">
+                  Ova akcija ce resetovati early adopter status i sledecih 100 NOVIH korisnika dobice besplatno premium.
+                </span>
+              </div>
+            </div>
+            
+            <!-- Premium Popup Section -->
+            <div style="padding: 20px; background: var(--background); border-radius: 12px; border: 1px solid var(--border);">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="font-size: 28px;">💎</span>
+                  <div>
+                    <div style="font-weight: 600; font-size: 16px;">Premium Popup</div>
+                    <div style="color: var(--text-secondary); font-size: 13px;">Prikazuje popup korisnicima za kupovinu premium clanstva</div>
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="premium-popup-toggle" \${data.premiumPopupEnabled ? 'checked' : ''} onchange="togglePremiumPopup(this.checked)">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        \`;
+      } catch (e) {
+        document.getElementById('system-settings-content').innerHTML = '<p style="color: var(--error); text-align: center; padding: 20px;">Greska pri ucitavanju sistemskih podesavanja</p>';
+      }
+    }
+
+    async function confirmResetEarlyAdopter() {
+      if (!confirm('Da li ste sigurni da zelite da resetujete early adopter brojac?\\n\\nOva akcija ce:\\n- Ukloniti early adopter status sa svih korisnika\\n- Omoguciti sledecih 100 NOVIH korisnika da dobiju besplatno premium\\n\\nPostojeci korisnici ce zadrzati premium ako im nije istekao.')) {
+        return;
+      }
+      
+      const btn = document.getElementById('reset-ea-btn');
+      btn.disabled = true;
+      btn.textContent = 'Resetovanje...';
+      
+      try {
+        const result = await api('/api/admin/reset-early-adopter', { method: 'POST' });
+        alert(result.message || 'Uspesno resetovano!');
+        loadSystemSettings();
+      } catch (e) {
+        alert('Greska: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Resetuj brojac (sledecih 100 korisnika dobija premium)';
+      }
+    }
+
+    async function togglePremiumPopup(enabled) {
+      try {
+        await api('/api/admin/toggle-premium-popup', { 
+          method: 'POST',
+          body: JSON.stringify({ enabled })
+        });
+      } catch (e) {
+        alert('Greska: ' + e.message);
+        loadSystemSettings();
       }
     }
 
