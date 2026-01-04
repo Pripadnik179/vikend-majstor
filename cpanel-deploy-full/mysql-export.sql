@@ -1,554 +1,592 @@
--- VikendMajstor MySQL Database Export
--- Exported from Replit PostgreSQL Development Database
--- Date: 2026-01-03
+-- VikendMajstor MySQL Database Schema
+-- Generated for cPanel deployment
+-- Compatible with MySQL 8.0+
 
 SET FOREIGN_KEY_CHECKS = 0;
 SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';
 
--- ============================================
--- ENUMS (MySQL uses ENUM directly in column definition)
--- ============================================
-
--- ============================================
+-- =====================================================
 -- TABLE: users
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `id` VARCHAR(36) NOT NULL,
-  `email` VARCHAR(255) NOT NULL UNIQUE,
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `email` VARCHAR(255) NOT NULL,
   `password` TEXT NOT NULL,
-  `name` VARCHAR(255) NOT NULL,
-  `phone` VARCHAR(50) DEFAULT NULL,
-  `city` VARCHAR(100) DEFAULT NULL,
-  `district` VARCHAR(100) DEFAULT NULL,
-  `avatar_url` TEXT DEFAULT NULL,
+  `name` TEXT NOT NULL,
+  `phone` TEXT,
+  `city` TEXT,
+  `district` TEXT,
+  `avatar_url` TEXT,
   `role` ENUM('owner', 'renter') NOT NULL DEFAULT 'renter',
-  `rating` DECIMAL(2,1) DEFAULT 0.0,
+  `rating` DECIMAL(2,1) DEFAULT '0',
   `total_ratings` INT DEFAULT 0,
-  `email_verified` TINYINT(1) NOT NULL DEFAULT 0,
-  `phone_verified` TINYINT(1) NOT NULL DEFAULT 0,
-  `document_verified` TINYINT(1) NOT NULL DEFAULT 0,
-  `document_url` TEXT DEFAULT NULL,
+  `email_verified` BOOLEAN NOT NULL DEFAULT FALSE,
+  `phone_verified` BOOLEAN NOT NULL DEFAULT FALSE,
+  `document_verified` BOOLEAN NOT NULL DEFAULT FALSE,
+  `document_url` TEXT,
   `subscription_type` ENUM('free', 'basic', 'premium') NOT NULL DEFAULT 'free',
   `subscription_status` ENUM('active', 'expired', 'cancelled') NOT NULL DEFAULT 'active',
-  `subscription_start_date` DATETIME DEFAULT NULL,
-  `subscription_end_date` DATETIME DEFAULT NULL,
-  `is_early_adopter` TINYINT(1) NOT NULL DEFAULT 0,
-  `is_premium_listing` TINYINT(1) NOT NULL DEFAULT 0,
-  `premium_listing_end_date` DATETIME DEFAULT NULL,
-  `free_feature_used` TINYINT(1) NOT NULL DEFAULT 0,
-  `stripe_customer_id` VARCHAR(255) DEFAULT NULL,
+  `subscription_start_date` TIMESTAMP NULL,
+  `subscription_end_date` TIMESTAMP NULL,
+  `is_early_adopter` BOOLEAN NOT NULL DEFAULT FALSE,
+  `is_premium_listing` BOOLEAN NOT NULL DEFAULT FALSE,
+  `premium_listing_end_date` TIMESTAMP NULL,
+  `free_feature_used` BOOLEAN NOT NULL DEFAULT FALSE,
+  `stripe_customer_id` TEXT,
   `total_ads_created` INT NOT NULL DEFAULT 0,
-  `push_token` TEXT DEFAULT NULL,
-  `is_admin` TINYINT(1) NOT NULL DEFAULT 0,
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  `push_token` TEXT,
+  `is_admin` BOOLEAN NOT NULL DEFAULT FALSE,
+  `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `users_email_unique` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
+-- =====================================================
+-- TABLE: verification_tokens
+-- =====================================================
+DROP TABLE IF EXISTS `verification_tokens`;
+CREATE TABLE `verification_tokens` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `user_id` VARCHAR(36) NOT NULL,
+  `token` VARCHAR(255) NOT NULL,
+  `type` TEXT NOT NULL DEFAULT 'email',
+  `expires_at` TIMESTAMP NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `verification_tokens_token_unique` (`token`),
+  KEY `verification_tokens_user_id_fk` (`user_id`),
+  CONSTRAINT `verification_tokens_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- TABLE: subscriptions
+-- =====================================================
+DROP TABLE IF EXISTS `subscriptions`;
+CREATE TABLE `subscriptions` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `user_id` VARCHAR(36) NOT NULL,
+  `type` ENUM('free', 'basic', 'premium') NOT NULL,
+  `status` ENUM('active', 'expired', 'cancelled') NOT NULL DEFAULT 'active',
+  `price_rsd` INT NOT NULL,
+  `start_date` TIMESTAMP NOT NULL,
+  `end_date` TIMESTAMP NOT NULL,
+  `stripe_payment_intent_id` TEXT,
+  `stripe_subscription_id` TEXT,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `subscriptions_user_id_fk` (`user_id`),
+  CONSTRAINT `subscriptions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
 -- TABLE: categories
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `categories`;
 CREATE TABLE `categories` (
-  `id` VARCHAR(36) NOT NULL,
-  `name` VARCHAR(255) NOT NULL UNIQUE,
-  `slug` VARCHAR(255) NOT NULL UNIQUE,
-  `icon` VARCHAR(255) DEFAULT NULL,
-  `sort_order` INT DEFAULT 0,
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- TABLE: subcategories
--- ============================================
-DROP TABLE IF EXISTS `subcategories`;
-CREATE TABLE `subcategories` (
-  `id` VARCHAR(36) NOT NULL,
-  `category_id` VARCHAR(36) NOT NULL,
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
   `name` VARCHAR(255) NOT NULL,
   `slug` VARCHAR(255) NOT NULL,
-  `icon` VARCHAR(255) DEFAULT NULL,
+  `icon` TEXT,
   `sort_order` INT DEFAULT 0,
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE CASCADE
+  UNIQUE KEY `categories_name_unique` (`name`),
+  UNIQUE KEY `categories_slug_unique` (`slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
+-- =====================================================
+-- TABLE: subcategories
+-- =====================================================
+DROP TABLE IF EXISTS `subcategories`;
+CREATE TABLE `subcategories` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `category_id` VARCHAR(36) NOT NULL,
+  `name` TEXT NOT NULL,
+  `slug` TEXT NOT NULL,
+  `icon` TEXT,
+  `sort_order` INT DEFAULT 0,
+  `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `subcategories_category_id_fk` (`category_id`),
+  CONSTRAINT `subcategories_category_id_fk` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
 -- TABLE: items
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `items`;
 CREATE TABLE `items` (
-  `id` VARCHAR(36) NOT NULL,
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
   `owner_id` VARCHAR(36) NOT NULL,
-  `title` VARCHAR(255) NOT NULL,
+  `title` TEXT NOT NULL,
   `description` TEXT NOT NULL,
-  `category` VARCHAR(255) NOT NULL,
-  `sub_category` VARCHAR(255) DEFAULT NULL,
-  `category_id` VARCHAR(36) DEFAULT NULL,
-  `subcategory_id` VARCHAR(36) DEFAULT NULL,
-  `tool_type` VARCHAR(255) DEFAULT NULL,
-  `tool_sub_type` VARCHAR(255) DEFAULT NULL,
-  `brand` VARCHAR(255) DEFAULT NULL,
-  `power_source` VARCHAR(100) DEFAULT NULL,
-  `power_watts` INT DEFAULT NULL,
+  `category` TEXT NOT NULL,
+  `sub_category` TEXT,
+  `category_id` VARCHAR(36),
+  `subcategory_id` VARCHAR(36),
+  `tool_type` TEXT,
+  `tool_sub_type` TEXT,
+  `brand` TEXT,
+  `power_source` TEXT,
+  `power_watts` INT,
   `price_per_day` INT NOT NULL,
   `deposit` INT NOT NULL,
-  `city` VARCHAR(100) NOT NULL,
-  `district` VARCHAR(100) DEFAULT NULL,
-  `latitude` DECIMAL(10,7) DEFAULT NULL,
-  `longitude` DECIMAL(10,7) DEFAULT NULL,
-  `images` JSON NOT NULL,
-  `ad_type` VARCHAR(50) NOT NULL DEFAULT 'renting',
-  `is_available` TINYINT(1) NOT NULL DEFAULT 1,
-  `is_featured` TINYINT(1) NOT NULL DEFAULT 0,
-  `rating` DECIMAL(2,1) DEFAULT 0.0,
+  `city` TEXT NOT NULL,
+  `district` TEXT,
+  `latitude` DECIMAL(10,7),
+  `longitude` DECIMAL(10,7),
+  `images` JSON NOT NULL DEFAULT ('[]'),
+  `ad_type` TEXT NOT NULL DEFAULT 'renting',
+  `is_available` BOOLEAN NOT NULL DEFAULT TRUE,
+  `is_featured` BOOLEAN NOT NULL DEFAULT FALSE,
+  `rating` DECIMAL(2,1) DEFAULT '0',
   `total_ratings` INT DEFAULT 0,
-  `expires_at` DATETIME DEFAULT NULL,
-  `activity_tags` JSON DEFAULT NULL,
-  `user_type` VARCHAR(50) DEFAULT 'diy',
-  `rental_period` VARCHAR(50) DEFAULT 'dan',
-  `has_deposit` TINYINT(1) DEFAULT 1,
-  `has_delivery` TINYINT(1) DEFAULT 0,
-  `weight` DECIMAL(6,2) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `expires_at` TIMESTAMP NULL,
+  `activity_tags` JSON,
+  `user_type` TEXT DEFAULT 'diy',
+  `rental_period` TEXT DEFAULT 'dan',
+  `has_deposit` BOOLEAN DEFAULT TRUE,
+  `has_delivery` BOOLEAN DEFAULT FALSE,
+  `weight` DECIMAL(6,2),
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`)
+  KEY `items_owner_id_fk` (`owner_id`),
+  CONSTRAINT `items_owner_id_fk` FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
+-- =====================================================
 -- TABLE: bookings
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `bookings`;
 CREATE TABLE `bookings` (
-  `id` VARCHAR(36) NOT NULL,
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
   `item_id` VARCHAR(36) NOT NULL,
   `renter_id` VARCHAR(36) NOT NULL,
   `owner_id` VARCHAR(36) NOT NULL,
-  `start_date` DATETIME NOT NULL,
-  `end_date` DATETIME NOT NULL,
+  `start_date` TIMESTAMP NOT NULL,
+  `end_date` TIMESTAMP NOT NULL,
   `total_days` INT NOT NULL,
   `total_price` INT NOT NULL,
   `deposit` INT NOT NULL,
   `status` ENUM('pending', 'confirmed', 'active', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
-  `payment_method` VARCHAR(50) DEFAULT 'cash',
-  `stripe_payment_id` VARCHAR(255) DEFAULT NULL,
-  `pickup_confirmed` TINYINT(1) DEFAULT 0,
-  `return_confirmed` TINYINT(1) DEFAULT 0,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `payment_method` TEXT DEFAULT 'cash',
+  `stripe_payment_id` TEXT,
+  `pickup_confirmed` BOOLEAN DEFAULT FALSE,
+  `return_confirmed` BOOLEAN DEFAULT FALSE,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`item_id`) REFERENCES `items`(`id`),
-  FOREIGN KEY (`renter_id`) REFERENCES `users`(`id`),
-  FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`)
+  KEY `bookings_item_id_fk` (`item_id`),
+  KEY `bookings_renter_id_fk` (`renter_id`),
+  KEY `bookings_owner_id_fk` (`owner_id`),
+  CONSTRAINT `bookings_item_id_fk` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`),
+  CONSTRAINT `bookings_renter_id_fk` FOREIGN KEY (`renter_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `bookings_owner_id_fk` FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
+-- =====================================================
 -- TABLE: conversations
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `conversations`;
 CREATE TABLE `conversations` (
-  `id` VARCHAR(36) NOT NULL,
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
   `user1_id` VARCHAR(36) NOT NULL,
   `user2_id` VARCHAR(36) NOT NULL,
-  `item_id` VARCHAR(36) DEFAULT NULL,
-  `last_message_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `item_id` VARCHAR(36),
+  `last_message_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`user1_id`) REFERENCES `users`(`id`),
-  FOREIGN KEY (`user2_id`) REFERENCES `users`(`id`),
-  FOREIGN KEY (`item_id`) REFERENCES `items`(`id`)
+  KEY `conversations_user1_id_fk` (`user1_id`),
+  KEY `conversations_user2_id_fk` (`user2_id`),
+  KEY `conversations_item_id_fk` (`item_id`),
+  CONSTRAINT `conversations_user1_id_fk` FOREIGN KEY (`user1_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `conversations_user2_id_fk` FOREIGN KEY (`user2_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `conversations_item_id_fk` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
+-- =====================================================
 -- TABLE: messages
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `messages`;
 CREATE TABLE `messages` (
-  `id` VARCHAR(36) NOT NULL,
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
   `conversation_id` VARCHAR(36) NOT NULL,
   `sender_id` VARCHAR(36) NOT NULL,
   `receiver_id` VARCHAR(36) NOT NULL,
   `content` TEXT NOT NULL,
-  `is_read` TINYINT(1) NOT NULL DEFAULT 0,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_read` BOOLEAN NOT NULL DEFAULT FALSE,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`conversation_id`) REFERENCES `conversations`(`id`),
-  FOREIGN KEY (`sender_id`) REFERENCES `users`(`id`),
-  FOREIGN KEY (`receiver_id`) REFERENCES `users`(`id`)
+  KEY `messages_conversation_id_fk` (`conversation_id`),
+  KEY `messages_sender_id_fk` (`sender_id`),
+  KEY `messages_receiver_id_fk` (`receiver_id`),
+  CONSTRAINT `messages_conversation_id_fk` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`),
+  CONSTRAINT `messages_sender_id_fk` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `messages_receiver_id_fk` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
+-- =====================================================
 -- TABLE: reviews
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `reviews`;
 CREATE TABLE `reviews` (
-  `id` VARCHAR(36) NOT NULL,
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
   `booking_id` VARCHAR(36) NOT NULL,
   `item_id` VARCHAR(36) NOT NULL,
   `reviewer_id` VARCHAR(36) NOT NULL,
   `reviewee_id` VARCHAR(36) NOT NULL,
   `rating` INT NOT NULL,
-  `comment` TEXT DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `comment` TEXT,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`booking_id`) REFERENCES `bookings`(`id`),
-  FOREIGN KEY (`item_id`) REFERENCES `items`(`id`),
-  FOREIGN KEY (`reviewer_id`) REFERENCES `users`(`id`),
-  FOREIGN KEY (`reviewee_id`) REFERENCES `users`(`id`)
+  KEY `reviews_booking_id_fk` (`booking_id`),
+  KEY `reviews_item_id_fk` (`item_id`),
+  KEY `reviews_reviewer_id_fk` (`reviewer_id`),
+  KEY `reviews_reviewee_id_fk` (`reviewee_id`),
+  CONSTRAINT `reviews_booking_id_fk` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`),
+  CONSTRAINT `reviews_item_id_fk` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`),
+  CONSTRAINT `reviews_reviewer_id_fk` FOREIGN KEY (`reviewer_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `reviews_reviewee_id_fk` FOREIGN KEY (`reviewee_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
--- TABLE: subscriptions
--- ============================================
-DROP TABLE IF EXISTS `subscriptions`;
-CREATE TABLE `subscriptions` (
-  `id` VARCHAR(36) NOT NULL,
-  `user_id` VARCHAR(36) NOT NULL,
-  `type` ENUM('free', 'basic', 'premium') NOT NULL,
-  `status` ENUM('active', 'expired', 'cancelled') NOT NULL DEFAULT 'active',
-  `price_rsd` INT NOT NULL,
-  `start_date` DATETIME NOT NULL,
-  `end_date` DATETIME NOT NULL,
-  `stripe_payment_intent_id` VARCHAR(255) DEFAULT NULL,
-  `stripe_subscription_id` VARCHAR(255) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- TABLE: verification_tokens
--- ============================================
-DROP TABLE IF EXISTS `verification_tokens`;
-CREATE TABLE `verification_tokens` (
-  `id` VARCHAR(36) NOT NULL,
-  `user_id` VARCHAR(36) NOT NULL,
-  `token` VARCHAR(255) NOT NULL UNIQUE,
-  `type` VARCHAR(50) NOT NULL DEFAULT 'email',
-  `expires_at` DATETIME NOT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- TABLE: feature_toggles
--- ============================================
-DROP TABLE IF EXISTS `feature_toggles`;
-CREATE TABLE `feature_toggles` (
-  `id` VARCHAR(36) NOT NULL,
-  `name` VARCHAR(255) NOT NULL UNIQUE,
-  `description` TEXT DEFAULT NULL,
-  `is_enabled` TINYINT(1) NOT NULL DEFAULT 1,
-  `enabled_for_percentage` INT DEFAULT 100,
-  `updated_by` VARCHAR(36) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- TABLE: admin_logs
--- ============================================
-DROP TABLE IF EXISTS `admin_logs`;
-CREATE TABLE `admin_logs` (
-  `id` VARCHAR(36) NOT NULL,
-  `admin_id` VARCHAR(36) NOT NULL,
-  `action` VARCHAR(255) NOT NULL,
-  `target_type` VARCHAR(100) DEFAULT NULL,
-  `target_id` VARCHAR(36) DEFAULT NULL,
-  `details` JSON DEFAULT NULL,
-  `ip_address` VARCHAR(45) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- TABLE: reported_items
--- ============================================
-DROP TABLE IF EXISTS `reported_items`;
-CREATE TABLE `reported_items` (
-  `id` VARCHAR(36) NOT NULL,
-  `item_id` VARCHAR(36) NOT NULL,
-  `reporter_id` VARCHAR(36) NOT NULL,
-  `reason` VARCHAR(255) NOT NULL,
-  `description` TEXT DEFAULT NULL,
-  `status` VARCHAR(50) NOT NULL DEFAULT 'pending',
-  `resolved_by` VARCHAR(36) DEFAULT NULL,
-  `resolved_at` DATETIME DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- TABLE: reported_users
--- ============================================
-DROP TABLE IF EXISTS `reported_users`;
-CREATE TABLE `reported_users` (
-  `id` VARCHAR(36) NOT NULL,
-  `reported_user_id` VARCHAR(36) NOT NULL,
-  `reporter_id` VARCHAR(36) NOT NULL,
-  `reason` VARCHAR(255) NOT NULL,
-  `description` TEXT DEFAULT NULL,
-  `status` VARCHAR(50) NOT NULL DEFAULT 'pending',
-  `resolved_by` VARCHAR(36) DEFAULT NULL,
-  `resolved_at` DATETIME DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- TABLE: item_views
--- ============================================
-DROP TABLE IF EXISTS `item_views`;
-CREATE TABLE `item_views` (
-  `id` VARCHAR(36) NOT NULL,
-  `item_id` VARCHAR(36) NOT NULL,
-  `viewer_id` VARCHAR(36) DEFAULT NULL,
-  `ip_address` VARCHAR(45) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  FOREIGN KEY (`item_id`) REFERENCES `items`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- DATA: users (18 records)
--- ============================================
-INSERT INTO `users` (`id`, `email`, `password`, `name`, `phone`, `city`, `district`, `avatar_url`, `role`, `rating`, `total_ratings`, `email_verified`, `phone_verified`, `document_verified`, `subscription_type`, `subscription_status`, `subscription_start_date`, `subscription_end_date`, `is_early_adopter`, `is_premium_listing`, `free_feature_used`, `total_ads_created`, `push_token`, `is_admin`, `is_active`, `created_at`) VALUES
-('3143835d-e481-48c0-858e-d4c42b6cd55c', 'stefan@demo.com', '928766689eb794d6becb57ed6b54ed3288322ef89e3d819b2c33b0ec08f6b56ec5f8370765e7618bca901a6b4090e30c6f6dda17b3fb2b74222559bee3d272e4.026848ea7e642e1194cca33ca4c9aa39', 'Stefan Jovanović', '+381643456789', 'Niš', 'Centar', NULL, 'owner', 4.9, 15, 0, 0, 0, 'premium', 'active', NULL, '2026-01-14 00:51:12', 0, 0, 0, 2, NULL, 0, 1, '2025-12-15 00:51:12'),
-('362fd13f-e394-4627-b884-033e538c6236', 'nikola@demo.com', '928766689eb794d6becb57ed6b54ed3288322ef89e3d819b2c33b0ec08f6b56ec5f8370765e7618bca901a6b4090e30c6f6dda17b3fb2b74222559bee3d272e4.026848ea7e642e1194cca33ca4c9aa39', 'Nikola Stojanović', '+381645678901', 'Subotica', 'Centar', NULL, 'owner', 4.7, 10, 0, 0, 0, 'basic', 'active', NULL, '2026-01-14 00:51:12', 0, 0, 0, 2, NULL, 0, 1, '2025-12-15 00:51:12'),
-('9724b237-816c-4db8-8e7e-880fc6207752', 'jelena@demo.com', '928766689eb794d6becb57ed6b54ed3288322ef89e3d819b2c33b0ec08f6b56ec5f8370765e7618bca901a6b4090e30c6f6dda17b3fb2b74222559bee3d272e4.026848ea7e642e1194cca33ca4c9aa39', 'Jelena Nikolić', '+381642345678', 'Novi Sad', 'Liman', NULL, 'owner', 4.5, 8, 0, 0, 0, 'premium', 'active', '2025-12-15 02:49:42', '2026-01-14 02:49:42', 1, 0, 0, 3, NULL, 0, 1, '2025-12-15 00:51:12'),
-('00639111-65e8-4f19-aff3-2982797cd00f', 'ana@demo.com', '928766689eb794d6becb57ed6b54ed3288322ef89e3d819b2c33b0ec08f6b56ec5f8370765e7618bca901a6b4090e30c6f6dda17b3fb2b74222559bee3d272e4.026848ea7e642e1194cca33ca4c9aa39', 'Ana Đorđević', '+381644567890', 'Kragujevac', 'Aerodrom', NULL, 'owner', 4.2, 5, 0, 0, 0, 'premium', 'active', '2025-12-20 16:11:26', '2026-01-19 16:11:26', 1, 0, 1, 2, NULL, 0, 1, '2025-12-15 00:51:12'),
-('770704ec-b269-4683-9b1d-4a40823bd97f', 'marko@demo.com', '928766689eb794d6becb57ed6b54ed3288322ef89e3d819b2c33b0ec08f6b56ec5f8370765e7618bca901a6b4090e30c6f6dda17b3fb2b74222559bee3d272e4.026848ea7e642e1194cca33ca4c9aa39', 'Marko Petrović', '+381641234567', 'Beograd', 'Novi Beograd', NULL, 'owner', 4.8, 12, 0, 0, 0, 'premium', 'active', '2025-12-20 16:23:04', '2026-01-19 16:23:04', 0, 0, 0, 2, NULL, 0, 1, '2025-12-15 00:51:12'),
-('c9abe37a-1cda-494b-bbc6-eee3b0faaae7', 'spasic018@gmail.com', '79eb1f6efdeaeac897897f6c9aca26e009bd1cac94b6647d25fb19e7f4e6dc5bedd8ae1695b69a41020496ecdab1086bb833e816980579df987855aeec096764.d065834639ce5884395691a24aed356c', 'Nikola', NULL, NULL, NULL, NULL, 'renter', 0.0, 0, 1, 0, 0, 'premium', 'active', NULL, '2026-01-19 15:00:17', 1, 0, 0, 0, 'ExponentPushToken[nZBYkDNsNfINiQ3Ymdb4NM]', 0, 1, '2025-12-20 15:00:17'),
-('c035bb80-a0c7-4377-84e9-749500e530c3', 'admin@vikendmajstor.rs', '7110413a410f28fd459abeaa4459015741c44e29023560badd7d039f4fcdab4abd6878d8c2412dc3ab0759b62a9c2a2090d57a952eb9e45e03553d08d797461d.26f2a4054440ed8dccd54e4903961dce', 'Administrator', NULL, 'Beograd', NULL, NULL, 'owner', 5.0, 0, 1, 0, 0, 'premium', 'active', NULL, NULL, 1, 0, 0, 0, 'ExponentPushToken[ZPNwXCJ75TrtDGrbW7yu2G]', 1, 1, '2025-12-20 16:03:42');
-
--- ============================================
--- DATA: categories (18 records)
--- ============================================
-INSERT INTO `categories` (`id`, `name`, `slug`, `icon`, `sort_order`, `is_active`, `created_at`) VALUES
-('2e975f23-1c5f-40fb-a13d-3f56b233e5dd', 'Električni alati', 'elektricni-alati', NULL, 0, 1, '2025-12-28 20:03:56'),
-('4e751a07-d023-4cc9-b496-17bb6e7bfe1f', 'Akumulatorski (aku) alati', 'akumulatorski-alati', NULL, 1, 1, '2025-12-28 20:03:56'),
-('9cb99f79-30cd-4ccb-9c8f-feaee45eac67', 'Ručni alati', 'rucni-alati', NULL, 2, 1, '2025-12-28 20:03:56'),
-('67899525-165b-4e8e-93bd-7a9857e31e0d', 'Baštenski alati i oprema', 'bastenski-alati', NULL, 3, 1, '2025-12-28 20:03:56'),
-('a16a0322-12b1-4f37-a7d9-a1b525ea9b34', 'Mašine za beton i teške radove', 'masine-beton-teski-radovi', NULL, 4, 1, '2025-12-28 20:03:56'),
-('63edf9e1-cd7a-454f-80b7-37bf4e1b3cab', 'Stolarski i obrada materijala', 'stolarski-obrada-materijala', NULL, 5, 1, '2025-12-28 20:03:56'),
-('ea920780-2f43-4b28-9fcb-c172bd83b4a4', 'Auto i servis', 'auto-servis', NULL, 6, 1, '2025-12-28 20:03:56'),
-('47999882-82a1-41e3-a142-810819e8ce70', 'Merni alati i oprema', 'merni-alati-oprema', NULL, 7, 1, '2025-12-28 20:03:56'),
-('9bdcc94d-9f04-4850-86e5-f27f4af97ae5', 'Sigurnosna i zaštitna oprema', 'sigurnosna-zastitna-oprema', NULL, 8, 1, '2025-12-28 20:03:56'),
-('90cbe7ce-ffda-4824-9f20-211b27c64e80', 'Oprema za čišćenje', 'oprema-za-ciscenje', NULL, 9, 1, '2025-12-28 20:03:56'),
-('c6e43087-cd9e-42db-bb59-1bc0b9ef677e', 'Ostalo / Specijalni alati', 'ostalo-specijalni-alati', NULL, 10, 1, '2025-12-28 20:03:56'),
-('ab9bcee3-6ca5-4f69-a172-bedb96c13334', 'Vodoinstalaterski alati', 'vodoinstalaterski-alati', NULL, 0, 1, '2025-12-28 21:07:48'),
-('4be9e81e-4a48-488f-baf0-3962a9d3211b', 'Elektroinstalaterski alati', 'elektroinstalaterski-alati', NULL, 1, 1, '2025-12-28 21:07:48'),
-('2d6019c5-9cb9-4dc1-b809-b97b98e26142', 'Alati za farbanje i dekoraciju', 'alati-farbanje-dekoracija', NULL, 2, 1, '2025-12-28 21:07:48'),
-('558dee82-238b-4f76-adcf-fa43736eee48', 'Alati za grejanje i klimatizaciju', 'alati-grejanje-klima', NULL, 3, 1, '2025-12-28 21:07:48'),
-('93749dac-0ff3-4cdf-ab51-7531b0afc941', 'Alati za podove', 'alati-za-podove', NULL, 4, 1, '2025-12-28 21:07:48'),
-('0815d959-38fc-43c6-aaf7-e11723da33a8', 'Alati za krov i fasadu', 'alati-krov-fasada', NULL, 5, 1, '2025-12-28 21:07:48'),
-('834981bc-2229-49de-ac16-89b3e9627480', 'Pumpe i oprema za vodu', 'pumpe-oprema-voda', NULL, 6, 1, '2025-12-28 21:07:48');
-
--- ============================================
--- DATA: subcategories (partial - main ones)
--- ============================================
-INSERT INTO `subcategories` (`id`, `category_id`, `name`, `slug`, `icon`, `sort_order`, `is_active`, `created_at`) VALUES
-('5a5b4fbd-64f3-4341-ba05-8c2b6f0ddd97', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', 'Bušilice', 'elektricni-alati-busilice', NULL, 0, 1, '2025-12-28 20:03:56'),
-('fcf81e17-2e39-4a8e-8dab-006fef0092d8', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', 'Brusilice', 'elektricni-alati-brusilice', NULL, 1, 1, '2025-12-28 20:03:56'),
-('52bc6164-4c39-40a2-8569-734be47b9c9b', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', 'Testere', 'elektricni-alati-testere', NULL, 2, 1, '2025-12-28 20:03:56'),
-('89350146-6c9a-4104-8bd9-1baf8f0b22ff', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', 'Štemari', 'elektricni-alati-stemari', NULL, 3, 1, '2025-12-28 20:03:56'),
-('192da693-6d22-411a-9497-89df79f503af', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', 'Rendei', 'elektricni-alati-rendei', NULL, 4, 1, '2025-12-28 20:03:56'),
-('ab8b00f5-e498-4247-9cfe-dc6a1505f65e', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', 'Glodalice', 'elektricni-alati-glodalice', NULL, 5, 1, '2025-12-28 20:03:56'),
-('6874defb-6bb6-42dc-8e99-fbfc277cbc46', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', 'Ostalo', 'elektricni-alati-ostalo', NULL, 6, 1, '2025-12-28 20:03:56'),
-('6877d47d-00f1-48e3-bc5a-3c2081d99579', '4e751a07-d023-4cc9-b496-17bb6e7bfe1f', 'Aku bušilice / odvijači', 'akumulatorski-alati-aku-busilice-odvijaci', NULL, 0, 1, '2025-12-28 20:03:56'),
-('139f2752-05e1-481f-a7ba-b506eb2be755', '4e751a07-d023-4cc9-b496-17bb6e7bfe1f', 'Aku brusilice', 'akumulatorski-alati-aku-brusilice', NULL, 1, 1, '2025-12-28 20:03:56'),
-('f7662981-9e9f-4d83-af1f-a6f1db390590', '4e751a07-d023-4cc9-b496-17bb6e7bfe1f', 'Aku testere', 'akumulatorski-alati-aku-testere', NULL, 2, 1, '2025-12-28 20:03:56'),
-('f63974ef-2d02-4690-a05d-86cfbab6f9a1', '67899525-165b-4e8e-93bd-7a9857e31e0d', 'Kosilice', 'bastenski-alati-kosilice', NULL, 0, 1, '2025-12-28 20:03:56'),
-('25232f09-e00d-4103-bcf9-e67128a97f3b', '67899525-165b-4e8e-93bd-7a9857e31e0d', 'Trimeri', 'bastenski-alati-trimeri', NULL, 1, 1, '2025-12-28 20:03:56'),
-('a70d511e-b262-48f8-8c5a-99daeb97f454', '67899525-165b-4e8e-93bd-7a9857e31e0d', 'Lančane testere', 'bastenski-alati-lancane-testere', NULL, 2, 1, '2025-12-28 20:03:56'),
-('131c92dd-a63a-48b2-9e59-6ff790200d36', 'a16a0322-12b1-4f37-a7d9-a1b525ea9b34', 'Betonijeri', 'masine-beton-teski-radovi-betonijeri', NULL, 0, 1, '2025-12-28 20:03:56'),
-('813b6f07-71d5-4b80-9aed-3d17aead0783', 'a16a0322-12b1-4f37-a7d9-a1b525ea9b34', 'Agregati', 'masine-beton-teski-radovi-agregati', NULL, 4, 1, '2025-12-28 20:03:56'),
-('06374478-9bbc-4077-bfa6-f2cc8734adc0', 'a16a0322-12b1-4f37-a7d9-a1b525ea9b34', 'Mašine za sečenje', 'masine-beton-teski-radovi-masine-za-secenje', NULL, 3, 1, '2025-12-28 20:03:56'),
-('61acd394-a0e8-46d9-99ae-7621faa1793a', '90cbe7ce-ffda-4824-9f20-211b27c64e80', 'Perači pod pritiskom', 'oprema-za-ciscenje-peraci-pod-pritiskom', NULL, 0, 1, '2025-12-28 20:03:56');
-
--- ============================================
--- DATA: items (10 records)
--- ============================================
-INSERT INTO `items` (`id`, `owner_id`, `title`, `description`, `category`, `sub_category`, `category_id`, `subcategory_id`, `tool_type`, `tool_sub_type`, `brand`, `power_source`, `power_watts`, `price_per_day`, `deposit`, `city`, `district`, `latitude`, `longitude`, `images`, `ad_type`, `is_available`, `is_featured`, `rating`, `total_ratings`, `expires_at`, `activity_tags`, `user_type`, `rental_period`, `has_deposit`, `has_delivery`, `weight`, `created_at`, `updated_at`) VALUES
-('101816e8-688e-4cd7-8f15-2667d2d877a1', '770704ec-b269-4683-9b1d-4a40823bd97f', 'Bosch profesionalna bušilica GSB 18V', 'Profesionalna akumulatorska bušilica Bosch sa dva akumulatora. Idealna za bušenje u betonu, drvu i metalu. Uključena torba za nošenje i set burgija.', 'Električni alati', 'Bušilice', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', '5a5b4fbd-64f3-4341-ba05-8c2b6f0ddd97', 'Akumulatorska bušilica', NULL, 'Bosch', 'Akumulator', 650, 800, 5000, 'Beograd', 'Novi Beograd', 44.8176000, 20.4633000, '["/demo-images/busilica_makita.png"]', 'renting', 1, 1, 4.8, 6, '2026-01-14 00:51:12', NULL, 'diy', 'dan', 1, 0, NULL, '2025-12-15 00:51:12', '2025-12-15 00:51:12'),
-('773e1c6b-8ea3-4517-8f57-0e8b8a8b52c6', '770704ec-b269-4683-9b1d-4a40823bd97f', 'Makita kružna testera 190mm', 'Snažna električna kružna testera za precizno sečenje drva. Dubina reza do 66mm. Laser za precizno vođenje.', 'Električni alati', 'Testere', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', '52bc6164-4c39-40a2-8569-734be47b9c9b', 'Kružna testera', NULL, 'Makita', 'Struja', 1800, 1200, 8000, 'Beograd', 'Novi Beograd', 44.8176000, 20.4633000, '["/demo-images/cirkular_bosch.png"]', 'renting', 1, 0, 4.9, 8, '2026-01-14 00:51:12', NULL, 'diy', 'dan', 1, 0, NULL, '2025-12-15 00:51:12', '2025-12-15 00:51:12'),
-('34c0394a-aba8-4c17-b53a-2e29b3734863', '9724b237-816c-4db8-8e7e-880fc6207752', 'Stihl benzinska lančana testera MS 250', 'Profesionalna benzinska lančana testera za sečenje drveća i ogreva. Dužina mača 40cm. Automatsko podmazivanje lanca.', 'Baštenski alati', 'Lančane testere', '67899525-165b-4e8e-93bd-7a9857e31e0d', 'a70d511e-b262-48f8-8c5a-99daeb97f454', NULL, NULL, 'Stihl', 'Benzin', NULL, 1800, 12000, 'Novi Sad', 'Liman', 45.2671000, 19.8335000, '["/demo-images/sekac_husqvarna.png"]', 'renting', 1, 1, 4.5, 3, '2026-01-14 00:51:12', NULL, 'diy', 'dan', 1, 0, NULL, '2025-12-15 00:51:12', '2025-12-15 00:51:12'),
-('05ff3fe3-e07c-449e-aed9-0fd8c3eebdac', '3143835d-e481-48c0-858e-d4c42b6cd55c', 'DeWalt ugaona brusilica 230mm', 'Profesionalna ugaona brusilica za sečenje i brušenje metala i kamena. Snaga 2200W. Uključeni zaštitni poklopac i ručka.', 'Električni alati', 'Brusilice', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', 'fcf81e17-2e39-4a8e-8dab-006fef0092d8', 'Ugaona brusilica', NULL, 'DeWalt', 'Struja', 2200, 900, 6000, 'Niš', 'Centar', 43.3209000, 21.8958000, '["/demo-images/brusilica_villager.png"]', 'renting', 1, 0, 4.9, 7, '2026-01-14 00:51:12', NULL, 'diy', 'dan', 1, 0, NULL, '2025-12-15 00:51:12', '2025-12-15 00:51:12'),
-('55e448ea-12fc-482b-8b18-7881ad5ff33d', '3143835d-e481-48c0-858e-d4c42b6cd55c', 'Hilti TE 7-C SDS-Plus čekić bušilica', 'Profesionalni čekić za bušenje u betonu i zidariji. Energija udara 2.6J. Uključen kofer sa setom burgija.', 'Električni alati', 'Čekić bušilice', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', '6874defb-6bb6-42dc-8e99-fbfc277cbc46', NULL, NULL, 'Hilti', 'Struja', 800, 1100, 8000, 'Niš', 'Centar', 43.3209000, 21.8958000, '["/demo-images/busilica_makita.png"]', 'renting', 1, 0, 4.7, 5, '2026-01-14 00:51:12', NULL, 'diy', 'dan', 1, 0, NULL, '2025-12-15 00:51:12', '2025-12-15 00:51:12'),
-('3bdd611c-8377-4f20-ae28-6ef1b8501655', '00639111-65e8-4f19-aff3-2982797cd00f', 'Betonijer mešalica 160L', 'Električna mešalica za beton kapaciteta 160 litara. Idealna za manje građevinske radove. Točkovi za lako premeštanje.', 'Građevinska oprema', 'Betonijeri', 'a16a0322-12b1-4f37-a7d9-a1b525ea9b34', '131c92dd-a63a-48b2-9e59-6ff790200d36', NULL, NULL, 'Lescha', 'Struja', 650, 1500, 10000, 'Kragujevac', 'Aerodrom', 44.0128000, 20.9114000, '["/demo-images/mesalica_beton_ingco.png"]', 'renting', 1, 0, 4.3, 2, '2026-01-14 00:51:12', NULL, 'diy', 'dan', 1, 0, NULL, '2025-12-15 00:51:12', '2025-12-15 00:51:12'),
-('9d0662f7-206b-491e-96e3-0fba4228a5d6', '362fd13f-e394-4627-b884-033e538c6236', 'Honda agregat EU 22i', 'Tihi inverterski agregat snage 2.2kW. Idealan za kampovanje, gradilište ili rezervno napajanje. Potrošnja samo 1L/h.', 'Građevinska oprema', 'Agregati', 'a16a0322-12b1-4f37-a7d9-a1b525ea9b34', '813b6f07-71d5-4b80-9aed-3d17aead0783', NULL, NULL, 'Honda', 'Benzin', NULL, 2500, 20000, 'Subotica', 'Centar', 46.1003000, 19.6658000, '["/demo-images/glodalica_bosch.png"]', 'renting', 1, 0, 4.6, 4, '2026-01-14 00:51:12', NULL, 'diy', 'dan', 1, 0, NULL, '2025-12-15 00:51:12', '2025-12-15 00:51:12'),
-('36b64494-928a-4ddf-91d9-d706cac70b6c', '362fd13f-e394-4627-b884-033e538c6236', 'Rubi mašina za sečenje pločica', 'Profesionalna mašina za sečenje keramičkih pločica do 60cm. Dijamantski disk i sistem vodenog hlađenja.', 'Građevinska oprema', 'Mašine za sečenje', 'a16a0322-12b1-4f37-a7d9-a1b525ea9b34', '06374478-9bbc-4077-bfa6-f2cc8734adc0', 'Mašina za pločice', NULL, 'Rubi', 'Struja', 800, 1200, 8000, 'Subotica', 'Centar', 46.1003000, 19.6658000, '["/demo-images/cirkular_metabo.png"]', 'renting', 1, 0, 4.8, 6, '2026-01-14 00:51:12', NULL, 'diy', 'dan', 1, 0, NULL, '2025-12-15 00:51:12', '2025-12-15 00:51:12'),
-('3dbde9e8-2011-4842-ac10-2f6a78bdae1f', '9724b237-816c-4db8-8e7e-880fc6207752', 'Kärcher perač pod pritiskom K5', 'Profesionalni perač pod pritiskom za čišćenje dvorišta, automobila, fasada. Pritisak do 145 bara. Uključeno crevo od 8m.', 'Oprema za čišćenje', 'Perači pod pritiskom', '90cbe7ce-ffda-4824-9f20-211b27c64e80', '61acd394-a0e8-46d9-99ae-7621faa1793a', NULL, NULL, 'Kärcher', 'Struja', 2100, 1500, 10000, 'Novi Sad', 'Liman', 45.2671000, 19.8335000, '["/demo-images/vibrator_beton_raider.png"]', 'renting', 1, 0, 4.6, 4, '2026-01-14 00:51:12', NULL, 'diy', 'dan', 1, 0, NULL, '2025-12-15 00:51:12', '2025-12-15 00:51:12'),
-('10e2a6c4-d71f-48fd-8207-5016750cec6e', '00639111-65e8-4f19-aff3-2982797cd00f', 'Bosch orbitalna brusilica GEX 125', 'Profesionalna orbitalna brusilica za finu obradu drveta. Prečnik ploče 125mm. Priključak za usisavanje prašine.', 'Električni alati', 'Brusilice', '2e975f23-1c5f-40fb-a13d-3f56b233e5dd', 'fcf81e17-2e39-4a8e-8dab-006fef0092d8', 'Orbitalna brusilica', NULL, 'Bosch', 'Struja', 350, 600, 4000, 'Kragujevac', 'Aerodrom', 44.0128000, 20.9114000, '["/demo-images/rende_makita.png"]', 'renting', 1, 1, 4.4, 3, '2026-01-14 00:51:12', NULL, 'diy', 'dan', 1, 0, NULL, '2025-12-15 00:51:12', '2025-12-15 00:51:12');
-
--- ============================================
--- DATA: bookings (2 records)
--- ============================================
-INSERT INTO `bookings` (`id`, `item_id`, `renter_id`, `owner_id`, `start_date`, `end_date`, `total_days`, `total_price`, `deposit`, `status`, `payment_method`, `stripe_payment_id`, `pickup_confirmed`, `return_confirmed`, `created_at`, `updated_at`) VALUES
-('2210accb-817c-4de5-813b-0a1bd78a16ca', '101816e8-688e-4cd7-8f15-2667d2d877a1', '9724b237-816c-4db8-8e7e-880fc6207752', '770704ec-b269-4683-9b1d-4a40823bd97f', '2025-12-23 23:00:00', '2025-12-27 23:00:00', 5, 4000, 5000, 'pending', 'cash', NULL, 0, 0, '2025-12-15 12:23:59', '2025-12-15 12:23:59'),
-('973c2fc6-23ea-4278-b2fe-78c0d6b4ada4', '55e448ea-12fc-482b-8b18-7881ad5ff33d', 'c9abe37a-1cda-494b-bbc6-eee3b0faaae7', '3143835d-e481-48c0-858e-d4c42b6cd55c', '2025-12-23 23:00:00', '2025-12-26 23:00:00', 4, 4400, 8000, 'cancelled', 'cash', NULL, 0, 0, '2025-12-20 20:23:20', '2025-12-20 22:11:44');
-
--- ============================================
--- DATA: feature_toggles (7 records)
--- ============================================
-INSERT INTO `feature_toggles` (`id`, `name`, `description`, `is_enabled`, `enabled_for_percentage`, `updated_by`, `created_at`, `updated_at`) VALUES
-('20460f94-8bbb-4bb1-9f1c-3c075d3ee42b', 'guest_browsing', 'Omogucava pregledanje oglasa bez prijave', 1, 100, NULL, '2025-12-29 14:06:58', '2025-12-29 14:06:58'),
-('d4f149aa-abbe-4c2c-81b5-aa9b09803027', 'early_adopter_program', 'Prvih 100 korisnika dobija premium besplatno 30 dana', 1, 100, NULL, '2025-12-29 14:06:58', '2025-12-29 14:06:58'),
-('fdde3fa5-d080-4a99-8445-c6125eea96ee', 'email_notifications', 'Slanje email notifikacija korisnicima', 1, 100, NULL, '2025-12-29 14:06:58', '2025-12-29 14:06:58'),
-('35682051-250e-4a8a-a61c-900a2a78c069', 'push_notifications', 'Push notifikacije za mobilnu aplikaciju', 0, 100, NULL, '2025-12-29 14:06:58', '2025-12-29 14:06:58'),
-('e628a656-14c5-42ab-814c-20583fa3a971', 'location_filter', 'Filtriranje oglasa po lokaciji', 1, 100, NULL, '2025-12-29 14:06:58', '2025-12-29 14:06:58'),
-('1bc6d3a1-b9c0-4e3d-8302-9aa149d31d09', 'stripe_payments', 'Stripe placanje za pretplate', 0, 100, NULL, '2025-12-29 14:06:58', '2025-12-29 14:06:58'),
-('630a68a2-2d50-454f-960f-cc1a47cb64d0', 'premium_popup', 'Prikazuje popup za premium pretplatu korisnicima', 1, 100, NULL, '2025-12-29 19:19:44', '2025-12-29 19:19:44');
-
--- ============================================
--- TABLE: email_subscribers
--- ============================================
-DROP TABLE IF EXISTS `email_subscribers`;
-CREATE TABLE `email_subscribers` (
-  `id` VARCHAR(36) NOT NULL,
-  `email` VARCHAR(255) NOT NULL UNIQUE,
-  `source` VARCHAR(100) DEFAULT 'landing_page',
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
+-- =====================================================
 -- TABLE: subscription_plans
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `subscription_plans`;
 CREATE TABLE `subscription_plans` (
-  `id` VARCHAR(36) NOT NULL,
-  `name` VARCHAR(255) NOT NULL UNIQUE,
-  `display_name` VARCHAR(255) NOT NULL,
-  `description` TEXT DEFAULT NULL,
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `name` VARCHAR(255) NOT NULL,
+  `display_name` TEXT NOT NULL,
+  `description` TEXT,
   `price_rsd` INT NOT NULL,
   `duration_days` INT NOT NULL DEFAULT 30,
-  `max_ads` INT DEFAULT NULL,
-  `features` JSON DEFAULT NULL,
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `max_ads` INT,
+  `features` JSON,
+  `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
   `sort_order` INT DEFAULT 0,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- TABLE: sent_reminders_log
--- ============================================
-DROP TABLE IF EXISTS `sent_reminders_log`;
-CREATE TABLE `sent_reminders_log` (
-  `id` VARCHAR(36) NOT NULL,
-  `booking_id` VARCHAR(36) NOT NULL,
-  `reminder_type` VARCHAR(100) NOT NULL,
-  `sent_date` VARCHAR(50) NOT NULL,
-  `reminder_key` VARCHAR(255) NOT NULL UNIQUE,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`booking_id`) REFERENCES `bookings`(`id`)
+  UNIQUE KEY `subscription_plans_name_unique` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
--- TABLE: admin_notifications
--- ============================================
-DROP TABLE IF EXISTS `admin_notifications`;
-CREATE TABLE `admin_notifications` (
-  `id` VARCHAR(36) NOT NULL,
-  `admin_id` VARCHAR(36) NOT NULL,
-  `type` VARCHAR(100) NOT NULL,
-  `title` VARCHAR(255) NOT NULL,
-  `message` TEXT NOT NULL,
-  `target_type` VARCHAR(100) DEFAULT NULL,
-  `target_ids` JSON DEFAULT NULL,
-  `sent_count` INT DEFAULT 0,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+-- =====================================================
+-- TABLE: item_views
+-- =====================================================
+DROP TABLE IF EXISTS `item_views`;
+CREATE TABLE `item_views` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `item_id` VARCHAR(36) NOT NULL,
+  `viewer_id` VARCHAR(36),
+  `ip_address` TEXT,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`admin_id`) REFERENCES `users`(`id`)
+  KEY `item_views_item_id_fk` (`item_id`),
+  KEY `item_views_viewer_id_fk` (`viewer_id`),
+  CONSTRAINT `item_views_item_id_fk` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`),
+  CONSTRAINT `item_views_viewer_id_fk` FOREIGN KEY (`viewer_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
--- TABLE: user_activity_logs
--- ============================================
-DROP TABLE IF EXISTS `user_activity_logs`;
-CREATE TABLE `user_activity_logs` (
-  `id` VARCHAR(36) NOT NULL,
-  `user_id` VARCHAR(36) NOT NULL,
-  `action` VARCHAR(255) NOT NULL,
-  `details` TEXT DEFAULT NULL,
-  `ip_address` VARCHAR(45) DEFAULT NULL,
-  `user_agent` TEXT DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+-- =====================================================
+-- TABLE: reported_users
+-- =====================================================
+DROP TABLE IF EXISTS `reported_users`;
+CREATE TABLE `reported_users` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `reporter_id` VARCHAR(36) NOT NULL,
+  `reported_user_id` VARCHAR(36) NOT NULL,
+  `reason` TEXT NOT NULL,
+  `description` TEXT,
+  `status` TEXT NOT NULL DEFAULT 'pending',
+  `admin_notes` TEXT,
+  `resolved_by` VARCHAR(36),
+  `resolved_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+  KEY `reported_users_reporter_id_fk` (`reporter_id`),
+  KEY `reported_users_reported_user_id_fk` (`reported_user_id`),
+  KEY `reported_users_resolved_by_fk` (`resolved_by`),
+  CONSTRAINT `reported_users_reporter_id_fk` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `reported_users_reported_user_id_fk` FOREIGN KEY (`reported_user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `reported_users_resolved_by_fk` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
+-- =====================================================
 -- TABLE: server_error_logs
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `server_error_logs`;
 CREATE TABLE `server_error_logs` (
-  `id` VARCHAR(36) NOT NULL,
-  `level` VARCHAR(50) NOT NULL DEFAULT 'error',
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `level` TEXT NOT NULL DEFAULT 'error',
   `message` TEXT NOT NULL,
-  `stack` TEXT DEFAULT NULL,
-  `endpoint` VARCHAR(255) DEFAULT NULL,
-  `method` VARCHAR(10) DEFAULT NULL,
-  `user_id` VARCHAR(36) DEFAULT NULL,
-  `ip_address` VARCHAR(45) DEFAULT NULL,
-  `user_agent` TEXT DEFAULT NULL,
-  `metadata` TEXT DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  `stack` TEXT,
+  `endpoint` TEXT,
+  `method` TEXT,
+  `user_id` VARCHAR(36),
+  `ip_address` TEXT,
+  `user_agent` TEXT,
+  `metadata` TEXT,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `server_error_logs_user_id_fk` (`user_id`),
+  CONSTRAINT `server_error_logs_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
+-- =====================================================
 -- TABLE: admin_2fa
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `admin_2fa`;
 CREATE TABLE `admin_2fa` (
-  `id` VARCHAR(36) NOT NULL,
-  `user_id` VARCHAR(36) NOT NULL UNIQUE,
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `user_id` VARCHAR(36) NOT NULL,
   `secret` TEXT NOT NULL,
-  `is_enabled` TINYINT(1) NOT NULL DEFAULT 0,
-  `backup_codes` JSON DEFAULT NULL,
-  `last_used_at` DATETIME DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_enabled` BOOLEAN NOT NULL DEFAULT FALSE,
+  `backup_codes` JSON,
+  `last_used_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+  KEY `admin_2fa_user_id_fk` (`user_id`),
+  CONSTRAINT `admin_2fa_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
+-- =====================================================
 -- TABLE: app_versions
--- ============================================
+-- =====================================================
 DROP TABLE IF EXISTS `app_versions`;
 CREATE TABLE `app_versions` (
-  `id` VARCHAR(36) NOT NULL,
-  `platform` VARCHAR(50) NOT NULL,
-  `version` VARCHAR(50) NOT NULL,
-  `build_number` INT DEFAULT NULL,
-  `release_notes` TEXT DEFAULT NULL,
-  `is_required` TINYINT(1) NOT NULL DEFAULT 0,
-  `download_url` TEXT DEFAULT NULL,
-  `released_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `platform` TEXT NOT NULL,
+  `version` TEXT NOT NULL,
+  `build_number` INT,
+  `release_notes` TEXT,
+  `is_required` BOOLEAN NOT NULL DEFAULT FALSE,
+  `download_url` TEXT,
+  `released_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- TABLE: email_subscribers
+-- =====================================================
+DROP TABLE IF EXISTS `email_subscribers`;
+CREATE TABLE `email_subscribers` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `email` VARCHAR(255) NOT NULL,
+  `source` TEXT DEFAULT 'landing_page',
+  `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email_subscribers_email_unique` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- TABLE: admin_logs
+-- =====================================================
+DROP TABLE IF EXISTS `admin_logs`;
+CREATE TABLE `admin_logs` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `admin_id` VARCHAR(36) NOT NULL,
+  `action` TEXT NOT NULL,
+  `target_type` TEXT,
+  `target_id` TEXT,
+  `details` TEXT,
+  `ip_address` TEXT,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `admin_logs_admin_id_fk` (`admin_id`),
+  CONSTRAINT `admin_logs_admin_id_fk` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- TABLE: user_activity_logs
+-- =====================================================
+DROP TABLE IF EXISTS `user_activity_logs`;
+CREATE TABLE `user_activity_logs` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `user_id` VARCHAR(36) NOT NULL,
+  `action` TEXT NOT NULL,
+  `details` TEXT,
+  `ip_address` TEXT,
+  `user_agent` TEXT,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `user_activity_logs_user_id_fk` (`user_id`),
+  CONSTRAINT `user_activity_logs_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- TABLE: reported_items
+-- =====================================================
+DROP TABLE IF EXISTS `reported_items`;
+CREATE TABLE `reported_items` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `item_id` VARCHAR(36) NOT NULL,
+  `reporter_id` VARCHAR(36) NOT NULL,
+  `reason` TEXT NOT NULL,
+  `description` TEXT,
+  `status` TEXT NOT NULL DEFAULT 'pending',
+  `resolved_by` VARCHAR(36),
+  `resolved_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `reported_items_item_id_fk` (`item_id`),
+  KEY `reported_items_reporter_id_fk` (`reporter_id`),
+  KEY `reported_items_resolved_by_fk` (`resolved_by`),
+  CONSTRAINT `reported_items_item_id_fk` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`),
+  CONSTRAINT `reported_items_reporter_id_fk` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `reported_items_resolved_by_fk` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- TABLE: feature_toggles
+-- =====================================================
+DROP TABLE IF EXISTS `feature_toggles`;
+CREATE TABLE `feature_toggles` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `name` VARCHAR(255) NOT NULL,
+  `description` TEXT,
+  `is_enabled` BOOLEAN NOT NULL DEFAULT TRUE,
+  `enabled_for_percentage` INT DEFAULT 100,
+  `updated_by` VARCHAR(36),
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `feature_toggles_name_unique` (`name`),
+  KEY `feature_toggles_updated_by_fk` (`updated_by`),
+  CONSTRAINT `feature_toggles_updated_by_fk` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- TABLE: admin_notifications
+-- =====================================================
+DROP TABLE IF EXISTS `admin_notifications`;
+CREATE TABLE `admin_notifications` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `admin_id` VARCHAR(36) NOT NULL,
+  `type` TEXT NOT NULL,
+  `title` TEXT NOT NULL,
+  `message` TEXT NOT NULL,
+  `target_type` TEXT,
+  `target_ids` JSON,
+  `sent_count` INT DEFAULT 0,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `admin_notifications_admin_id_fk` (`admin_id`),
+  CONSTRAINT `admin_notifications_admin_id_fk` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- TABLE: sent_reminders_log
+-- =====================================================
+DROP TABLE IF EXISTS `sent_reminders_log`;
+CREATE TABLE `sent_reminders_log` (
+  `id` VARCHAR(36) NOT NULL DEFAULT (UUID()),
+  `booking_id` VARCHAR(36) NOT NULL,
+  `reminder_type` TEXT NOT NULL,
+  `sent_date` TEXT NOT NULL,
+  `reminder_key` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sent_reminders_log_reminder_key_unique` (`reminder_key`),
+  KEY `sent_reminders_log_booking_id_fk` (`booking_id`),
+  CONSTRAINT `sent_reminders_log_booking_id_fk` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ============================================
--- IMPORTANT NOTES:
--- ============================================
--- 1. Demo user password is: demo123 (for all demo accounts)
--- 2. Admin password for admin@vikendmajstor.rs needs to be reset
--- 3. Images paths (/demo-images/...) need to be updated to match your server
--- 4. Run this script in phpMyAdmin or MySQL CLI
--- 5. Make sure your database is set to utf8mb4 charset
+-- =====================================================
+-- DEMO DATA: Admin user (password: Admin123!)
+-- Hash is scrypt format - you need to create new admin via registration
+-- =====================================================
+INSERT INTO `users` (`id`, `email`, `password`, `name`, `phone`, `city`, `role`, `email_verified`, `is_admin`, `subscription_type`, `is_early_adopter`, `created_at`) VALUES
+('admin-001', 'admin@vikendmajstor.rs', 'demo_password_change_after_first_login', 'Administrator', '+381601234567', 'Beograd', 'owner', TRUE, TRUE, 'premium', TRUE, NOW());
+
+-- =====================================================
+-- DEMO DATA: Test users (for testing only - remove in production)
+-- =====================================================
+INSERT INTO `users` (`id`, `email`, `password`, `name`, `phone`, `city`, `district`, `role`, `email_verified`, `subscription_type`, `is_early_adopter`, `rating`, `total_ratings`, `created_at`) VALUES
+('user-owner-001', 'vlasnik@test.rs', 'demo_password', 'Marko Vlasnik', '+381621111111', 'Beograd', 'Vracar', 'owner', TRUE, 'premium', TRUE, '4.8', 25, NOW()),
+('user-owner-002', 'petar@test.rs', 'demo_password', 'Petar Majstor', '+381622222222', 'Novi Sad', 'Detelinara', 'owner', TRUE, 'basic', FALSE, '4.5', 12, NOW()),
+('user-renter-001', 'korisnik@test.rs', 'demo_password', 'Ana Korisnik', '+381623333333', 'Nis', 'Palilula', 'renter', TRUE, 'free', FALSE, '4.9', 8, NOW());
+
+-- =====================================================
+-- DEMO DATA: Categories
+-- =====================================================
+INSERT INTO `categories` (`id`, `name`, `slug`, `icon`, `sort_order`, `is_active`) VALUES
+('cat-001', 'Elektricni alati', 'elektricni-alati', 'zap', 1, TRUE),
+('cat-002', 'Akumulatorski alati', 'akumulatorski-alati', 'battery', 2, TRUE),
+('cat-003', 'Rucni alati', 'rucni-alati', 'wrench', 3, TRUE),
+('cat-004', 'Bastenski alati', 'bastenski-alati', 'tree', 4, TRUE),
+('cat-005', 'Masine za beton', 'masine-beton', 'hard-drive', 5, TRUE),
+('cat-006', 'Stolarski alati', 'stolarski-alati', 'layers', 6, TRUE),
+('cat-007', 'Auto i servis', 'auto-servis', 'tool', 7, TRUE),
+('cat-008', 'Merni alati', 'merni-alati', 'compass', 8, TRUE),
+('cat-009', 'Oprema za ciscenje', 'oprema-ciscenje', 'droplet', 9, TRUE);
+
+-- =====================================================
+-- DEMO DATA: Subcategories
+-- =====================================================
+INSERT INTO `subcategories` (`id`, `category_id`, `name`, `slug`, `sort_order`, `is_active`) VALUES
+('sub-001', 'cat-001', 'Busilice', 'busilice', 1, TRUE),
+('sub-002', 'cat-001', 'Brusilice', 'brusilice', 2, TRUE),
+('sub-003', 'cat-001', 'Testere', 'testere', 3, TRUE),
+('sub-004', 'cat-001', 'Rendei', 'rendei', 4, TRUE),
+('sub-005', 'cat-001', 'Glodalice', 'glodalice', 5, TRUE),
+('sub-006', 'cat-004', 'Kosilice', 'kosilice', 1, TRUE),
+('sub-007', 'cat-004', 'Trimeri', 'trimeri', 2, TRUE),
+('sub-008', 'cat-005', 'Betonijeri', 'betonijeri', 1, TRUE),
+('sub-009', 'cat-005', 'Vibratori', 'vibratori', 2, TRUE),
+('sub-010', 'cat-005', 'Sekaci', 'sekaci', 3, TRUE);
+
+-- =====================================================
+-- DEMO DATA: Items (tools)
+-- =====================================================
+INSERT INTO `items` (`id`, `owner_id`, `title`, `description`, `category`, `sub_category`, `category_id`, `subcategory_id`, `brand`, `power_source`, `power_watts`, `price_per_day`, `deposit`, `city`, `district`, `latitude`, `longitude`, `images`, `is_available`, `is_featured`, `rating`, `total_ratings`, `expires_at`, `created_at`) VALUES
+('item-001', 'user-owner-001', 'Makita busilica HR2470', 'Profesionalna udarna busilica Makita HR2470 sa SDS-Plus prihvatom. Idealna za busenje u betonu, cigli i kamenu. Snaga 780W, broj udaraca 4500/min.', 'Elektricni alati', 'Busilice', 'cat-001', 'sub-001', 'Makita', 'Elektricni (struja)', 780, 800, 5000, 'Beograd', 'Vracar', 44.8040, 20.4651, '["/demo-images/busilica_makita.png"]', TRUE, TRUE, '4.9', 15, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()),
+('item-002', 'user-owner-001', 'Bosch cirkular GKS 190', 'Rucna kruzna testera Bosch GKS 190 Professional. Precnik diska 190mm, dubina reza 70mm. Snaga 1400W.', 'Elektricni alati', 'Testere', 'cat-001', 'sub-003', 'Bosch', 'Elektricni (struja)', 1400, 1000, 8000, 'Beograd', 'Novi Beograd', 44.8176, 20.4199, '["/demo-images/cirkular_bosch.png"]', TRUE, TRUE, '4.7', 8, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()),
+('item-003', 'user-owner-002', 'Villager brusilica VPG 2400', 'Ugaona brusilica Villager sa diskom 230mm. Snaga 2400W, idealna za secenje i brusenje metala i kamena.', 'Elektricni alati', 'Brusilice', 'cat-001', 'sub-002', 'Villager', 'Elektricni (struja)', 2400, 600, 4000, 'Novi Sad', 'Detelinara', 45.2671, 19.8335, '["/demo-images/brusilica_villager.png"]', TRUE, FALSE, '4.5', 6, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()),
+('item-004', 'user-owner-002', 'Metabo cirkular KS 55 FS', 'Rucna kruzna testera Metabo KS 55 FS. Disk 160mm, dubina reza 55mm. Precizna vodilica ukljucena.', 'Elektricni alati', 'Testere', 'cat-001', 'sub-003', 'Metabo', 'Elektricni (struja)', 1200, 900, 6000, 'Novi Sad', 'Liman', 45.2442, 19.8410, '["/demo-images/cirkular_metabo.png"]', TRUE, FALSE, '4.6', 4, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()),
+('item-005', 'user-owner-001', 'Bosch glodalica POF 1400 ACE', 'Vertikalna glodalica Bosch POF 1400 ACE. Snaga 1400W, hod 55mm. Idealna za profilisanje, utore i preciznu obradu drveta.', 'Elektricni alati', 'Glodalice', 'cat-001', 'sub-005', 'Bosch', 'Elektricni (struja)', 1400, 1200, 10000, 'Beograd', 'Zvezdara', 44.7866, 20.5001, '["/demo-images/glodalica_bosch.png"]', TRUE, TRUE, '4.8', 10, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()),
+('item-006', 'user-owner-001', 'Makita rende KP0800', 'Elektricni rende Makita KP0800. Sirina hobla 82mm, dubina struganja 2.5mm. Lagan i kompaktan.', 'Elektricni alati', 'Rendei', 'cat-001', 'sub-004', 'Makita', 'Elektricni (struja)', 620, 700, 5000, 'Beograd', 'Vracar', 44.8040, 20.4651, '["/demo-images/rende_makita.png"]', TRUE, FALSE, '4.4', 3, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()),
+('item-007', 'user-owner-002', 'Villager ubodna testera VJS 900', 'Ubodna testera Villager VJS 900. Snaga 650W, broj hodova 3000/min. Za drvo, metal i plastiku.', 'Elektricni alati', 'Testere', 'cat-001', 'sub-003', 'Villager', 'Elektricni (struja)', 650, 500, 3000, 'Novi Sad', 'Petrovaradin', 45.2548, 19.8606, '["/demo-images/ubodna_testera_villager.png"]', TRUE, FALSE, '4.3', 5, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()),
+('item-008', 'user-owner-001', 'Husqvarna sekac K535i', 'Akumulatorski sekac Husqvarna K535i za beton i asfalt. Disk 230mm, bez izduvnih gasova.', 'Masine za beton', 'Sekaci', 'cat-005', 'sub-010', 'Husqvarna', 'Akumulator', 0, 2500, 15000, 'Beograd', 'Zemun', 44.8445, 20.4065, '["/demo-images/sekac_husqvarna.png"]', TRUE, TRUE, '4.9', 7, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()),
+('item-009', 'user-owner-002', 'INGCO mesalica za beton', 'Profesionalna mesalica za beton INGCO kapaciteta 120L. Motorna, sa tockovima za lako premestanje.', 'Masine za beton', 'Betonijeri', 'cat-005', 'sub-008', 'INGCO', 'Elektricni (struja)', 550, 1500, 10000, 'Novi Sad', 'Sajmiste', 45.2600, 19.8165, '["/demo-images/mesalica_beton_ingco.png"]', TRUE, FALSE, '4.6', 9, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()),
+('item-010', 'user-owner-001', 'Raider vibrator za beton', 'Elektricni vibrator za beton Raider. Duzina igle 35mm, pogonski motor 1500W. Za izlivanje temelja i ploca.', 'Masine za beton', 'Vibratori', 'cat-005', 'sub-009', 'Raider', 'Elektricni (struja)', 1500, 1800, 8000, 'Beograd', 'Cukarica', 44.7856, 20.4169, '["/demo-images/vibrator_beton_raider.png"]', TRUE, FALSE, '4.7', 4, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW());
+
+-- =====================================================
+-- DEMO DATA: Subscription plans
+-- =====================================================
+INSERT INTO `subscription_plans` (`id`, `name`, `display_name`, `description`, `price_rsd`, `duration_days`, `max_ads`, `features`, `is_active`, `sort_order`) VALUES
+('plan-free', 'free', 'Besplatno', 'Osnovna funkcionalnost za pocetnike', 0, 30, 5, '["5 oglasa", "Osnovne funkcije", "Email podrska"]', TRUE, 1),
+('plan-basic', 'basic', 'Standard', 'Za aktivne korisnike koji zele vise', 500, 30, 20, '["20 oglasa", "Prioritetna podrska", "Statistika oglasa", "Istaknuti oglasi"]', TRUE, 2),
+('plan-premium', 'premium', 'Premium', 'Za profesionalce i firme', 1000, 30, NULL, '["Neograniceni oglasi", "VIP podrska", "Detaljna analitika", "Istaknuti oglasi", "Premium bedz", "Prioritet u pretrazi"]', TRUE, 3);
+
+-- =====================================================
+-- DEMO DATA: Feature toggles
+-- =====================================================
+INSERT INTO `feature_toggles` (`id`, `name`, `description`, `is_enabled`, `enabled_for_percentage`) VALUES
+('ft-001', 'registration', 'Omoguci registraciju novih korisnika', TRUE, 100),
+('ft-002', 'booking', 'Omoguci rezervacije', TRUE, 100),
+('ft-003', 'messaging', 'Omoguci poruke izmedju korisnika', TRUE, 100),
+('ft-004', 'reviews', 'Omoguci recenzije', TRUE, 100),
+('ft-005', 'push_notifications', 'Omoguci push notifikacije', TRUE, 100),
+('ft-006', 'email_notifications', 'Omoguci email notifikacije', TRUE, 100);
+
+-- =====================================================
+-- DEMO DATA: App versions
+-- =====================================================
+INSERT INTO `app_versions` (`id`, `platform`, `version`, `build_number`, `release_notes`, `is_required`) VALUES
+('ver-ios-001', 'ios', '1.0.0', 1, 'Prva verzija aplikacije', FALSE),
+('ver-android-001', 'android', '1.0.0', 1, 'Prva verzija aplikacije', FALSE);
+
+-- =====================================================
+-- IMPORTANT: After import, create a real admin user!
+-- Go to the app, register with your email, then run:
+-- UPDATE users SET is_admin = TRUE WHERE email = 'your@email.rs';
+-- =====================================================
