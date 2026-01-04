@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Politika privatnosti - VikendMajstor</title>
+  <meta name="description" content="Politika privatnosti platforme VikendMajstor - kako prikupljamo i koristimo vase podatke.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary: #FFCC00;
+      --primary-dark: #E6B800;
+      --dark: #1A1A1A;
+      --dark-secondary: #2A2A2A;
+      --text: #333333;
+      --text-secondary: #666666;
+      --background: #FFFFFF;
+      --background-secondary: #F8F9FA;
+      --border: #E5E5E5;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.8;
+      color: var(--text);
+      background: var(--background);
+    }
+    
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .nav {
+      background: var(--dark);
+      padding: 16px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+    
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .nav-logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+    }
+    
+    .nav-logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .nav-cta {
+      background: var(--primary);
+      color: var(--dark);
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    
+    .nav-cta:hover {
+      background: var(--primary-dark);
+    }
+    
+    .content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 120px 20px 60px;
+    }
+    
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 16px;
+    }
+    
+    .last-updated {
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+    
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-top: 40px;
+      margin-bottom: 16px;
+    }
+    
+    p {
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    
+    ul, ol {
+      margin-bottom: 16px;
+      padding-left: 24px;
+    }
+    
+    li {
+      margin-bottom: 8px;
+    }
+    
+    .highlight-box {
+      background: var(--background-secondary);
+      border-left: 4px solid var(--primary);
+      padding: 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .highlight-box p {
+      margin-bottom: 0;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+    }
+    
+    .data-table th,
+    .data-table td {
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      text-align: left;
+    }
+    
+    .data-table th {
+      background: var(--background-secondary);
+      font-weight: 600;
+    }
+    
+    .data-table tr:hover {
+      background: var(--background-secondary);
+    }
+    
+    .footer {
+      background: var(--dark);
+      padding: 30px 0;
+      text-align: center;
+    }
+    
+    .footer-text {
+      color: #999;
+      font-size: 14px;
+    }
+    
+    .footer-links {
+      margin-top: 16px;
+    }
+    
+    .footer-links a {
+      color: #999;
+      margin: 0 16px;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+    
+    @media (max-width: 768px) {
+      .data-table {
+        font-size: 14px;
+      }
+      
+      .data-table th,
+      .data-table td {
+        padding: 8px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <img src="/favicon.png" alt="VikendMajstor">
+        <span class="nav-logo-text">VikendMajstor</span>
+      </a>
+      <a href="https://app.vikendmajstor.rs" class="nav-cta">Otvori aplikaciju</a>
+    </div>
+  </nav>
+
+  <main class="content">
+    <h1>Politika privatnosti</h1>
+    <p class="last-updated">Poslednje azuriranje: Decembar 2024</p>
+
+    <div class="highlight-box">
+      <p><strong>Ukratko:</strong> Prikupljamo samo podatke koji su neophodni za funkcionisanje platforme. Ne prodajemo vase podatke trecim licima i koristimo ih iskljucivo za pruzanje usluge.</p>
+    </div>
+
+    <h2>1. Ko smo mi</h2>
+    <p>VikendMajstor je platforma za iznajmljivanje alata koja povezuje korisnike u Srbiji. Ova Politika privatnosti objasnjava kako prikupljamo, koristimo i stitimo vase licne podatke u skladu sa Zakonom o zastiti podataka o licnosti Republike Srbije.</p>
+    <p><strong>Kontakt:</strong> info@vikendmajstor.rs</p>
+
+    <h2>2. Koje podatke prikupljamo</h2>
+    
+    <h3>Podaci koje vi pruzate:</h3>
+    <table class="data-table">
+      <tr>
+        <th>Podatak</th>
+        <th>Svrha</th>
+      </tr>
+      <tr>
+        <td>Ime i prezime</td>
+        <td>Identifikacija na platformi</td>
+      </tr>
+      <tr>
+        <td>Email adresa</td>
+        <td>Prijava, obavestenja, verifikacija</td>
+      </tr>
+      <tr>
+        <td>Lozinka (hesovana)</td>
+        <td>Bezbednost naloga</td>
+      </tr>
+      <tr>
+        <td>Lokacija (grad)</td>
+        <td>Prikaz alata u vasem kraju</td>
+      </tr>
+      <tr>
+        <td>Fotografije alata</td>
+        <td>Prikaz u oglasima</td>
+      </tr>
+      <tr>
+        <td>Poruke</td>
+        <td>Komunikacija sa korisnicima</td>
+      </tr>
+    </table>
+
+    <h3>Podaci koje automatski prikupljamo:</h3>
+    <ul>
+      <li>IP adresa (za bezbednost i sprecavanje zloupotrebe)</li>
+      <li>Tip uredaja i pregledaca</li>
+      <li>Vreme pristupa platformi</li>
+      <li>Stranice koje posecujete na platformi</li>
+    </ul>
+
+    <h2>3. Kako koristimo vase podatke</h2>
+    <p>Vase podatke koristimo iskljucivo za:</p>
+    <ul>
+      <li><strong>Pruzanje usluge:</strong> Kreiranje naloga, objavljivanje oglasa, omogucavanje komunikacije</li>
+      <li><strong>Bezbednost:</strong> Zastita od prevara, sprecavanje zloupotrebe, verifikacija naloga</li>
+      <li><strong>Poboljsanje platforme:</strong> Analiza koriscenja za unapredjenje funkcionalnosti</li>
+      <li><strong>Komunikacija:</strong> Slanje obavestenja o rezervacijama, porukama i vaznim promenama</li>
+    </ul>
+
+    <div class="highlight-box">
+      <p><strong>Ne prodajemo vase podatke.</strong> Nikada necemo prodati, iznajmiti ili deliti vase licne podatke sa trecim licima u marketinske svrhe.</p>
+    </div>
+
+    <h2>4. Pravni osnov za obradu</h2>
+    <p>Vase podatke obradjujemo na osnovu:</p>
+    <ul>
+      <li><strong>Izvrsenje ugovora:</strong> Podaci neophodni za koriscenje platforme</li>
+      <li><strong>Legitimni interes:</strong> Bezbednost platforme i sprecavanje prevara</li>
+      <li><strong>Pristanak:</strong> Za opcione funkcije poput marketinskih obavestenja</li>
+    </ul>
+
+    <h2>5. Deljenje podataka</h2>
+    <p>Vase podatke delimo samo u sledecim slucajevima:</p>
+    <ul>
+      <li><strong>Sa drugim korisnicima:</strong> Vase ime i lokacija su vidljivi u oglasima; poruke su vidljive primaocu</li>
+      <li><strong>Sa pruzaocima usluga:</strong> Hosting, email servis - svi su obavezani na poverljivost</li>
+      <li><strong>Na zahtev zakona:</strong> Ako to zahteva sud ili nadlezni organ</li>
+    </ul>
+
+    <h2>6. Bezbednost podataka</h2>
+    <p>Primenjujemo savremene mere zastite:</p>
+    <ul>
+      <li><strong>Enkripcija:</strong> Svi podaci se prenose preko HTTPS (SSL/TLS)</li>
+      <li><strong>Hesovanje lozinki:</strong> Koristimo scrypt algoritam - cak ni mi ne mozemo videti vasu lozinku</li>
+      <li><strong>Zastita od napada:</strong> Rate limiting, zastita od XSS i SQL injection napada</li>
+      <li><strong>Pristup podacima:</strong> Samo ovlasceni administratori imaju pristup bazi podataka</li>
+    </ul>
+
+    <h2>7. Cuvanje podataka</h2>
+    <p>Vase podatke cuvamo dok koristite platformu. Nakon brisanja naloga:</p>
+    <ul>
+      <li>Licni podaci se brisu u roku od 30 dana</li>
+      <li>Anonimizovani podaci za statistiku mogu se zadrzati</li>
+      <li>Podaci potrebni za zakonske obaveze cuvaju se u skladu sa propisima</li>
+    </ul>
+
+    <h2>8. Vasa prava</h2>
+    <p>Imate pravo da:</p>
+    <ul>
+      <li><strong>Pristupite:</strong> Zatrazite kopiju svih podataka koje imamo o vama</li>
+      <li><strong>Ispravite:</strong> Azurirate netacne podatke u podesavanjima naloga</li>
+      <li><strong>Obrisete:</strong> Zatrazite brisanje vaseg naloga i svih podataka</li>
+      <li><strong>Prenesete:</strong> Dobijete vase podatke u citljivom formatu</li>
+      <li><strong>Prigovorite:</strong> Ukoliko smatrate da se vasi podaci obradjuju nezakonito</li>
+    </ul>
+    <p>Za ostvarivanje ovih prava, kontaktirajte nas na info@vikendmajstor.rs</p>
+
+    <h2>9. Kolacici (Cookies)</h2>
+    <p>Koristimo kolacice za:</p>
+    <ul>
+      <li><strong>Neophodni kolacici:</strong> Za prijavu i osnovno funkcionisanje</li>
+      <li><strong>Analiticki kolacici:</strong> Za razumevanje kako korisnici koriste platformu</li>
+    </ul>
+    <p>Ne koristimo kolacice za pracenje u marketinske svrhe.</p>
+
+    <h2>10. Deca</h2>
+    <p>Platforma nije namenjena osobama mladjim od 18 godina. Ne prikupljamo svesno podatke od maloletnika. Ako saznamo da imamo podatke maloletnika, odmah cemo ih obrisati.</p>
+
+    <h2>11. Izmene politike</h2>
+    <p>Mozemo povremeno azurirati ovu Politiku privatnosti. O znacajnim promenama cemo vas obavestiti putem email-a ili obaveštenja na platformi najmanje 30 dana unapred.</p>
+
+    <h2>12. Pravo na zalbu</h2>
+    <p>Ako smatrate da se vasi podaci obradjuju nezakonito, imate pravo da podnesete zalbu Povereniku za informacije od javnog znacaja i zastitu podataka o licnosti Republike Srbije.</p>
+    <p>
+      <strong>Poverenik:</strong><br>
+      Bulevar kralja Aleksandra 15, Beograd<br>
+      office@poverenik.rs<br>
+      www.poverenik.rs
+    </p>
+
+    <h2>13. Kontakt</h2>
+    <p>Za sva pitanja u vezi sa vasom privatnoscu:</p>
+    <p>
+      <strong>Email:</strong> info@vikendmajstor.rs<br>
+    </p>
+  </main>
+
+  <footer class="footer">
+    <p class="footer-text">&copy; 2024 VikendMajstor. Sva prava zadrzana.</p>
+    <div class="footer-links">
+      <a href="/">Pocetna</a>
+      <a href="/uslovi-koriscenja">Uslovi koriscenja</a>
+      <a href="/politika-privatnosti">Politika privatnosti</a>
+    </div>
+  </footer>
+</body>
+</html>
