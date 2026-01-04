@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "node:http";
 import { setupAuth, isAuthenticated, isVerifiedUser } from "./auth";
 import { storage } from "./storage";
-import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { LocalStorageService, LocalNotFoundError } from "./localStorage";
 import { 
   sendBookingRequestNotification, 
   sendBookingRequestConfirmationToRenter,
@@ -300,13 +300,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/public-objects/:filePath(*)", async (req, res) => {
     const filePath = req.params.filePath;
-    const objectStorageService = new ObjectStorageService();
+    const localStorageService = new LocalStorageService();
     try {
-      const file = await objectStorageService.searchPublicObject(filePath);
+      const file = await localStorageService.searchPublicObject(filePath);
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
-      objectStorageService.downloadObject(file, res);
+      localStorageService.downloadObject(file, res);
     } catch (error) {
       console.error("Error searching for public object:", error);
       return res.status(500).json({ error: "Internal server error" });
@@ -314,17 +314,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/objects/:objectPath(*)", async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
+    const localStorageService = new LocalStorageService();
     console.log(`[OBJECTS] Requesting object: ${req.path}`);
     try {
-      const objectFile = await objectStorageService.getObjectEntityFile(
-        req.path,
-      );
+      const filePath = await localStorageService.getObjectEntityFile(req.path);
       console.log(`[OBJECTS] Found object: ${req.path}`);
-      objectStorageService.downloadObject(objectFile, res);
+      localStorageService.downloadObject(filePath, res);
     } catch (error) {
       console.error(`[OBJECTS] Error for ${req.path}:`, error);
-      if (error instanceof ObjectNotFoundError) {
+      if (error instanceof LocalNotFoundError) {
         return res.sendStatus(404);
       }
       return res.sendStatus(500);
@@ -332,16 +330,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/objects/:objectPath(*)", async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
+    const localStorageService = new LocalStorageService();
     const objectPath = `/objects/${req.params.objectPath}`;
     console.log(`[API-OBJECTS] Requesting object: ${objectPath}`);
     try {
-      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      const filePath = await localStorageService.getObjectEntityFile(objectPath);
       console.log(`[API-OBJECTS] Found object: ${objectPath}`);
-      objectStorageService.downloadObject(objectFile, res);
+      localStorageService.downloadObject(filePath, res);
     } catch (error) {
       console.error(`[API-OBJECTS] Error for ${objectPath}:`, error);
-      if (error instanceof ObjectNotFoundError) {
+      if (error instanceof LocalNotFoundError) {
         return res.sendStatus(404);
       }
       return res.sendStatus(500);
@@ -349,28 +347,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
+    const localStorageService = new LocalStorageService();
     try {
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
+      const uploadId = localStorageService.generateUploadId();
+      res.json({ uploadId, uploadURL: `/api/objects/upload/${uploadId}` });
     } catch (error) {
-      console.error("Error getting upload URL:", error);
-      res.status(500).json({ error: "Failed to get upload URL" });
+      console.error("Error generating upload ID:", error);
+      res.status(500).json({ error: "Failed to generate upload ID" });
+    }
+  });
+
+  app.put("/api/objects/upload/:uploadId", isAuthenticated, async (req, res) => {
+    const { uploadId } = req.params;
+    const userId = req.user!.id;
+    const localStorageService = new LocalStorageService();
+    
+    console.log(`[UPLOAD] Receiving file upload for user ${userId}, uploadId: ${uploadId}`);
+    
+    try {
+      const chunks: Buffer[] = [];
+      req.on("data", (chunk: Buffer) => chunks.push(chunk));
+      req.on("end", async () => {
+        const fileBuffer = Buffer.concat(chunks);
+        const contentType = req.headers["content-type"] || "application/octet-stream";
+        
+        const objectPath = await localStorageService.saveUploadedFile(
+          uploadId,
+          fileBuffer,
+          contentType,
+          userId
+        );
+        
+        console.log(`[UPLOAD] Saved successfully, objectPath: ${objectPath}`);
+        res.status(200).json({ objectPath });
+      });
+    } catch (error) {
+      console.error("[UPLOAD] Error saving upload:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
   app.put("/api/objects/finalize", isAuthenticated, async (req, res) => {
-    if (!req.body.uploadURL) {
-      return res.status(400).json({ error: "uploadURL is required" });
+    if (!req.body.uploadURL && !req.body.objectPath) {
+      return res.status(400).json({ error: "uploadURL or objectPath is required" });
     }
 
     const userId = req.user!.id;
-    console.log(`[UPLOAD] Finalizing upload for user ${userId}, URL: ${req.body.uploadURL.substring(0, 100)}...`);
+    const rawPath = req.body.uploadURL || req.body.objectPath;
+    console.log(`[UPLOAD] Finalizing upload for user ${userId}, path: ${rawPath}`);
 
     try {
-      const objectStorageService = new ObjectStorageService();
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
-        req.body.uploadURL,
+      const localStorageService = new LocalStorageService();
+      const objectPath = await localStorageService.trySetObjectEntityAclPolicy(
+        rawPath,
         {
           owner: userId,
           visibility: "public",

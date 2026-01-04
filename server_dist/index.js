@@ -2542,149 +2542,81 @@ function isVerifiedUser(req, res, next) {
   next();
 }
 
-// server/objectStorage.ts
-import { Storage } from "@google-cloud/storage";
+// server/localStorage.ts
 import { randomUUID } from "crypto";
-
-// server/objectAcl.ts
-var ACL_POLICY_METADATA_KEY = "custom:aclPolicy";
-function isPermissionAllowed(requested, granted) {
-  if (requested === "read" /* READ */) {
-    return ["read" /* READ */, "write" /* WRITE */].includes(granted);
-  }
-  return granted === "write" /* WRITE */;
+import * as fs from "fs";
+import * as path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = dirname(__filename);
+var UPLOADS_DIR = path.join(__dirname, "uploads");
+var PUBLIC_DIR = path.join(UPLOADS_DIR, "public");
+var TEMP_DIR = path.join(UPLOADS_DIR, "temp");
+var UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var MAX_FILE_SIZE = 10 * 1024 * 1024;
+function isValidUUID(id) {
+  return UUID_REGEX.test(id);
 }
-function createObjectAccessGroup(group) {
-  switch (group.type) {
-    default:
-      throw new Error(`Unknown access group type: ${group.type}`);
-  }
-}
-async function setObjectAclPolicy(objectFile, aclPolicy) {
-  const [exists] = await objectFile.exists();
-  if (!exists) {
-    throw new Error(`Object not found: ${objectFile.name}`);
-  }
-  await objectFile.setMetadata({
-    metadata: {
-      [ACL_POLICY_METADATA_KEY]: JSON.stringify(aclPolicy)
-    }
-  });
-}
-async function getObjectAclPolicy(objectFile) {
-  const [metadata] = await objectFile.getMetadata();
-  const aclPolicy = metadata?.metadata?.[ACL_POLICY_METADATA_KEY];
-  if (!aclPolicy) {
+function sanitizePath(inputPath, baseDir) {
+  const cleanPath = inputPath.replace(/\.\./g, "").replace(/\/+/g, "/");
+  const fullPath = path.join(baseDir, cleanPath);
+  const normalizedPath = path.normalize(fullPath);
+  if (!normalizedPath.startsWith(baseDir)) {
     return null;
   }
-  return JSON.parse(aclPolicy);
+  return normalizedPath;
 }
-async function canAccessObject({
-  userId,
-  objectFile,
-  requestedPermission
-}) {
-  const aclPolicy = await getObjectAclPolicy(objectFile);
-  if (!aclPolicy) {
-    return false;
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
   }
-  if (aclPolicy.visibility === "public" && requestedPermission === "read" /* READ */) {
-    return true;
-  }
-  if (!userId) {
-    return false;
-  }
-  if (aclPolicy.owner === userId) {
-    return true;
-  }
-  for (const rule of aclPolicy.aclRules || []) {
-    const accessGroup = createObjectAccessGroup(rule.group);
-    if (await accessGroup.hasMember(userId) && isPermissionAllowed(requestedPermission, rule.permission)) {
-      return true;
-    }
-  }
-  return false;
 }
-
-// server/objectStorage.ts
-var REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
-function decodeHtmlEntities(str) {
-  return str.replace(/&amp;/g, "&").replace(/&#x2F;/g, "/").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
-}
-var objectStorageClient = new Storage({
-  credentials: {
-    audience: "replit",
-    subject_token_type: "access_token",
-    token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
-    type: "external_account",
-    credential_source: {
-      url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
-      format: {
-        type: "json",
-        subject_token_field_name: "access_token"
-      }
-    },
-    universe_domain: "googleapis.com"
-  },
-  projectId: ""
-});
-var ObjectNotFoundError = class _ObjectNotFoundError extends Error {
+ensureDir(PUBLIC_DIR);
+ensureDir(TEMP_DIR);
+var LocalNotFoundError = class _LocalNotFoundError extends Error {
   constructor() {
-    super("Object not found");
-    this.name = "ObjectNotFoundError";
-    Object.setPrototypeOf(this, _ObjectNotFoundError.prototype);
+    super("File not found");
+    this.name = "LocalNotFoundError";
+    Object.setPrototypeOf(this, _LocalNotFoundError.prototype);
   }
 };
-var ObjectStorageService = class {
+var LocalStorageService = class {
   constructor() {
-  }
-  getPublicObjectSearchPaths() {
-    const pathsStr = process.env.PUBLIC_OBJECT_SEARCH_PATHS || "";
-    const paths = Array.from(
-      new Set(
-        pathsStr.split(",").map((path3) => path3.trim()).filter((path3) => path3.length > 0)
-      )
-    );
-    if (paths.length === 0) {
-      throw new Error(
-        "PUBLIC_OBJECT_SEARCH_PATHS not set. Create a bucket in 'Object Storage' tool and set PUBLIC_OBJECT_SEARCH_PATHS env var (comma-separated paths)."
-      );
-    }
-    return paths;
-  }
-  getPrivateObjectDir() {
-    const dir = process.env.PRIVATE_OBJECT_DIR || "";
-    if (!dir) {
-      throw new Error(
-        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var."
-      );
-    }
-    return dir;
+    ensureDir(PUBLIC_DIR);
+    ensureDir(TEMP_DIR);
   }
   async searchPublicObject(filePath) {
-    for (const searchPath of this.getPublicObjectSearchPaths()) {
-      const fullPath = `${searchPath}/${filePath}`;
-      const { bucketName, objectName } = parseObjectPath(fullPath);
-      const bucket = objectStorageClient.bucket(bucketName);
-      const file = bucket.file(objectName);
-      const [exists] = await file.exists();
-      if (exists) {
-        return file;
-      }
+    const fullPath = path.join(PUBLIC_DIR, filePath);
+    const normalizedPath = path.normalize(fullPath);
+    if (!normalizedPath.startsWith(PUBLIC_DIR)) {
+      return null;
+    }
+    if (fs.existsSync(normalizedPath)) {
+      return normalizedPath;
     }
     return null;
   }
-  async downloadObject(file, res, cacheTtlSec = 3600) {
+  async downloadObject(filePath, res, cacheTtlSec = 3600) {
     try {
-      const [metadata] = await file.getMetadata();
-      const aclPolicy = await getObjectAclPolicy(file);
-      const isPublic = aclPolicy?.visibility === "public";
+      const stats = fs.statSync(filePath);
+      const ext = path.extname(filePath).toLowerCase();
+      const mimeTypes = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".svg": "image/svg+xml",
+        ".pdf": "application/pdf"
+      };
+      const contentType = mimeTypes[ext] || "application/octet-stream";
       res.set({
-        "Content-Type": metadata.contentType || "application/octet-stream",
-        "Content-Length": metadata.size,
-        "Cache-Control": `${isPublic ? "public" : "private"}, max-age=${cacheTtlSec}`
+        "Content-Type": contentType,
+        "Content-Length": stats.size,
+        "Cache-Control": `public, max-age=${cacheTtlSec}`
       });
-      const stream = file.createReadStream();
+      const stream = fs.createReadStream(filePath);
       stream.on("error", (err) => {
         console.error("Stream error:", err);
         if (!res.headersSent) {
@@ -2699,129 +2631,65 @@ var ObjectStorageService = class {
       }
     }
   }
-  async getObjectEntityUploadURL() {
-    const privateObjectDir = this.getPrivateObjectDir();
-    if (!privateObjectDir) {
-      throw new Error(
-        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var."
-      );
+  generateUploadId() {
+    return randomUUID();
+  }
+  getTempPath(uploadId) {
+    return path.join(TEMP_DIR, uploadId);
+  }
+  getPublicPath(uploadId) {
+    return path.join(PUBLIC_DIR, uploadId);
+  }
+  async saveUploadedFile(uploadId, fileBuffer, contentType, userId) {
+    if (!isValidUUID(uploadId)) {
+      throw new Error("Invalid upload ID format");
     }
-    const objectId = randomUUID();
-    const fullPath = `${privateObjectDir}/uploads/${objectId}`;
-    const { bucketName, objectName } = parseObjectPath(fullPath);
-    return signObjectURL({
-      bucketName,
-      objectName,
-      method: "PUT",
-      ttlSec: 900
-    });
+    if (fileBuffer.length > MAX_FILE_SIZE) {
+      throw new Error("File too large (max 10MB)");
+    }
+    const publicPath = sanitizePath(uploadId, PUBLIC_DIR);
+    if (!publicPath) {
+      throw new Error("Invalid file path");
+    }
+    fs.writeFileSync(publicPath, fileBuffer);
+    const metadata = {
+      contentType,
+      size: fileBuffer.length,
+      owner: userId,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    fs.writeFileSync(`${publicPath}.meta.json`, JSON.stringify(metadata));
+    return `/objects/uploads/${uploadId}`;
   }
   async getObjectEntityFile(objectPath) {
     if (!objectPath.startsWith("/objects/")) {
-      throw new ObjectNotFoundError();
+      throw new LocalNotFoundError();
     }
-    const parts = objectPath.slice(1).split("/");
-    if (parts.length < 2) {
-      throw new ObjectNotFoundError();
+    const relativePath = objectPath.replace("/objects/", "");
+    const fullPath = path.join(PUBLIC_DIR, relativePath);
+    const normalizedPath = path.normalize(fullPath);
+    if (!normalizedPath.startsWith(PUBLIC_DIR)) {
+      throw new LocalNotFoundError();
     }
-    const entityId = parts.slice(1).join("/");
-    let entityDir = this.getPrivateObjectDir();
-    if (!entityDir.endsWith("/")) {
-      entityDir = `${entityDir}/`;
+    if (!fs.existsSync(normalizedPath)) {
+      throw new LocalNotFoundError();
     }
-    const objectEntityPath = `${entityDir}${entityId}`;
-    const { bucketName, objectName } = parseObjectPath(objectEntityPath);
-    const bucket = objectStorageClient.bucket(bucketName);
-    const objectFile = bucket.file(objectName);
-    const [exists] = await objectFile.exists();
-    if (!exists) {
-      throw new ObjectNotFoundError();
-    }
-    return objectFile;
-  }
-  normalizeObjectEntityPath(rawPath) {
-    let decodedPath = decodeHtmlEntities(rawPath);
-    if (!decodedPath.startsWith("https://storage.googleapis.com/")) {
-      return decodedPath;
-    }
-    const url = new URL(decodedPath);
-    const rawObjectPath = url.pathname;
-    let objectEntityDir = this.getPrivateObjectDir();
-    if (!objectEntityDir.endsWith("/")) {
-      objectEntityDir = `${objectEntityDir}/`;
-    }
-    if (!rawObjectPath.startsWith(objectEntityDir)) {
-      return rawObjectPath;
-    }
-    const entityId = rawObjectPath.slice(objectEntityDir.length);
-    return `/objects/${entityId}`;
-  }
-  async trySetObjectEntityAclPolicy(rawPath, aclPolicy) {
-    const normalizedPath = this.normalizeObjectEntityPath(rawPath);
-    if (!normalizedPath.startsWith("/")) {
-      return normalizedPath;
-    }
-    const objectFile = await this.getObjectEntityFile(normalizedPath);
-    await setObjectAclPolicy(objectFile, aclPolicy);
     return normalizedPath;
   }
-  async canAccessObjectEntity({
-    userId,
-    objectFile,
-    requestedPermission
-  }) {
-    return canAccessObject({
-      userId,
-      objectFile,
-      requestedPermission: requestedPermission ?? "read" /* READ */
-    });
+  normalizeObjectEntityPath(rawPath) {
+    if (rawPath.startsWith("/objects/")) {
+      return rawPath;
+    }
+    if (rawPath.startsWith("uploads/")) {
+      return `/objects/${rawPath}`;
+    }
+    return rawPath;
+  }
+  async trySetObjectEntityAclPolicy(objectPath, _aclPolicy) {
+    return this.normalizeObjectEntityPath(objectPath);
   }
 };
-function parseObjectPath(path3) {
-  if (!path3.startsWith("/")) {
-    path3 = `/${path3}`;
-  }
-  const pathParts = path3.split("/");
-  if (pathParts.length < 3) {
-    throw new Error("Invalid path: must contain at least a bucket name");
-  }
-  const bucketName = pathParts[1];
-  const objectName = pathParts.slice(2).join("/");
-  return {
-    bucketName,
-    objectName
-  };
-}
-async function signObjectURL({
-  bucketName,
-  objectName,
-  method,
-  ttlSec
-}) {
-  const request = {
-    bucket_name: bucketName,
-    object_name: objectName,
-    method,
-    expires_at: new Date(Date.now() + ttlSec * 1e3).toISOString()
-  };
-  const response = await fetch(
-    `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(request)
-    }
-  );
-  if (!response.ok) {
-    throw new Error(
-      `Failed to sign object URL, errorcode: ${response.status}, make sure you're running on Replit`
-    );
-  }
-  const { signed_url: signedURL } = await response.json();
-  return signedURL;
-}
+var localStorageService = new LocalStorageService();
 
 // server/notifications.ts
 init_schema();
@@ -3551,12 +3419,12 @@ function isProductionAvailable() {
 // server/routes.ts
 init_schema();
 import { eq as eq4, asc } from "drizzle-orm";
-import * as path from "path";
-import * as fs from "fs";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
-var __filename = fileURLToPath(import.meta.url);
-var __dirname = dirname(__filename);
+import * as path2 from "path";
+import * as fs2 from "fs";
+import { fileURLToPath as fileURLToPath2 } from "url";
+import { dirname as dirname2 } from "path";
+var __filename2 = fileURLToPath2(import.meta.url);
+var __dirname2 = dirname2(__filename2);
 function sanitizeString(input) {
   if (input === void 0) return void 0;
   if (input === null) return null;
@@ -3586,8 +3454,8 @@ async function registerRoutes(app2) {
     if (isExpoRequest) {
       return res.json({ status: "ok", type: "api" });
     }
-    const landingPath = path.join(__dirname, "landing", "index.html");
-    if (fs.existsSync(landingPath)) {
+    const landingPath = path2.join(__dirname2, "landing", "index.html");
+    if (fs2.existsSync(landingPath)) {
       return res.sendFile(landingPath);
     }
     res.json({ status: "ok", message: "VikendMajstor API" });
@@ -3602,24 +3470,24 @@ async function registerRoutes(app2) {
   ];
   seoPages.forEach((page) => {
     app2.get(`/${page}`, (req, res) => {
-      const pagePath = path.join(__dirname, "landing", "seo", `${page}.html`);
-      if (fs.existsSync(pagePath)) {
+      const pagePath = path2.join(__dirname2, "landing", "seo", `${page}.html`);
+      if (fs2.existsSync(pagePath)) {
         return res.sendFile(pagePath);
       }
       res.redirect("/");
     });
   });
   app2.get("/sitemap.xml", (req, res) => {
-    const sitemapPath = path.join(__dirname, "landing", "sitemap.xml");
-    if (fs.existsSync(sitemapPath)) {
+    const sitemapPath = path2.join(__dirname2, "landing", "sitemap.xml");
+    if (fs2.existsSync(sitemapPath)) {
       res.setHeader("Content-Type", "application/xml");
       return res.sendFile(sitemapPath);
     }
     res.status(404).send("Sitemap not found");
   });
   app2.get("/robots.txt", (req, res) => {
-    const robotsPath = path.join(__dirname, "landing", "robots.txt");
-    if (fs.existsSync(robotsPath)) {
+    const robotsPath = path2.join(__dirname2, "landing", "robots.txt");
+    if (fs2.existsSync(robotsPath)) {
       res.setHeader("Content-Type", "text/plain");
       return res.sendFile(robotsPath);
     }
@@ -3677,8 +3545,8 @@ async function registerRoutes(app2) {
     if (isAndroid || isIOS) {
       return res.redirect("exp://");
     }
-    const webAppPath = path.join(process.cwd(), "static-build", "web", "index.html");
-    if (fs.existsSync(webAppPath)) {
+    const webAppPath = path2.join(process.cwd(), "static-build", "web", "index.html");
+    if (fs2.existsSync(webAppPath)) {
       return res.sendFile(webAppPath);
     }
     res.redirect("/");
@@ -3764,71 +3632,95 @@ async function registerRoutes(app2) {
   });
   app2.get("/public-objects/:filePath(*)", async (req, res) => {
     const filePath = req.params.filePath;
-    const objectStorageService = new ObjectStorageService();
+    const localStorageService2 = new LocalStorageService();
     try {
-      const file = await objectStorageService.searchPublicObject(filePath);
+      const file = await localStorageService2.searchPublicObject(filePath);
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
-      objectStorageService.downloadObject(file, res);
+      localStorageService2.downloadObject(file, res);
     } catch (error) {
       console.error("Error searching for public object:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });
   app2.get("/objects/:objectPath(*)", async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
+    const localStorageService2 = new LocalStorageService();
     console.log(`[OBJECTS] Requesting object: ${req.path}`);
     try {
-      const objectFile = await objectStorageService.getObjectEntityFile(
-        req.path
-      );
+      const filePath = await localStorageService2.getObjectEntityFile(req.path);
       console.log(`[OBJECTS] Found object: ${req.path}`);
-      objectStorageService.downloadObject(objectFile, res);
+      localStorageService2.downloadObject(filePath, res);
     } catch (error) {
       console.error(`[OBJECTS] Error for ${req.path}:`, error);
-      if (error instanceof ObjectNotFoundError) {
+      if (error instanceof LocalNotFoundError) {
         return res.sendStatus(404);
       }
       return res.sendStatus(500);
     }
   });
   app2.get("/api/objects/:objectPath(*)", async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
+    const localStorageService2 = new LocalStorageService();
     const objectPath = `/objects/${req.params.objectPath}`;
     console.log(`[API-OBJECTS] Requesting object: ${objectPath}`);
     try {
-      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      const filePath = await localStorageService2.getObjectEntityFile(objectPath);
       console.log(`[API-OBJECTS] Found object: ${objectPath}`);
-      objectStorageService.downloadObject(objectFile, res);
+      localStorageService2.downloadObject(filePath, res);
     } catch (error) {
       console.error(`[API-OBJECTS] Error for ${objectPath}:`, error);
-      if (error instanceof ObjectNotFoundError) {
+      if (error instanceof LocalNotFoundError) {
         return res.sendStatus(404);
       }
       return res.sendStatus(500);
     }
   });
   app2.post("/api/objects/upload", isAuthenticated, async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
+    const localStorageService2 = new LocalStorageService();
     try {
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
+      const uploadId = localStorageService2.generateUploadId();
+      res.json({ uploadId, uploadURL: `/api/objects/upload/${uploadId}` });
     } catch (error) {
-      console.error("Error getting upload URL:", error);
-      res.status(500).json({ error: "Failed to get upload URL" });
+      console.error("Error generating upload ID:", error);
+      res.status(500).json({ error: "Failed to generate upload ID" });
+    }
+  });
+  app2.put("/api/objects/upload/:uploadId", isAuthenticated, async (req, res) => {
+    const { uploadId } = req.params;
+    const userId = req.user.id;
+    const localStorageService2 = new LocalStorageService();
+    console.log(`[UPLOAD] Receiving file upload for user ${userId}, uploadId: ${uploadId}`);
+    try {
+      const chunks = [];
+      req.on("data", (chunk) => chunks.push(chunk));
+      req.on("end", async () => {
+        const fileBuffer = Buffer.concat(chunks);
+        const contentType = req.headers["content-type"] || "application/octet-stream";
+        const objectPath = await localStorageService2.saveUploadedFile(
+          uploadId,
+          fileBuffer,
+          contentType,
+          userId
+        );
+        console.log(`[UPLOAD] Saved successfully, objectPath: ${objectPath}`);
+        res.status(200).json({ objectPath });
+      });
+    } catch (error) {
+      console.error("[UPLOAD] Error saving upload:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
   app2.put("/api/objects/finalize", isAuthenticated, async (req, res) => {
-    if (!req.body.uploadURL) {
-      return res.status(400).json({ error: "uploadURL is required" });
+    if (!req.body.uploadURL && !req.body.objectPath) {
+      return res.status(400).json({ error: "uploadURL or objectPath is required" });
     }
     const userId = req.user.id;
-    console.log(`[UPLOAD] Finalizing upload for user ${userId}, URL: ${req.body.uploadURL.substring(0, 100)}...`);
+    const rawPath = req.body.uploadURL || req.body.objectPath;
+    console.log(`[UPLOAD] Finalizing upload for user ${userId}, path: ${rawPath}`);
     try {
-      const objectStorageService = new ObjectStorageService();
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
-        req.body.uploadURL,
+      const localStorageService2 = new LocalStorageService();
+      const objectPath = await localStorageService2.trySetObjectEntityAclPolicy(
+        rawPath,
         {
           owner: userId,
           visibility: "public"
@@ -9951,14 +9843,14 @@ async function seedAppVersions() {
 }
 
 // server/index.ts
-import * as fs2 from "fs";
-import * as path2 from "path";
+import * as fs3 from "fs";
+import * as path3 from "path";
 import { scrypt as scrypt4, randomBytes as randomBytes5 } from "crypto";
 import { promisify as promisify4 } from "util";
-import { fileURLToPath as fileURLToPath2 } from "url";
-import { dirname as dirname2 } from "path";
-var __filename2 = fileURLToPath2(import.meta.url);
-var __dirname2 = dirname2(__filename2);
+import { fileURLToPath as fileURLToPath3 } from "url";
+import { dirname as dirname3 } from "path";
+var __filename3 = fileURLToPath3(import.meta.url);
+var __dirname3 = dirname3(__filename3);
 var scryptAsync4 = promisify4(scrypt4);
 async function hashPasswordForAdmin(password) {
   const salt = randomBytes5(16).toString("hex");
@@ -10056,7 +9948,7 @@ function setupBodyParsing(app2) {
 function setupRequestLogging(app2) {
   app2.use((req, res, next) => {
     const start = Date.now();
-    const path3 = req.path;
+    const path4 = req.path;
     let capturedJsonResponse = void 0;
     const originalResJson = res.json;
     res.json = function(bodyJson, ...args) {
@@ -10064,9 +9956,9 @@ function setupRequestLogging(app2) {
       return originalResJson.apply(res, [bodyJson, ...args]);
     };
     res.on("finish", () => {
-      if (!path3.startsWith("/api")) return;
+      if (!path4.startsWith("/api")) return;
       const duration = Date.now() - start;
-      let logLine = `${req.method} ${path3} ${res.statusCode} in ${duration}ms`;
+      let logLine = `${req.method} ${path4} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -10080,8 +9972,8 @@ function setupRequestLogging(app2) {
 }
 function getAppName() {
   try {
-    const appJsonPath = path2.resolve(process.cwd(), "app.json");
-    const appJsonContent = fs2.readFileSync(appJsonPath, "utf-8");
+    const appJsonPath = path3.resolve(process.cwd(), "app.json");
+    const appJsonContent = fs3.readFileSync(appJsonPath, "utf-8");
     const appJson = JSON.parse(appJsonContent);
     return appJson.expo?.name || "App Landing Page";
   } catch {
@@ -10089,19 +9981,19 @@ function getAppName() {
   }
 }
 function serveExpoManifest(platform, res) {
-  const manifestPath = path2.resolve(
+  const manifestPath = path3.resolve(
     process.cwd(),
     "static-build",
     platform,
     "manifest.json"
   );
-  if (!fs2.existsSync(manifestPath)) {
+  if (!fs3.existsSync(manifestPath)) {
     return res.status(404).json({ error: `Manifest not found for platform: ${platform}` });
   }
   res.setHeader("expo-protocol-version", "1");
   res.setHeader("expo-sfv-version", "0");
   res.setHeader("content-type", "application/json");
-  const manifest = fs2.readFileSync(manifestPath, "utf-8");
+  const manifest = fs3.readFileSync(manifestPath, "utf-8");
   res.send(manifest);
 }
 function serveLandingPage({
@@ -10123,7 +10015,7 @@ function serveLandingPage({
   res.status(200).send(html);
 }
 function configureExpoAndLanding(app2) {
-  const customLandingPath = path2.resolve(
+  const customLandingPath = path3.resolve(
     process.cwd(),
     "server",
     "landing",
@@ -10132,7 +10024,7 @@ function configureExpoAndLanding(app2) {
   const landingPageTemplate = LANDING_PAGE_TEMPLATE;
   const adminPanelTemplate = ADMIN_PANEL_TEMPLATE;
   const appName = getAppName();
-  const hasCustomLanding = fs2.existsSync(customLandingPath);
+  const hasCustomLanding = fs3.existsSync(customLandingPath);
   log("Serving static Expo files with dynamic manifest routing");
   app2.get("/admin", (_req, res) => {
     res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -10144,8 +10036,8 @@ function configureExpoAndLanding(app2) {
   });
   log("Admin panel available at /admin");
   app2.get("/favicon.png", (_req, res) => {
-    const faviconPath = path2.resolve(process.cwd(), "server", "templates", "favicon.png");
-    if (fs2.existsSync(faviconPath)) {
+    const faviconPath = path3.resolve(process.cwd(), "server", "templates", "favicon.png");
+    if (fs3.existsSync(faviconPath)) {
       res.sendFile(faviconPath);
     } else {
       res.status(404).send("Favicon not found");
@@ -10159,64 +10051,64 @@ function configureExpoAndLanding(app2) {
     res.redirect("/");
   });
   app2.get("/uslovi-koriscenja", (_req, res) => {
-    const termsPath = path2.resolve(process.cwd(), "server", "landing", "uslovi-koriscenja.html");
-    if (fs2.existsSync(termsPath)) {
+    const termsPath = path3.resolve(process.cwd(), "server", "landing", "uslovi-koriscenja.html");
+    if (fs3.existsSync(termsPath)) {
       res.sendFile(termsPath);
     } else {
       res.status(404).send("Page not found");
     }
   });
   app2.get("/politika-privatnosti", (_req, res) => {
-    const privacyPath = path2.resolve(process.cwd(), "server", "landing", "politika-privatnosti.html");
-    if (fs2.existsSync(privacyPath)) {
+    const privacyPath = path3.resolve(process.cwd(), "server", "landing", "politika-privatnosti.html");
+    if (fs3.existsSync(privacyPath)) {
       res.sendFile(privacyPath);
     } else {
       res.status(404).send("Page not found");
     }
   });
   app2.get("/terms-of-service", (_req, res) => {
-    const termsPath = path2.resolve(process.cwd(), "server", "templates", "terms.html");
-    if (fs2.existsSync(termsPath)) {
+    const termsPath = path3.resolve(process.cwd(), "server", "templates", "terms.html");
+    if (fs3.existsSync(termsPath)) {
       res.sendFile(termsPath);
     } else {
       res.status(404).send("Page not found");
     }
   });
   app2.get("/privacy-policy", (_req, res) => {
-    const privacyPath = path2.resolve(process.cwd(), "server", "templates", "privacy.html");
-    if (fs2.existsSync(privacyPath)) {
+    const privacyPath = path3.resolve(process.cwd(), "server", "templates", "privacy.html");
+    if (fs3.existsSync(privacyPath)) {
       res.sendFile(privacyPath);
     } else {
       res.status(404).send("Page not found");
     }
   });
   app2.get("/legal", (_req, res) => {
-    const legalPath = path2.resolve(process.cwd(), "server", "templates", "legal.html");
-    if (fs2.existsSync(legalPath)) {
+    const legalPath = path3.resolve(process.cwd(), "server", "templates", "legal.html");
+    if (fs3.existsSync(legalPath)) {
       res.sendFile(legalPath);
     } else {
       res.status(404).send("Page not found");
     }
   });
   app2.get("/refund-policy", (_req, res) => {
-    const refundPath = path2.resolve(process.cwd(), "server", "templates", "refund.html");
-    if (fs2.existsSync(refundPath)) {
+    const refundPath = path3.resolve(process.cwd(), "server", "templates", "refund.html");
+    if (fs3.existsSync(refundPath)) {
       res.sendFile(refundPath);
     } else {
       res.status(404).send("Page not found");
     }
   });
   app2.get("/contact", (_req, res) => {
-    const contactPath = path2.resolve(process.cwd(), "server", "templates", "contact.html");
-    if (fs2.existsSync(contactPath)) {
+    const contactPath = path3.resolve(process.cwd(), "server", "templates", "contact.html");
+    if (fs3.existsSync(contactPath)) {
       res.sendFile(contactPath);
     } else {
       res.status(404).send("Page not found");
     }
   });
   app2.get("/auth/google/callback", (_req, res) => {
-    const callbackPath = path2.resolve(process.cwd(), "server", "templates", "google-callback.html");
-    if (fs2.existsSync(callbackPath)) {
+    const callbackPath = path3.resolve(process.cwd(), "server", "templates", "google-callback.html");
+    if (fs3.existsSync(callbackPath)) {
       res.sendFile(callbackPath);
     } else {
       res.status(404).send("Callback page not found");
@@ -10256,9 +10148,9 @@ function configureExpoAndLanding(app2) {
     etag: true,
     lastModified: true
   };
-  app2.use("/assets", express.static(path2.resolve(process.cwd(), "assets"), staticOptions));
-  app2.use("/demo-images", express.static(path2.resolve(process.cwd(), "server/public/demo-images"), staticOptions));
-  app2.use("/images", express.static(path2.resolve(process.cwd(), "server/landing/images"), staticOptions));
+  app2.use("/assets", express.static(path3.resolve(process.cwd(), "assets"), staticOptions));
+  app2.use("/demo-images", express.static(path3.resolve(process.cwd(), "server/public/demo-images"), staticOptions));
+  app2.use("/images", express.static(path3.resolve(process.cwd(), "server/landing/images"), staticOptions));
   app2.use((req, res, next) => {
     if (req.path.startsWith("/api")) {
       return next();
@@ -10266,10 +10158,10 @@ function configureExpoAndLanding(app2) {
     const hostname = req.hostname || req.headers.host?.split(":")[0] || "";
     const isAppSubdomain = hostname === "app.vikendmajstor.rs" || hostname.includes("app.");
     if (isAppSubdomain) {
-      const webBuildPath = path2.resolve(process.cwd(), "static-build", "web");
+      const webBuildPath = path3.resolve(process.cwd(), "static-build", "web");
       return express.static(webBuildPath)(req, res, () => {
-        const indexPath = path2.join(webBuildPath, "index.html");
-        if (fs2.existsSync(indexPath)) {
+        const indexPath = path3.join(webBuildPath, "index.html");
+        if (fs3.existsSync(indexPath)) {
           return res.sendFile(indexPath);
         }
         next();
@@ -10277,7 +10169,7 @@ function configureExpoAndLanding(app2) {
     }
     next();
   });
-  app2.use(express.static(path2.resolve(process.cwd(), "static-build")));
+  app2.use(express.static(path3.resolve(process.cwd(), "static-build")));
   log("Expo routing: Checking expo-platform header on / and /manifest");
 }
 function setupErrorHandler(app2) {

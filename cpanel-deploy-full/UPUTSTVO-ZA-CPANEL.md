@@ -57,13 +57,18 @@ vikendapp/
 ├── server/
 │   ├── templates/            (HTML fajlovi)
 │   ├── landing/              (landing stranice)
-│   └── public/
-│       └── demo-images/      (slike alata)
+│   ├── public/
+│   │   └── demo-images/      (slike alata)
+│   └── uploads/              (folder za upload korisnickih slika)
+│       ├── public/           (javne slike)
+│       └── temp/             (privremeni fajlovi)
 ├── shared/
 │   └── schema.ts             (baza schema)
 ├── assets/                   (ikonice)
 └── static-build/             (Expo web build)
 ```
+
+**VAZNO:** Folder `server/uploads/` mora imati write permission (755 ili 775) da bi korisnici mogli uploadovati slike.
 
 ---
 
