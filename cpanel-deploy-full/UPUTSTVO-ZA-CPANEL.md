@@ -153,7 +153,53 @@ U istom "Setup Node.js App" prozoru, skrolujte dole do **Environment variables**
 
 ---
 
-## Kontakt za pomoc
+## Demo podaci i Test korisnici
+
+SQL fajl sadrzi demo podatke za testiranje:
+
+### Kategorije
+- 9 kategorija alata (Elektricni, Akumulatorski, Rucni, Bastenski, itd.)
+- 10 podkategorija
+
+### Test alati
+- 10 demo alata sa slikama u razlicitim kategorijama
+- Gradovi: Beograd, Novi Sad, Nis
+
+### Test korisnici (samo za testiranje!)
+
+| Email | Uloga | Napomena |
+|-------|-------|----------|
+| admin@vikendmajstor.rs | Admin | Ima pristup admin panelu |
+| vlasnik@test.rs | Vlasnik | Premium pretplata |
+| petar@test.rs | Vlasnik | Basic pretplata |
+| korisnik@test.rs | Korisnik | Besplatna pretplata |
+
+**VAZNO:** Demo korisnici imaju placeholder lozinke i ne mogu se koristiti za login!
+
+### Kreiranje pravog admin naloga
+
+1. Registrujte se na app.vikendmajstor.rs sa vasim emailom
+2. U phpMyAdmin pokrenite:
+```sql
+UPDATE users SET is_admin = TRUE WHERE email = 'vas@email.rs';
+```
+3. Sada imate pristup admin panelu na `/admin`
+
+---
+
+## Subscription planovi
+
+Tri plana su vec dodati u bazu:
+
+| Plan | Cena | Limit oglasa |
+|------|------|--------------|
+| Besplatno | 0 RSD | 5 oglasa |
+| Standard | 500 RSD/mesec | 20 oglasa |
+| Premium | 1000 RSD/mesec | Neograniceno |
+
+---
+
+## Contakt za pomoc
 
 Ako imate problema, sacuvajte:
 1. Screenshot greske
