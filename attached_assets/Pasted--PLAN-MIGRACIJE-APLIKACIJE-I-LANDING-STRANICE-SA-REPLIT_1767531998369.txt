@@ -1,0 +1,574 @@
+# PLAN MIGRACIJE APLIKACIJE I LANDING STRANICE SA REPLITA NA CPANEL
+## Detaljna, Strukturirana Procedura - Redosled je Kritičan
+
+---
+
+## FAZA 0: PRIPREMA I AUDIT (Prije nego što počnete bilo šta)
+**Trajanje: 2-4 sata**
+
+### 0.1 Dokumentovanje trenutnog stanja
+- [ ] **Napravite inventar svih komponenti:**
+  - Koliko aplikacija imate na Replitu?
+  - Koja je arhitektura? (Python Flask/Django, Node.js/Express, HTML/CSS/JavaScript, PHP?)
+  - Koje baze podataka koristite? (Replit DB, PostgreSQL, MySQL, MongoDB?)
+  - Koja je veličina aplikacije? (< 500MB, 500MB-1GB, > 1GB?)
+  - Koliko landing stranica? (statične HTML ili dinačke?)
+
+- [ ] **Provjerite sve zavisnosti:**
+  - Otvorite `replit.nix` ili `requirements.txt` / `package.json` za sve zavisnosti
+  - Napravite listu svih paketa
+  - Provjerite verzije (kritično!)
+  - Napravite listu svih environment varijabli i API ključeva
+
+- [ ] **Backup trenutnog Replita:**
+  - Exportujte sve kao ZIP (opcionalno ali sigurno)
+  - Kreirajte GitHub repozitorijum kao backup
+
+### 0.2 Provjerite cPanel server
+- [ ] **SSH pristup:**
+  - Da li imate SSH pristup cPanel serveru?
+  - Koja je SSH porta? (obično 22, ali može biti drugačija)
+  - Da li je port dostupan izvana?
+
+- [ ] **Dostupne tehnologije na cPanel serveru:**
+  - Koja verzija PHP je instalirana? (ako trebate PHP)
+  - Da li je Node.js dostupan? (ako trebate Node.js)
+  - Da li je Python dostupan? (ako trebate Python)
+  - Koja je verzija MySQL? (ako trebate bazu)
+  - Koji su dostupni web serverski moduli?
+
+- [ ] **Kontrola resursa:**
+  - Koliko CPU, RAM, disk prostora je dostupno?
+  - Koliko maksimalnih simultanih konekcija?
+  - Kolika je maksimalna veličina datoteke za upload?
+
+### 0.3 Priprema domena
+- [ ] **DNS postavke:**
+  - Gdje su registrovani domeni?
+  - Gdje su DNS registari postavljeni?
+  - Napravite backup DNS zapisa
+  - Smanjite TTL na 300 sekundi (za brže prebacivanje kasnije)
+
+---
+
+## FAZA 1: EXPORT PROJEKTA SA REPLITA
+**Trajanje: 30 minuta - 2 sata (zavisno od veličine)**
+
+### 1.1 Download projekta kao ZIP
+- [ ] **Za svaki projekt na Replitu:**
+  1. Otvorite projekt na Replitu
+  2. Kliknite na tri točke ⋮ u file panelu (lijevo)
+  3. Izaberite "Download as ZIP"
+  4. Čekajte download (može biti dugo za velike projekte)
+  5. Spremi datoteka na siguran lokalni direktorijum
+
+### 1.2 Exportovanje baza podataka
+- [ ] **Ako koristite Replit DB:**
+  1. Tražite datoteku `.replit`
+  2. Kopirajte konfiguraciju baze
+  3. Exportujte sve podatke (obično JSON ili CSV format)
+  4. Spremi fajlove na local
+  
+- [ ] **Ako koristite MySQL/PostgreSQL na Replitu:**
+  1. Konektujte se na bazu preko terminala
+  2. Napravite dump: `mysqldump -u korisnik -p baza > baza_backup.sql`
+  3. Spremi SQL fajl na local
+
+### 1.3 Environment varijable
+- [ ] **Za sve API ključeve i tajne:**
+  1. Otvorite "Secrets" tab na Replitu
+  2. Napravite tekstualnu listu SVIH varijabli
+  3. Spremi na siguran lokalni drive (ali ne u verzijsku kontrolu!)
+  4. Trebat će vam za cPanel kasnije
+
+---
+
+## FAZA 2: PRIPREMA LOKALNOG OKRUŽENJA
+**Trajanje: 30 minuta - 2 sata**
+
+### 2.1 Ekstraktovanje projektnog koda
+- [ ] **Za svaki ZIP fajl:**
+  1. Ekstrakujte ZIP na lokalni računar
+  2. Provjerite da su svi fajlovi tamo
+  3. Provjerite strukturu direktorijuma
+
+### 2.2 Provjerajte kod lokalno (TEST FAZA)
+- [ ] **Prije nego što prebacite na cPanel:**
+  1. Instalirajte zavisnosti lokalno
+     - Ako je Node.js: `npm install`
+     - Ako je Python: `pip install -r requirements.txt`
+     - Ako je PHP: ništa, trebate samo fajlove
+  2. Pokrenite aplikaciju lokalno
+  3. Testirajte sve funkcionalnosti
+  4. Provjerite greške u console-u
+  5. Zapišite sve greške koje nađete
+  
+   **KRITIČNO:** Ako aplikacija ne radi lokalno, neće raditi ni na cPanel-u!
+
+---
+
+## FAZA 3: PRIPREMA cPANEL SERVERA
+**Trajanje: 1-3 sata**
+
+### 3.1 SSH pristup na cPanel server
+- [ ] **Konektujte se na server:**
+  ```
+  ssh -p [SSH_PORT] root@[SERVER_IP]
+  ```
+  - Zamijenite [SSH_PORT] sa stvarnom porom (obično 22)
+  - Zamijenite [SERVER_IP] sa IP adresom servera
+  - Unesite lozinku kada se traži
+
+### 3.2 Provjerite dostupne tehnologije
+- [ ] **Provjerite verzije:**
+  ```
+  php -v              # Za PHP
+  node -v             # Za Node.js
+  python3 -v          # Za Python
+  mysql --version     # Za MySQL
+  ```
+
+### 3.3 Kreirajte cPanel račun (ako ne postoji)
+- [ ] **Preko WHM (Web Host Manager):**
+  1. Logirajte se u WHM kao root
+  2. Idite na "Create a New Account"
+  3. Popunite:
+     - Domain: vaš domen
+     - Username: korisničko ime (npr. appuser)
+     - Password: sigurna lozinka
+     - Email: administrator email
+  4. Postavite odgovarajuće resurse (CPU, RAM, disk)
+  5. Kreirajte račun
+  6. ZapamtiteUsername i Password
+
+### 3.4 Pripremite direktorijume
+- [ ] **SSH pristup - kreirajte strukture:**
+  ```
+  mkdir -p /home/username/public_html/app
+  mkdir -p /home/username/public_html/landing
+  mkdir -p /home/username/databases
+  mkdir -p /home/username/node_modules_cache
+  chmod 755 /home/username/public_html
+  ```
+  - Zamijeni `username` sa stvarnim imenom korisnika
+
+---
+
+## FAZA 4: PRIPREMA BAZE PODATAKA
+**Trajanje: 30 minuta - 2 sata**
+
+### 4.1 Kreirajte MySQL bazu na cPanel-u
+- [ ] **Via WHM ili cPanel:**
+  1. Logirajte se u cPanel kao kreirani korisnik
+  2. Idite na "MySQL Databases"
+  3. Kreirajte novu bazu:
+     - Database Name: `username_appdb`
+     - Username: `username_appuser`
+     - Password: Sigurna lozinka
+  4. Dajte svim privilegijama pristup
+  5. Zapamtite credentials
+
+### 4.2 Importujte podatke u novu bazu
+- [ ] **Ako imate SQL dump:**
+  ```
+  mysql -u username_appuser -p username_appdb < /path/to/baza_backup.sql
+  ```
+  - Unesite lozinku kada se traži
+  - Čekajte da se završi import
+
+- [ ] **Ako trebate migrirati sa Replit DB na MySQL:**
+  1. Exportujte Replit DB kao JSON
+  2. Napravite SQL insert statemente
+  3. Importujte u MySQL
+
+---
+
+## FAZA 5: UPLOAD KODA NA cPANEL
+**Trajanje: 1-4 sata (zavisno od veličine)**
+
+### 5.1 Upload preko SFTP
+- [ ] **Koristeći SFTP klijent (FileZilla, WinSCP, itd):**
+  1. Konektujte se sa:
+     - Host: IP ili domen servera
+     - Username: cPanel korisnik
+     - Password: cPanel lozinka
+     - Port: 22 (SFTP)
+  2. Navigujte u `/home/username/public_html/`
+  3. Uploadujte sve fajlove iz ekstraktovane aplikacije
+  4. Za `public_html/app/` uploadujte sve aplikacijske fajlove
+  5. Za `public_html/landing/` uploadujte sve landing stranice
+  6. **Provjerite da su svi fajlovi uploadovani**
+
+### 5.2 Upload preko SSH i git (PREPORUČENO za Node.js aplikacije)
+- [ ] **Ako imate GitHub:**
+  ```
+  cd /home/username/public_html/app
+  git clone https://github.com/vasegithub/vaseapp.git .
+  ```
+  - Zamijenite URL sa stvarnim GitHub URL-om
+
+---
+
+## FAZA 6: INSTALACIJA ZAVISNOSTI NA cPANEL-U
+**Trajanje: 30 minuta - 2 sata**
+
+### 6.1 Za Node.js aplikacije
+- [ ] **Instalirajte npm zavisnosti:**
+  ```
+  cd /home/username/public_html/app
+  npm install
+  ```
+  - Čekajte da se završi (može biti dugo)
+  - Provjerite da nema grešaka
+
+### 6.2 Za Python aplikacije
+- [ ] **Instalirajte Python zavisnosti:**
+  ```
+  cd /home/username/public_html/app
+  python3 -m venv venv
+  source venv/bin/activate
+  pip install -r requirements.txt
+  ```
+
+### 6.3 Za PHP aplikacije
+- [ ] **Obično nema potrebe za instalacijom**
+  - Samo provjerite da su svi PHP fajlovi na mjestu
+
+### 6.4 Kreirajte .env fajl
+- [ ] **Za sve varijable okruženja:**
+  1. SSH na server
+  2. Kreirajte `.env` fajl:
+     ```
+     nano /home/username/public_html/app/.env
+     ```
+  3. Dodajte sve varijable koje ste zabilježili iz Replita:
+     ```
+     DATABASE_URL=mysql://username_appuser:password@localhost/username_appdb
+     API_KEY=vasa_api_kljuc
+     SECRET_KEY=vasatajnalozinka
+     PORT=3000
+     NODE_ENV=production
+     ```
+  4. Spremi (Ctrl+O, Enter, Ctrl+X)
+  5. **KRITIČNO:** Provjerite dozvole:
+     ```
+     chmod 600 /home/username/public_html/app/.env
+     ```
+
+---
+
+## FAZA 7: KONFIGURACIJA WEB SERVERA
+**Trajanje: 1-2 sata**
+
+### 7.1 Za Node.js aplikacije
+- [ ] **Kreirajte .htaccess za proxy:**
+  ```
+  nano /home/username/public_html/app/.htaccess
+  ```
+  Dodajte:
+  ```
+  <IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
+  </IfModule>
+  ```
+
+- [ ] **Instalacija Node.js aplikacije kao servis:**
+  1. Kreirajte systemd servis fajl
+  2. Ili koristite PM2 (Process Manager)
+     ```
+     npm install -g pm2
+     pm2 start app.js --name "myapp"
+     pm2 startup
+     pm2 save
+     ```
+
+### 7.2 Za Python aplikacije
+- [ ] **Kreirajte WSGI wrapper:**
+  ```
+  nano /home/username/public_html/app/wsgi.py
+  ```
+  
+- [ ] **Konfigurirajte sa gunicorn ili uWSGI:**
+  ```
+  pip install gunicorn
+  gunicorn -w 4 -b 127.0.0.1:8000 app:app
+  ```
+
+### 7.3 Za PHP aplikacije
+- [ ] **Provjerite index.php:**
+  1. Kreirajte index.php ako ne postoji
+  2. Provjerite routing (ako koristite custom router)
+  3. Dodajte .htaccess za pretty URLs:
+     ```
+     <IfModule mod_rewrite.c>
+       RewriteEngine On
+       RewriteBase /
+       RewriteCond %{REQUEST_FILENAME} !-f
+       RewriteCond %{REQUEST_FILENAME} !-d
+       RewriteRule ^(.*)$ index.php/$1 [L]
+     </IfModule>
+     ```
+
+---
+
+## FAZA 8: KONFIGURACIJA SSL CERTIFIKATA
+**Trajanje: 30 minuta**
+
+### 8.1 Automatska Let's Encrypt konfiguracija
+- [ ] **Preko cPanel AutoSSL:**
+  1. Logirajte se u cPanel
+  2. Idite na "AutoSSL"
+  3. Kliknite "Run AutoSSL"
+  4. Čekajte da se završi (obično < 5 minuta)
+
+### 8.2 Redirekcija na HTTPS
+- [ ] **Dodajte u .htaccess:**
+  ```
+  <IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  </IfModule>
+  ```
+
+---
+
+## FAZA 9: TESTIRANJE NA cPANEL-U
+**Trajanje: 1-3 sata**
+
+### 9.1 Testiranje direktnog pristupa
+- [ ] **Via SSH terminal:**
+  1. Provjerite logove:
+     ```
+     tail -50 /var/log/apache2/error_log
+     tail -50 /var/log/apache2/access_log
+     ```
+  2. Testirajte aplikaciju:
+     ```
+     curl http://localhost:3000/    # Za Node.js
+     curl http://localhost:8000/   # Za Python
+     ```
+  3. Provjerite HTTP status kodove
+
+### 9.2 Testiranje preko domenskog imena
+- [ ] **Prije nego što prebacite DNS:**
+  1. Otvorite hosts fajl na lokalnom računaru:
+     - Windows: `C:\Windows\System32\drivers\etc\hosts`
+     - Mac/Linux: `/etc/hosts`
+  2. Dodajte liniju:
+     ```
+     SERVER_IP  vasadomena.com
+     ```
+  3. Otvorite browser: `http://vasadomena.com`
+  4. Testirajte sve funkcionalnosti
+  5. Provjerite console za greške
+
+### 9.3 Testiranje svega na listi
+- [ ] **Napravite test listu:**
+  - [ ] Početna stranica se učitava
+  - [ ] Svi statički fajlovi se učitavaju (CSS, JS, slike)
+  - [ ] Baza podataka se povezuje
+  - [ ] CRUD operacije rade
+  - [ ] Forma se submituje
+  - [ ] Autentifikacija radi (ako postoji)
+  - [ ] API endpoints rade
+  - [ ] Error handling radi
+  - [ ] Performanse su zadovoljavajuće
+  - [ ] Nema JavaScript grešaka
+
+---
+
+## FAZA 10: PREBACIVANJE DNS
+**Trajanje: 30 minuta - 24 sata (za propagaciju)**
+
+### 10.1 Pronađite cPanel A record
+- [ ] **Preko WHM:**
+  1. Logirajte se u WHM
+  2. Pronađite A record za vašu domenu
+  3. Zapamtite IP adresu cPanel servera
+  4. Format: `vasadomena.com A [SERVER_IP]`
+
+### 10.2 Prebacite DNS
+- [ ] **Na vašem registratoru domene (GoDaddy, Namecheap, itd):**
+  1. Logirajte se u registrator
+  2. Pronađite DNS postavke za domenu
+  3. Pronađite A record
+  4. Zamijenite stari IP sa cPanel serverom IP-om
+  5. Spremi promene
+  6. **NAPOMENA:** Može trebati do 24 sata da se propagira
+
+### 10.3 Monitoring propagacije
+- [ ] **Provjerite propagaciju:**
+  ```
+  dig vasadomena.com
+  nslookup vasadomena.com
+  ```
+  - Trebate viditi novi IP
+  - Koristite online tools kao whatsmydns.net
+
+### 10.4 Fallback plan
+- [ ] **Ako nešto nije u redu:**
+  1. Prebacite DNS nazad na stari IP
+  2. Istražite greške na cPanel-u
+  3. Provjerite logove
+  4. Testirajte ponovo
+  5. Pokušajte ponovno
+
+---
+
+## FAZA 11: POST-MIGRACIJA
+**Trajanje: 1-2 sata**
+
+### 11.1 Cleanup i optimizacija
+- [ ] **Na cPanel serveru:**
+  1. Obriši privremene fajlove
+  2. Setz dozvole datoteka:
+     ```
+     find /home/username/public_html -type f -exec chmod 644 {} \;
+     find /home/username/public_html -type d -exec chmod 755 {} \;
+     chmod 600 /home/username/public_html/app/.env
+     ```
+  3. Optimizuj caching
+
+### 11.2 Monitoring
+- [ ] **Provjerite zdravlje aplikacije:**
+  1. Logovi: `/var/log/apache2/error_log`
+  2. CPU i RAM usage
+  3. Disk space
+  4. Konekcije na bazu
+
+### 11.3 Backup konfiguracija
+- [ ] **Kreirajte redovne backupe:**
+  1. Koristite cPanel Backup funkciju
+  2. Postavite automatske backupe (dnevne)
+  3. Testirajte restore proces
+
+### 11.4 Dokumentovanje
+- [ ] **Kreirajte dokumentaciju za budućnost:**
+  1. Zabilježite sve login kredencijale (u sigurnoj lokaciji)
+  2. Dokumentujte strukturu direktorijuma
+  3. Zabilježite sve custom konfiguracije
+  4. Kreirajte runbook za restart aplikacije
+
+---
+
+## FAZA 12: OLDCPANEL SERVER PRIPREMA ZA ISKLJUČIVANJE
+**Trajanje: 30 minuta - 2 sata**
+
+### 12.1 Finalni backup iz Replita
+- [ ] **Prije nego što isključite Replit hosting:**
+  1. Preuzmi finalni backup svih baza
+  2. Preuzmi sve fajlove ponovno
+  3. Spremi na 2+ sigurne lokacije
+
+### 12.2 Prelazni period
+- [ ] **Ostavite Replit aplikaciju pokrenuttom 24-48 sati:**
+  1. U slučaju problema, lako se vraćate
+  2. Korisnici mogu pristupiti preko Replit URL-a ako trebate
+  3. Email backup ako trebate neće biti promenjena
+
+### 12.3 Isključivanje Replita
+- [ ] **Tek nakon što sve radi na cPanel-u:**
+  1. Suspenzujte (ne brišite) Replit aplikaciju
+  2. Čekajte još 48 sati
+  3. Onda obrišite ako je sve stabil
+
+---
+
+## FAZA 13: HITNE PROCEDURE ZA TROUBLESHOOTING
+**Ako nešto krene po zlu - redosled je važan!**
+
+### Problem: Aplikacija nije dostupna
+1. [ ] Provjerite DNS propagaciju: `dig vasadomena.com`
+2. [ ] Provjerite da aplikacija radi: `curl http://localhost:3000`
+3. [ ] Provjerite logove: `tail -100 /var/log/apache2/error_log`
+4. [ ] Provjerite ports: `netstat -tlnp | grep LISTEN`
+5. [ ] Rekrenite aplikaciju (PM2): `pm2 restart all`
+6. [ ] Ako sve padne - prebacite DNS nazad na Replit
+
+### Problem: Baza nije dostupna
+1. [ ] Provjerite credentials u .env
+2. [ ] Testirajte konekciju: `mysql -u user -p baza`
+3. [ ] Provjerite da li postoji baza: `show databases;`
+4. [ ] Provjerite dozvole korisnika
+5. [ ] Restartujte MySQL: `service mysql restart`
+
+### Problem: Static fajlovi se ne učitavaju
+1. [ ] Provjerite dozvole: `chmod 755 /home/username/public_html`
+2. [ ] Provjerite putanje u HTML: svi URL-ovi trebaju biti relativni
+3. [ ] Provjerite .htaccess (može blokirati static fajlove)
+4. [ ] Testujte direktan pristup fajlu
+
+### Problem: Performanse su loše
+1. [ ] Provjerite CPU/RAM: `top`
+2. [ ] Provjerite broj MySQL konekcija
+3. [ ] Dodajte caching (Redis ili Memcached)
+4. [ ] Optimizujte bazu (indeksi)
+5. [ ] Razmotrите CDN za static fajlove
+
+---
+
+## CHECKLIST - FINAL SUBMISSION
+
+**Prije nego što kažete da je migracija završena, provjerite:**
+
+- [ ] Sve aplikacije dostupne preko domena
+- [ ] HTTPS/SSL radi na svim domenama
+- [ ] Sve baze podataka su migrirane
+- [ ] Svi fajlovi su uploadovani
+- [ ] .env varijable su postavljene
+- [ ] Svi URL-ovi i putanje rade
+- [ ] Svi API endpointi funkcionišu
+- [ ] Forme se submituju korektno
+- [ ] Database upiti rade brzo
+- [ ] Nema JavaScript grešaka u console-u
+- [ ] Email notifikacije rade (ako postoje)
+- [ ] Autentifikacija i autorizacija rade
+- [ ] Admin paneli dostupni
+- [ ] Logging funkcionira
+- [ ] Backup sistem je postavljen
+- [ ] Monitoring je aktivan
+- [ ] Dokumentacija je complete
+- [ ] Tim je obučen kako da održava sistem
+- [ ] Fallback plan je dokumentovan
+- [ ] Replit backup je sacuvan na sigurnom mjestu
+
+---
+
+## VREMENSKE PROCJENE
+
+| FAZA | AKTIVNOST | MINIMALNO | MAKSIMALNO |
+|------|-----------|-----------|-----------|
+| 0 | Priprema i audit | 2h | 4h |
+| 1 | Export sa Replita | 30min | 2h |
+| 2 | Lokalna testiranja | 30min | 2h |
+| 3 | cPanel priprema | 1h | 3h |
+| 4 | Baze podataka | 30min | 2h |
+| 5 | Upload koda | 1h | 4h |
+| 6 | Instalacija zavisnosti | 30min | 2h |
+| 7 | Web server config | 1h | 2h |
+| 8 | SSL sertifikati | 30min | 1h |
+| 9 | Testiranje | 1h | 3h |
+| 10 | DNS prebacivanje | 30min | 24h* |
+| 11 | Post-migracija | 1h | 2h |
+| 12 | Cleanup | 30min | 2h |
+| **TOTALNO** | | **10-11h** | **30-31h** |
+
+*Uključujući DNS propagaciju koja se dešava u pozadini
+
+---
+
+## KRITIČNI REDOSLJED - NIKAD MIJENJAJTE!
+
+```
+FAZA 0 → FAZA 1 → FAZA 2 → FAZA 3 → FAZA 4 → FAZA 5 → FAZA 6 
+  ↓
+FAZA 7 → FAZA 8 → FAZA 9 (OBAVEZNA TESTIRANJA!) → FAZA 10 
+  ↓
+FAZA 11 → FAZA 12 → FAZA 13 (Ako trebate troubleshooting)
+```
+
+**NIKAD NE PREBACUJTE DNS PRE NEGO STO JE FAZA 9 COMPLETE!**
