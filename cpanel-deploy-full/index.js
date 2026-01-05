@@ -2421,23 +2421,35 @@ function setupAuth(app2) {
       res.status(500).json({ error: error.message });
     }
   });
-  app2.get("/api/debug/fix-passwords", async (req, res) => {
+  app2.get("/api/debug/fix-passwords-now", async (req, res) => {
     try {
+      const secretKey = req.query.key;
+      if (secretKey !== "vikend2024fix") {
+        return res.status(403).json({ error: "Pogresan kljuc. Koristi ?key=vikend2024fix" });
+      }
       const adminPassword = "Admin123!";
       const demoPassword = "demo123";
       const hashedAdminPassword = await hashPassword(adminPassword);
       const hashedDemoPassword = await hashPassword(demoPassword);
+      const adminResult = await pool.execute(
+        "UPDATE users SET password = ? WHERE email = ?",
+        [hashedAdminPassword, "admin@vikendmajstor.rs"]
+      );
+      const demoResult = await pool.execute(
+        "UPDATE users SET password = ? WHERE email LIKE ?",
+        [hashedDemoPassword, "%@demo.com"]
+      );
       res.json({
-        message: "Kopiraj SQL komande u phpMyAdmin",
+        success: true,
+        message: "Lozinke su azurirane!",
         adminCredentials: { email: "admin@vikendmajstor.rs", password: adminPassword },
         demoCredentials: { password: demoPassword, note: "Za sve @demo.com korisnike" },
-        sqlCommands: [
-          `UPDATE users SET password = '${hashedAdminPassword}' WHERE email = 'admin@vikendmajstor.rs';`,
-          `UPDATE users SET password = '${hashedDemoPassword}' WHERE email LIKE '%@demo.com';`
-        ]
+        adminRowsAffected: adminResult[0].affectedRows,
+        demoRowsAffected: demoResult[0].affectedRows,
+        warning: "OBRISI OVAJ ENDPOINT NAKON UPOTREBE!"
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message, stack: error.stack });
     }
   });
   app2.post("/api/auth/google", async (req, res) => {
