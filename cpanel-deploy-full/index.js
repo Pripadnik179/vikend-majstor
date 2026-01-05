@@ -10343,6 +10343,7 @@ function configureExpoAndLanding(app2) {
   app2.use("/demo-images", express.static(path3.resolve(__dirname, "demo-images"), staticOptions));
   app2.use("/images", express.static(path3.resolve(process.cwd(), "server/landing/images"), staticOptions));
   app2.use("/uploads", express.static(path3.resolve(__dirname, "uploads", "public"), staticOptions));
+  app2.use("/objects/uploads", express.static(path3.resolve(__dirname, "uploads", "public"), staticOptions));
   app2.use((req, res, next) => {
     if (req.path.startsWith("/api")) {
       return next();
