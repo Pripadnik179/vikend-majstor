@@ -9995,14 +9995,22 @@ function setupCors(app2) {
   });
 }
 function setupBodyParsing(app2) {
-  app2.use(
+  app2.use((req, res, next) => {
+    if (req.path.startsWith('/api/objects/upload/') && req.method === 'PUT') {
+      return next();
+    }
     express.json({
-      verify: (req, _res, buf) => {
-        req.rawBody = buf;
+      verify: (req2, _res, buf) => {
+        req2.rawBody = buf;
       }
-    })
-  );
-  app2.use(express.urlencoded({ extended: false }));
+    })(req, res, next);
+  });
+  app2.use((req, res, next) => {
+    if (req.path.startsWith('/api/objects/upload/') && req.method === 'PUT') {
+      return next();
+    }
+    express.urlencoded({ extended: false })(req, res, next);
+  });
 }
 function setupRequestLogging(app2) {
   app2.use((req, res, next) => {
@@ -10210,6 +10218,7 @@ function configureExpoAndLanding(app2) {
   app2.use("/assets", express.static(path3.resolve(process.cwd(), "assets"), staticOptions));
   app2.use("/demo-images", express.static(path3.resolve(process.cwd(), "server/public/demo-images"), staticOptions));
   app2.use("/images", express.static(path3.resolve(process.cwd(), "server/landing/images"), staticOptions));
+  app2.use("/uploads", express.static(path3.resolve(__dirname, "uploads", "public"), staticOptions));
   app2.use((req, res, next) => {
     if (req.path.startsWith("/api")) {
       return next();
