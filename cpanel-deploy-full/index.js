@@ -2452,6 +2452,48 @@ function setupAuth(app2) {
       res.status(500).json({ error: error.message, stack: error.stack });
     }
   });
+  app2.get("/api/debug/fix-image-urls", async (req, res) => {
+    try {
+      const secretKey = req.query.key;
+      if (secretKey !== "vikend2024fix") {
+        return res.status(403).json({ error: "Pogresan kljuc. Koristi ?key=vikend2024fix" });
+      }
+      const placeholderImage = "/demo-images/placeholder-tool.svg";
+      const itemsResult = await pool.execute(
+        "UPDATE items SET images = ? WHERE images IS NOT NULL AND images != '[]' AND images != ''",
+        [JSON.stringify([placeholderImage])]
+      );
+      const avatarResult = await pool.execute(
+        "UPDATE users SET avatarUrl = NULL WHERE avatarUrl IS NOT NULL AND avatarUrl LIKE '%replit%'"
+      );
+      res.json({
+        success: true,
+        message: "URL-ovi slika su azurirani!",
+        itemsUpdated: itemsResult[0].affectedRows,
+        avatarsCleared: avatarResult[0].affectedRows,
+        note: "Sve slike su zamenjene placeholder slikama. Korisnici mogu uploadovati nove slike."
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message, stack: error.stack });
+    }
+  });
+  app2.get("/api/debug/check-uploads", async (req, res) => {
+    try {
+      const uploadsDir = path.join(__dirname, "uploads", "public");
+      let files = [];
+      if (fs.existsSync(uploadsDir)) {
+        files = fs.readdirSync(uploadsDir).filter(f => !f.endsWith('.meta.json'));
+      }
+      res.json({
+        uploadsDir: uploadsDir,
+        exists: fs.existsSync(uploadsDir),
+        fileCount: files.length,
+        files: files.slice(0, 20)
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
   app2.post("/api/auth/google", async (req, res) => {
     try {
       const { accessToken } = req.body;
@@ -3734,20 +3776,35 @@ async function registerRoutes(app2) {
       return res.sendStatus(500);
     }
   });
+  var pendingUploads = new Map();
   app2.post("/api/objects/upload", isAuthenticated, async (req, res) => {
     const localStorageService2 = new LocalStorageService();
     try {
       const uploadId = localStorageService2.generateUploadId();
-      res.json({ uploadId, uploadURL: `/api/objects/upload/${uploadId}` });
+      const uploadToken = randomUUID().replace(/-/g, '');
+      pendingUploads.set(uploadId, { userId: req.user.id, token: uploadToken, createdAt: Date.now() });
+      setTimeout(() => pendingUploads.delete(uploadId), 10 * 60 * 1000);
+      res.json({ uploadId, uploadURL: `/api/objects/upload/${uploadId}?token=${uploadToken}` });
     } catch (error) {
       console.error("Error generating upload ID:", error);
       res.status(500).json({ error: "Failed to generate upload ID" });
     }
   });
-  app2.put("/api/objects/upload/:uploadId", isAuthenticated, async (req, res) => {
+  app2.put("/api/objects/upload/:uploadId", async (req, res) => {
     const { uploadId } = req.params;
-    const userId = req.user.id;
+    const { token } = req.query;
     const localStorageService2 = new LocalStorageService();
+    const pending = pendingUploads.get(uploadId);
+    let userId = null;
+    if (pending && pending.token === token) {
+      userId = pending.userId;
+      pendingUploads.delete(uploadId);
+    } else if (req.user) {
+      userId = req.user.id;
+    } else {
+      console.log(`[UPLOAD] Auth failed for uploadId: ${uploadId}, token: ${token}`);
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     console.log(`[UPLOAD] Receiving file upload for user ${userId}, uploadId: ${uploadId}`);
     try {
       const chunks = [];
@@ -10216,7 +10273,7 @@ function configureExpoAndLanding(app2) {
     lastModified: true
   };
   app2.use("/assets", express.static(path3.resolve(process.cwd(), "assets"), staticOptions));
-  app2.use("/demo-images", express.static(path3.resolve(process.cwd(), "server/public/demo-images"), staticOptions));
+  app2.use("/demo-images", express.static(path3.resolve(__dirname, "demo-images"), staticOptions));
   app2.use("/images", express.static(path3.resolve(process.cwd(), "server/landing/images"), staticOptions));
   app2.use("/uploads", express.static(path3.resolve(__dirname, "uploads", "public"), staticOptions));
   app2.use((req, res, next) => {
