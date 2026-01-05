@@ -2081,7 +2081,7 @@ function setupAuth(app2) {
       });
     } catch (error) {
       console.error("Registration error:", error);
-      res.status(500).json({ error: "Gre\u0161ka pri registraciji" });
+      res.status(500).json({ error: "Greska pri registraciji: " + (error.message || String(error)) });
     }
   });
   app2.get("/api/auth/verify-email", async (req, res) => {
@@ -2161,7 +2161,7 @@ function setupAuth(app2) {
       res.json({ ...userWithoutPassword, authToken });
     } catch (error) {
       console.error("Login error:", error);
-      res.status(500).json({ error: "Gre\u0161ka pri prijavi" });
+      res.status(500).json({ error: "Greska pri prijavi: " + (error.message || String(error)) });
     }
   });
   app2.post("/api/auth/logout", (req, res) => {
@@ -2450,7 +2450,7 @@ function setupAuth(app2) {
       });
     } catch (error) {
       console.error("Google auth error:", error);
-      res.status(500).json({ error: "Gre\u0161ka pri Google prijavi" });
+      res.status(500).json({ error: "Greska pri Google prijavi: " + (error.message || String(error)) });
     }
   });
   app2.post("/api/auth/apple", async (req, res) => {
