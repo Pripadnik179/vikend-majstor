@@ -2421,6 +2421,25 @@ function setupAuth(app2) {
       res.status(500).json({ error: error.message });
     }
   });
+  app2.get("/api/debug/fix-passwords", async (req, res) => {
+    try {
+      const adminPassword = "Admin123!";
+      const demoPassword = "demo123";
+      const hashedAdminPassword = await hashPassword(adminPassword);
+      const hashedDemoPassword = await hashPassword(demoPassword);
+      res.json({
+        message: "Kopiraj SQL komande u phpMyAdmin",
+        adminCredentials: { email: "admin@vikendmajstor.rs", password: adminPassword },
+        demoCredentials: { password: demoPassword, note: "Za sve @demo.com korisnike" },
+        sqlCommands: [
+          `UPDATE users SET password = '${hashedAdminPassword}' WHERE email = 'admin@vikendmajstor.rs';`,
+          `UPDATE users SET password = '${hashedDemoPassword}' WHERE email LIKE '%@demo.com';`
+        ]
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
   app2.post("/api/auth/google", async (req, res) => {
     try {
       const { accessToken } = req.body;
