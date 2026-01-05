@@ -2393,6 +2393,34 @@ function setupAuth(app2) {
     const { password: _, ...userWithoutPassword } = req.user;
     res.json(userWithoutPassword);
   });
+  app2.get("/api/debug/check-user/:email", async (req, res) => {
+    try {
+      const { email } = req.params;
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.json({ found: false, message: "User not found" });
+      }
+      const pwd = user.password;
+      const pwdType = typeof pwd;
+      const pwdLength = pwd ? pwd.length : 0;
+      const hasDot = pwd ? pwd.includes(".") : false;
+      const parts = pwd ? pwd.split(".") : [];
+      res.json({
+        found: true,
+        email: user.email,
+        passwordType: pwdType,
+        passwordLength: pwdLength,
+        hasDot: hasDot,
+        partsCount: parts.length,
+        firstPartLength: parts[0] ? parts[0].length : 0,
+        secondPartLength: parts[1] ? parts[1].length : 0,
+        passwordPreview: pwd ? pwd.substring(0, 20) + "..." : null,
+        allUserKeys: Object.keys(user)
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
   app2.post("/api/auth/google", async (req, res) => {
     try {
       const { accessToken } = req.body;
