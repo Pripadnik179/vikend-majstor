@@ -2463,15 +2463,82 @@ function setupAuth(app2) {
         "UPDATE items SET images = ? WHERE images IS NOT NULL AND images != '[]' AND images != ''",
         [JSON.stringify([placeholderImage])]
       );
-      const avatarResult = await pool.execute(
-        "UPDATE users SET avatarUrl = NULL WHERE avatarUrl IS NOT NULL AND avatarUrl LIKE '%replit%'"
-      );
       res.json({
         success: true,
         message: "URL-ovi slika su azurirani!",
         itemsUpdated: itemsResult[0].affectedRows,
-        avatarsCleared: avatarResult[0].affectedRows,
         note: "Sve slike su zamenjene placeholder slikama. Korisnici mogu uploadovati nove slike."
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message, stack: error.stack });
+    }
+  });
+  app2.get("/api/debug/seed-categories", async (req, res) => {
+    try {
+      const secretKey = req.query.key;
+      if (secretKey !== "vikend2024fix") {
+        return res.status(403).json({ error: "Pogresan kljuc. Koristi ?key=vikend2024fix" });
+      }
+      let createdCategories = 0;
+      let createdSubcategories = 0;
+      let sortOrder = 0;
+      for (const [key, cat] of Object.entries(PREDEFINED_CATEGORIES)) {
+        const [existingCat] = await pool.execute(
+          "SELECT id FROM categories WHERE slug = ?",
+          [cat.slug]
+        );
+        let categoryId;
+        if (existingCat.length === 0) {
+          const [result] = await pool.execute(
+            "INSERT INTO categories (id, name, slug, sort_order, is_active) VALUES (?, ?, ?, ?, ?)",
+            [crypto.randomUUID(), cat.name, cat.slug, sortOrder, true]
+          );
+          const [newCat] = await pool.execute("SELECT id FROM categories WHERE slug = ?", [cat.slug]);
+          categoryId = newCat[0].id;
+          createdCategories++;
+          console.log(`[SEED] Created category: ${cat.name}`);
+        } else {
+          categoryId = existingCat[0].id;
+        }
+        sortOrder++;
+        let subSortOrder = 0;
+        for (const sub of cat.subcategories) {
+          const fullSlug = `${cat.slug}-${sub.slug}`;
+          const [existingSub] = await pool.execute(
+            "SELECT id FROM subcategories WHERE category_id = ? AND slug = ?",
+            [categoryId, fullSlug]
+          );
+          if (existingSub.length === 0) {
+            await pool.execute(
+              "INSERT INTO subcategories (id, category_id, name, slug, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)",
+              [crypto.randomUUID(), categoryId, sub.name, fullSlug, subSortOrder, true]
+            );
+            createdSubcategories++;
+            console.log(`[SEED]   Created subcategory: ${sub.name}`);
+          }
+          subSortOrder++;
+        }
+      }
+      res.json({
+        success: true,
+        message: "Kategorije su seedirane!",
+        createdCategories,
+        createdSubcategories,
+        totalCategories: Object.keys(PREDEFINED_CATEGORIES).length
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message, stack: error.stack });
+    }
+  });
+  app2.get("/api/debug/list-categories", async (req, res) => {
+    try {
+      const [categories] = await pool.execute("SELECT * FROM categories ORDER BY sort_order");
+      const [subcategories] = await pool.execute("SELECT * FROM subcategories ORDER BY sort_order");
+      res.json({
+        categoriesCount: categories.length,
+        subcategoriesCount: subcategories.length,
+        categories: categories,
+        subcategories: subcategories
       });
     } catch (error) {
       res.status(500).json({ error: error.message, stack: error.stack });
