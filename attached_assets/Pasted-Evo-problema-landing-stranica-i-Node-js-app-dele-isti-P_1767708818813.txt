@@ -1,0 +1,253 @@
+Evo problema - landing stranica i Node.js app dele isti Passenger proces!
+
+Kada pokrenes "Run NPM Install", cPanel stopira Passenger da bi instalirao pakete, i to rusi OBE stranice.
+
+Resenje - Razdvoji ih:
+
+Landing stranica (vikendmajstor.rs) - treba da bude CISTI staticki HTML u public_html/ BEZ Passenger-a
+
+Node.js app (app.vikendmajstor.rs) - treba da bude u ZASEBNOM folderu van public_html/
+
+Koraci:
+
+U File Manager proveri da li postoji .htaccess fajl u public_html/ - ako ima Passenger direktive, to je problem
+
+Obrisi (DESTROY) Node.js aplikaciju
+
+Napravi NOVU Node.js aplikaciju sa:
+
+Application root: vikendapp/cpanel-deploy-full (van public_html - ovo izgleda OK)
+Application URL: app.vikendmajstor.rs
+Node.js version: 20
+Proveri da public_html/.htaccess NE sadrzi Passenger direktive - treba samo tvoj originalni redirect kod
+
+Mozes li da otvoris public_html/.htaccess i pokazi mi sta pise unutra?
+
+Worked for 2 minutes
+Mogu ali oni i nisu u istom folderu, vidi. public_html je folder za sebe. A vikendapp/cpanel-deploy-full je van ,tako je od pocetka.
+A U .htaccess pise
+DirectoryIndex index.html
+
+<IfModule mod_headers.c> Header set Cache-Control "no-cache, no-store, must-revalidate" Header set Pragma "no-cache" Header set Expires 0 </IfModule> <IfModule mod_rewrite.c> RewriteEngine On RewriteBase /
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+ErrorDocument 404 /index.html
+<IfModule mod_headers.c>
+Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+Header set Pragma "no-cache"
+</IfModule>
+
+
+1 message & 1 action
+Hvala, `.htaccess` je cist - nema Passenger direktiva. Problem je verovatno **resource limit** - kada npm install pocne, trosi toliko memorije/CPU da ceo hosting account pati, ukljucujuci i landing stranicu. **Evo sta da probas:** 1. **DESTROY** postojecu Node.js aplikaciju 2. **CREATE** novu sa Node.js **20** (ne 24) 3. **Pre nego sto kliknes Run NPM Install** - otvori landing stranicu u drugom tabu da vidis da li radi 4. Klikni **Run NPM Install** i prati sta se desava Ako landing opet padne, to je definitivno resource limit na hosting paketu - kada npm install radi, server nema dovoljno resursa za ostale procese. **Alternativa:** Pisi hostingu (support) i objasni problem - mozda mogu da ti pomognu da instaliras pakete preko SSH ili da ti dodele vise resursa za vreme instalacije.
+pogledaj ove greske , da nie tu nesto?
+
+
+1 message & 1 action
+**EVO PROBLEMA!** Greska jasno kaze: > `Cannot find package 'drizzle-orm'` To znaci da **npm install NIJE uspeo** - paketi nisu instalirani, a aplikacija pokusava da se pokrene bez njih. **Resenje:** Posto npm install ne radi kroz cPanel UI, imas dve opcije: **Opcija 1 - Kontaktiraj hosting support:** Reci im: "npm install ne radi kroz Node.js Selector, molim vas da pokrenete `npm install` komandu u folderu `/home/vikendma/vikendapp/cpanel-deploy-full/` preko SSH" **Opcija 2 - Ako imas SSH pristup:** ```bash cd /home/vikendma/vikendapp/cpanel-deploy-full/ source /home/vikendma/nodevenv/vikendapp/cpanel-deploy-full/20/bin/activate npm install ``` **Opcija 3 - Uploaduj node_modules rucno:** 1. Instaliraj pakete lokalno na svom racunaru 2. Zipuj `node_modules` folder 3. Uploaduj na hosting i raspakovji Ali paznja - CloudLinux ponekad ima problem sa rucno uploadovanim node_modules. Zato je Opcija 1 (hosting support) najsigurnija.
+Unistio sam ga , hajde sada da napravimo novi app
+
+
+1 message & 1 action
+Super! Evo koraka za novu aplikaciju: **U cPanel → Setup Node.js App → CREATE APPLICATION:** 1. **Node.js version:** `20` (ili 20.x koja je dostupna) 2. **Application mode:** `Production` 3. **Application root:** `vikendapp/cpanel-deploy-full` 4. **Application URL:** izaberi `app.vikendmajstor.rs` 5. **Application startup file:** `app.js` Klikni **CREATE**. **Posle toga dodaj Environment variables:** - `MYSQL_URL` = `mysql://vikendma_vikendmajstor_user:Caralazara13%40@localhost:3306/vikendma_vikendmajstor_db` - `NODE_ENV` = `production` - `SESSION_SECRET` = `vikendmajstor-super-secret-session-key-2024` Klikni **SAVE**. **Zatim** probaj **Run NPM Install**. Javi mi sta se desi!
+evo nove greske
+
+
+Show less
+Ovo je zapravo dobar znak! Greska kaze da je npm install zavrsen, ali aplikacija vraca 500 error.
+
+To znaci da su paketi verovatno instalirani, ali aplikacija ima neku drugu gresku.
+
+Proveri:
+
+Idi na Errors stranicu u cPanel (gde si malopre video greske)
+Osvezi i pogledaj nove greske
+Ili probaj da otvoris https://app.vikendmajstor.rs u browseru i javi mi sta se prikazuje.
+
+Worked for 12 seconds
+
+1 message & 1 action
+Ista greska - `drizzle-zod` i `drizzle-orm` nedostaju. **npm install NE instalira pakete** - ovo je problem na strani hostinga. **Jedino resenje:** Kontaktiraj hosting support sa ovom porukom: --- *"Pozdrav,* *Imam problem sa Node.js aplikacijom na app.vikendmajstor.rs. Kada kliknem 'Run NPM Install' u Node.js Selector-u, instalacija ne uspeva i paketi nisu instalirani.* *Molim vas da pokrenete sledece komande preko SSH:* ``` cd /home/vikendma/vikendapp/cpanel-deploy-full/ source /home/vikendma/nodevenv/vikendapp/cpanel-deploy-full/20/bin/activate npm install ``` *Hvala!"* --- Oni imaju SSH pristup i mogu da pokrenu npm install direktno. To je jedini nacin da se ovo resi posto cPanel UI ne radi kako treba.
+da li ovde ja mogu da uradim nesto?
+
+
+1 message & 1 action
+Nazalost, tu nema nista sto moze da pomogne sa npm install. **Proveri da li imas Terminal u cPanel:** - Idi na cPanel pocetnu stranicu - Trazi **"Terminal"** u pretrazi ili u sekciji **"Advanced"** Ako imas Terminal, mozes sam da pokrenes: ```bash cd /home/vikendma/vikendapp/cpanel-deploy-full/ source /home/vikendma/nodevenv/vikendapp/cpanel-deploy-full/20/bin/activate npm install ``` Ako nemas Terminal - onda moras da kontaktiras hosting support.
+terminal nema
+,ovo ne pomaze
+
+
+1 message & 1 action
+Ne, PHP PEAR je za PHP pakete, ne pomaze za Node.js. **Imas samo dve opcije:** **Opcija 1 (Preporuceno) - Kontaktiraj hosting:** Pisi im ticket/email sa komandama koje sam ti dao. Oni ce pokrenuti npm install preko SSH. **Opcija 2 - Probaj rucni upload node_modules:** 1. Na svom racunaru napravi folder 2. Kopiraj `package.json` iz `cpanel-deploy-full/` 3. Pokreni `npm install` lokalno 4. Zipuj `node_modules` folder 5. Uploaduj ZIP na hosting u `vikendapp/cpanel-deploy-full/` 6. Raspakuj ga tamo Ali upozorenje - CloudLinux ponekad odbija rucno uploadovan node_modules. Opcija 1 je sigurnija. **Da li zelis da ti pripremim poruku za hosting support?**
+vec mi je blokirao kaze da je virus kada sam probao
+
+
+1 message & 1 action
+Da, to se cesto desava - antivirusni skeneri na hostingu blokiraju node_modules jer sadrzi hiljade malih fajlova. **Jedina opcija je hosting support.** Pisi im ovo: --- *"Pozdrav,* *Potrebna mi je pomoc sa Node.js aplikacijom.* *Problem: "Run NPM Install" u Node.js Selector-u ne instalira pakete. Aplikacija javlja gresku "Cannot find package 'drizzle-orm'".* *Molim vas da pokrenete npm install u folderu:* `/home/vikendma/vikendapp/cpanel-deploy-full/` *Hvala!"* --- Bez SSH pristupa, ovo je jedini nacin da se resi. Hosting provider mora da uradi npm install za tebe.
+Enter to the virtual environment.
+
+To enter to virtual environment, run the command: source /home/vikendma/nodevenv/vikendapp/cpanel-deploy-full/20/bin/activate && cd /home/vikendma/vikendapp/cpanel-deploy-full
+Da li ovo nesto znaci?
+
+
+Show less
+DA! To je TACNA komanda koju hosting treba da pokrene!
+
+Pisi im:
+
+"Pozdrav,
+
+Molim vas da pokrenete sledece komande u terminalu:
+
+source /home/vikendma/nodevenv/vikendapp/cpanel-deploy-full/20/bin/activate && cd /home/vikendma/vikendapp/cpanel-deploy-full
+npm install
+Hvala!"
+
+Ova komanda aktivira Node.js 20 virtual environment i instalira pakete. Ti nemas Terminal pristup da je pokrenes sam, ali hosting support moze.
+
+Worked for 14 seconds
+Ali to je poruka koju ja imam u app
+
+
+1 message & 1 action
+Da, cPanel ti pokazuje tu komandu, ali ti nemas **Terminal** gde bi je pokrenuo. **DOBRA VEST:** Vidim da si sada na Node.js **20.19.3** - to je odlicno! **Probaj ponovo:** 1. Klikni **Run NPM Install** jos jednom 2. Ako opet ne uspe, pisi hostingu da pokrenu tu komandu + `npm install` Ili proveri u File Manager da li sada postoji `node_modules` folder u `vikendapp/cpanel-deploy-full/` - mozda je npm install ovaj put uspeo?
+node_modules postoji folder i evo ss iz njega
+
+
+Show less
+ODLICNO! Vidim drizzle-orm folder - npm install je USPEO! 🎉
+
+Sada:
+
+Vrati se na Setup Node.js App
+Klikni RESTART dugme
+Otvori https://app.vikendmajstor.rs u browseru
+Javi mi sta se prikazuje!
+
+Worked for 10 seconds
+uradio sve i isto
+
+
+Show less
+Aplikacija ima novu gresku. Proveri ponovo Errors stranicu u cPanel - trebalo bi da pokazuje novu gresku.
+
+Ili pogledaj u File Manager da li postoji fajl:
+/home/vikendma/logs/passenger.log
+
+Otvori ga i pokazi mi poslednje linije.
+
+Worked for 9 seconds
+[04-Jan-2026 01:00:30 +0100]: <773bd8f2> DB Error: SQLSTATE[HY000] [14] unable to open database file in /usr/local/cpanel/base/3rdparty/roundcube/program/lib/Roundcube/rcube_db.php on line 201 (GET /cpsess2844656318/3rdparty/roundcube/index.php)
+[04-Jan-2026 01:01:55 +0100]: <ca901e40> DB Error: SQLSTATE[HY000] [14] unable to open database file in /usr/local/cpanel/base/3rdparty/roundcube/program/lib/Roundcube/rcube_db.php on line 201 (GET /cpsess2844656318/3rdparty/roundcube/index.php)
+TO JE IZ errors.log
+
+[04-Jan-2026 01:00:30 Europe/Belgrade] PHP Warning: touch(): Unable to create file /home/vikendma/etc/vikendma.rcube.db because No such file or directory in /usr/local/cpanel/base/3rdparty/roundcube/program/lib/Roundcube/db/sqlite.php on line 39
+[04-Jan-2026 01:01:55 Europe/Belgrade] PHP Warning: touch(): Unable to create file /home/vikendma/etc/vikendma.rcube.db because No such file or directory in /usr/local/cpanel/base/3rdparty/roundcube/program/lib/Roundcube/db/sqlite.php on line 39
+[04-Jan-2026 01:08:23 Europe/Belgrade] Schema updates detected in /usr/local/cpanel/base/3rdparty/roundcube/plugins/libkolab/SQL/sqlite.initial.sql, applying now...
+[04-Jan-2026 01:08:23 Europe/Belgrade] Schema updates detected in /usr/local/cpanel/base/3rdparty/roundcube/plugins/calendar/drivers/database/SQL/sqlite.initial.sql, applying now...
+[04-Jan-2026 01:08:23 Europe/Belgrade] Schema updates detected in /usr/local/cpanel/base/3rdparty/roundcube/plugins/calendar/drivers/caldav/SQL/sqlite.initial.sql, applying now... = .php.error.log
+
+
+Show less
+Te greske su za Roundcube (cPanel email) - nisu vezane za tvoju aplikaciju.
+
+Trazi passenger.log ili proveri Errors stranicu u cPanel (gde si ranije video "Cannot find package drizzle-orm").
+
+Ili u File Manager pogledaj folder:
+/home/vikendma/logs/
+
+Da li tamo postoji neki log fajl za Node.js/passenger?
+
+Worked for 12 seconds
+
+Show less
+Greska je sada drizzle-zod - razlicita od drizzle-orm.
+
+Proveri u File Manager da li postoji folder:
+vikendapp/cpanel-deploy-full/node_modules/drizzle-zod
+
+Ako NE postoji, npm install nije instalirao sve pakete.
+
+Resenje: Probaj ponovo Run NPM Install - mozda ce ovaj put instalirati sve.
+
+Worked for 11 seconds
+Ne postoji taj fajl
+
+
+Show less
+Nasao sam problem!
+
+U package.json nema drizzle-zod - zato nije instaliran!
+
+Treba da se doda u package.json. Evo sta treba:
+
+U File Manager otvori vikendapp/cpanel-deploy-full/package.json
+Klikni Edit
+Dodaj "drizzle-zod": "^0.7.0" u dependencies
+Treba da izgleda ovako:
+
+{
+  "name": "vikendmajstor-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.39.3",
+    "drizzle-zod": "^0.7.0",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.2.1",
+    "express-session": "^1.18.2",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
+    "jose": "^6.1.3",
+    "mysql2": "^3.16.0",
+    "nodemailer": "^7.0.11",
+    "zod": "^3.24.2",
+    "zod-validation-error": "^3.4.0"
+  }
+}
+Sacuvaj fajl
+Vrati se na Node.js App i klikni Run NPM Install ponovo
+Pa onda RESTART
+Worked for 1 minute
+{ "name": "vikendmajstor-server", "version": "1.0.0", "type": "module", "main": "index.js", "scripts": { "start": "node index.js" }, "dependencies": { "drizzle-orm": "^0.39.3", "express": "^4.21.2", "express-rate-limit": "^8.2.1", "express-session": "^1.18.2", "express-validator": "^7.3.1", "helmet": "^8.1.0", "jose": "^6.1.3", "mysql2": "^3.16.0", "nodemailer": "^7.0.11", "zod": "^3.24.2", "zod-validation-error": "^3.4.0" } }
+Ovako izgleda pre izmene
+
+
+Show less
+Da, dodaj "drizzle-zod": "^0.7.0", posle drizzle-orm linije.
+
+Ovako treba da izgleda POSLE izmene:
+
+{
+  "name": "vikendmajstor-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.39.3",
+    "drizzle-zod": "^0.7.0",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.2.1",
+    "express-session": "^1.18.2",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
+    "jose": "^6.1.3",
+    "mysql2": "^3.16.0",
+    "nodemailer": "^7.0.11",
+    "zod": "^3.24.2",
+    "zod-validation-error": "^3.4.0"
+  }
+}
+Sacuvaj, pa Run NPM Install, pa RESTART.
+
+Worked for 14 seconds
+Radi napokon!
