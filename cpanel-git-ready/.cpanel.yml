@@ -1,0 +1,9 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/vikendma/vikendapp-git/
+    - /bin/cp -R demo-images $DEPLOYPATH
+    - /bin/cp index.js $DEPLOYPATH
+    - /bin/cp package.json $DEPLOYPATH
+    - /bin/cp -R static-build $DEPLOYPATH
+    - /bin/cp -R uploads $DEPLOYPATH
