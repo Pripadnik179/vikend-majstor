@@ -1,44 +1,68 @@
 # VikendMajstor - cPanel Deployment
 
-## Brza Instalacija
+## Struktura fajlova
 
-### 1. Na cPanel-u (prvi put)
-
-```bash
-cd ~/vikendapp
-git clone -b cpanel https://github.com/Pripadnik/Vikend-Maj.git .
-npm install
+```
+vikendapp-git/
+├── index.js          # Glavni server fajl (bundled)
+├── package.json      # Dependencies (type: module)
+├── static-build/     # Expo web build
+│   ├── index.html
+│   ├── _expo/
+│   └── assets/
+└── uploads/          # Folder za upload slika
+    ├── public/
+    └── temp/
 ```
 
-### 2. Podesi Environment Varijable
+## Deployment na cPanel (prvi put)
 
-U cPanel Node.js App podesi:
-- `MYSQL_URL` - MySQL connection string
-- `SESSION_SECRET` - Secret za sesije
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` - Za email
+### 1. Git Clone
+U cPanel -> Git Version Control -> Create:
+- Clone URL: `https://github.com/Pripadnik/Vikend-Maj.git`
+- Branch: `cpanel`
+- Repository Path: `/home/vikendma/vikendapp-git`
 
-### 3. Pokreni aplikaciju
+### 2. Node.js App Setup
+U cPanel -> Setup Node.js App -> Create Application:
+- Node.js version: `20`
+- Application mode: `Production`
+- Application root: `vikendapp-git`
+- Application URL: `app.vikendmajstor.rs`
+- Application startup file: `index.js`
 
-```bash
-npm start
+### 3. Environment Variables
+Dodaj ove varijable u Node.js App:
 ```
+MYSQL_URL=mysql://vikendma_vikendmajstor_user:Caralazara13%40@localhost:3306/vikendma_vikendmajstor_db
+SESSION_SECRET=vikendmajstor2024secretkey
+NODE_ENV=production
+```
+
+### 4. Install i Start
+1. Klikni "Run NPM Install"
+2. Sacekaj da se zavrsi
+3. Klikni "Start App" ili "Restart"
 
 ---
 
-## Ažuriranje (svaki put)
+## Azuriranje aplikacije
 
+### Na Replit-u:
 ```bash
-cd ~/vikendapp
-git pull origin cpanel
-npm install
-# Restartuj aplikaciju u cPanel-u
+cd cpanel-git-ready
+git add .
+git commit -m "Opis izmene"
+git push origin cpanel
 ```
+
+### Na cPanel-u:
+1. Git Version Control -> vikendapp-git -> "Update from Remote"
+2. Setup Node.js App -> "Restart"
 
 ---
 
-## Debug Endpoints
-
-Posle prvog deploya pozovi:
+## Debug Endpoints (posle prvog deploya)
 
 ```
 https://app.vikendmajstor.rs/api/debug/seed-categories?key=vikend2024fix
@@ -47,14 +71,15 @@ https://app.vikendmajstor.rs/api/debug/fix-image-urls?key=vikend2024fix
 
 ---
 
-## Struktura
+## Troubleshooting
 
-```
-vikendapp/
-├── index.js          # Server (Express + API)
-├── package.json      # Dependencies
-├── static-build/     # Expo Web frontend
-└── uploads/
-    ├── public/       # Uploadovane slike
-    └── temp/         # Privremeni fajlovi
-```
+### Greska "Cannot find package X"
+1. Proveri da li je paket u package.json
+2. U File Manager obrisi `node_modules` folder (ako postoji u app folderu)
+3. U nodevenv folderu obrisi `node_modules` i `package-lock.json`
+4. Ponovo "Run NPM Install"
+
+### 500 Internal Server Error
+- Proveri Errors log u cPanel -> Metrics -> Errors
+- Proveri Environment Variables
+- Proveri da li MySQL baza radi
