@@ -369,6 +369,21 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  app.post("/api/admin/users/:id/verify-email", isAdminAuth, async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const admin = (req as any).admin;
+      await db.update(users)
+        .set({ emailVerified: true })
+        .where(eq(users.id, userId));
+      await logAdminAction(admin.id, 'verify_email', 'user', userId, 'Email manually verified by admin', req.ip);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Admin verify email error:', error);
+      res.status(500).json({ message: 'Greska pri verifikaciji emaila' });
+    }
+  });
+
   app.get("/api/admin/items", isAdminAuth, async (req, res) => {
     try {
       // Use Drizzle to get real items from database
