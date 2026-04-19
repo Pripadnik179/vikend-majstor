@@ -2,7 +2,7 @@
   "expo": {
     "name": "VikendMajstor",
     "slug": "vikendmajstor",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "vikendmajstor",
@@ -17,7 +17,18 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vikendmajstor.app"
+      "bundleIdentifier": "com.vikendmajstor.app",
+      "buildNumber": "2",
+      "infoPlist": {
+        "NSCameraUsageDescription": "VikendMajstor koristi kameru za fotografisanje alata koje iznajmljujete.",
+        "NSPhotoLibraryUsageDescription": "VikendMajstor pristupa galeriji kako biste mogli da dodate fotografije alata.",
+        "NSPhotoLibraryAddUsageDescription": "VikendMajstor čuva fotografije alata u vašoj galeriji.",
+        "NSLocationWhenInUseUsageDescription": "VikendMajstor koristi vašu lokaciju kako biste pronašli alate u blizini.",
+        "NSLocationAlwaysUsageDescription": "VikendMajstor koristi vašu lokaciju kako biste pronašli alate u blizini.",
+        "NSContactsUsageDescription": "VikendMajstor može da pristupi kontaktima kako biste lakše pozvali prijatelje.",
+        "NSMicrophoneUsageDescription": "VikendMajstor koristi mikrofon za snimanje video zapisa alata.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
